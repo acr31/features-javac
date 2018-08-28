@@ -11,6 +11,27 @@
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>26.0-jre</version>
+        </dependency>
+        <dependency>
+            <groupId>org.checkerframework</groupId>
+            <artifactId>dataflow</artifactId>
+            <version>2.5.4</version>
+        </dependency>
+        <dependency>
+            <groupId>org.checkerframework</groupId>
+            <artifactId>checker</artifactId>
+            <version>2.5.4</version>
+        </dependency>
+        <dependency>
+            <groupId>org.checkerframework</groupId>
+            <artifactId>javacutil</artifactId>
+            <version>2.5.4</version>
+        </dependency>
+
     </dependencies>
 
     <build>
@@ -27,6 +48,10 @@
                         <arg>jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED</arg>
                         <arg>--add-exports</arg>
                         <arg>jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED</arg>
+                        <arg>--add-exports</arg>
+                        <arg>jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED</arg>
+                        <arg>--add-exports</arg>
+                        <arg>jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED</arg>
                     </compilerArgs>
                     <source>1.10</source>
                     <target>1.10</target>
