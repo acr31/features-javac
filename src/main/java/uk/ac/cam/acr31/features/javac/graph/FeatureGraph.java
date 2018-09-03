@@ -76,10 +76,6 @@ public class FeatureGraph {
         .collect(toImmutableSet());
   }
 
-  public ImmutableSet<FeatureNode> descendants(FeatureNode node, NodeType nodeType) {
-
-  }
-
   public void pruneLeaves(NodeType nodeType) {
     while (pruneLeavesOnce(nodeType)) {
       // do nothing
