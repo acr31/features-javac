@@ -1,4 +1,4 @@
-package uk.ac.cam.acr31.features.javac;
+package uk.ac.cam.acr31.features.javac.semantic;
 
 import com.google.common.collect.ImmutableSet;
 import com.sun.source.tree.Tree;
@@ -23,6 +23,10 @@ public class PossibleTreeSet implements AbstractValue<PossibleTreeSet> {
 
   PossibleTreeSet() {
     this(ImmutableSet.of());
+  }
+
+  public Set<Tree> nodes() {
+    return nodes;
   }
 
   boolean isEmpty() {

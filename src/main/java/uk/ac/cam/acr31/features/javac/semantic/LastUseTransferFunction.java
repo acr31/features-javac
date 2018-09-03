@@ -1,4 +1,4 @@
-package uk.ac.cam.acr31.features.javac;
+package uk.ac.cam.acr31.features.javac.semantic;
 
 import java.util.List;
 import org.checkerframework.dataflow.analysis.RegularTransferResult;
@@ -7,7 +7,6 @@ import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.node.AbstractNodeVisitor;
-import org.checkerframework.dataflow.cfg.node.AssignmentNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 

@@ -1,4 +1,4 @@
-package uk.ac.cam.acr31.features.javac;
+package uk.ac.cam.acr31.features.javac.semantic;
 
 import java.util.List;
 import org.checkerframework.dataflow.analysis.RegularTransferResult;
