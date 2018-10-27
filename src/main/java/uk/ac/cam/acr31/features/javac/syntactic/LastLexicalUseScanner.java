@@ -65,7 +65,8 @@ public class LastLexicalUseScanner extends TreeScanner<Void, Void> {
   @Override
   public Void visitIdentifier(IdentifierTree node, Void aVoid) {
     var ident = (JCTree.JCIdent) node;
-    symbolMap.put(ident.sym, node);
+    if (ident.sym != null)
+       symbolMap.put(ident.sym, node);
     return super.visitIdentifier(node, aVoid);
   }
 }
