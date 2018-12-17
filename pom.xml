@@ -156,6 +156,7 @@
                             <encoding>UTF-8</encoding>
                             <consoleOutput>true</consoleOutput>
                             <failsOnError>true</failsOnError>
+                            <sourceDirectory>${project.build.sourceDirectory}</sourceDirectory>
                         </configuration>
                         <goals>
                             <goal>check</goal>
