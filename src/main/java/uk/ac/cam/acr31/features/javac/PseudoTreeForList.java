@@ -26,8 +26,8 @@ import java.util.List;
 import java.util.Optional;
 import uk.ac.cam.acr31.features.javac.graph.EdgeType;
 import uk.ac.cam.acr31.features.javac.graph.FeatureGraph;
-import uk.ac.cam.acr31.features.javac.graph.FeatureNode;
-import uk.ac.cam.acr31.features.javac.graph.NodeType;
+import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureNode;
+import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureNode.NodeType;
 
 /**
  * Pretends to be a JCTree for the purposes of normlising the processing of nodes and lists of

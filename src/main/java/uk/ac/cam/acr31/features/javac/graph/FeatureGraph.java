@@ -30,6 +30,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureNode;
+import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureNode.NodeType;
 
 public class FeatureGraph {
 
@@ -46,13 +48,13 @@ public class FeatureGraph {
   }
 
   public FeatureNode createFeatureNode(NodeType nodeType, String contents, Tree tree) {
-    FeatureNode result = FeatureNode.create(nodeType, contents);
+    FeatureNode result = FeatureNodes.create(nodeType, contents);
     nodeMap.put(tree, result);
     return result;
   }
 
   public FeatureNode createFeatureNode(NodeType nodeType, String contents) {
-    return FeatureNode.create(nodeType, contents);
+    return FeatureNodes.create(nodeType, contents);
   }
 
   public void putEdgeValue(FeatureNode nodeU, FeatureNode nodeV, EdgeType value) {
@@ -74,7 +76,7 @@ public class FeatureGraph {
     return graph
         .nodes()
         .stream()
-        .filter(n -> nodes.contains(n.nodeType()))
+        .filter(n -> nodes.contains(n.getType()))
         .collect(toImmutableSet());
   }
 
@@ -94,7 +96,7 @@ public class FeatureGraph {
     return graph
         .successors(node)
         .stream()
-        .filter(n -> n.nodeType() == nodeType)
+        .filter(n -> n.getType().equals(nodeType))
         .collect(toImmutableSet());
   }
 
@@ -107,7 +109,7 @@ public class FeatureGraph {
   private boolean pruneLeavesOnce(NodeType nodeType) {
     Set<FeatureNode> toRemove = new HashSet<>();
     for (FeatureNode n : graph.nodes()) {
-      if (n.nodeType() != nodeType) {
+      if (!n.getType().equals(nodeType)) {
         if (graph.successors(n).isEmpty()) {
           toRemove.add(n);
         }

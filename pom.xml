@@ -42,13 +42,29 @@
             <version>1.6.2</version>
             <scope>provided</scope>
         </dependency>
-
-
+        <dependency>
+            <groupId>com.google.protobuf</groupId>
+            <artifactId>protobuf-java</artifactId>
+            <version>3.6.1</version>
+        </dependency>
     </dependencies>
 
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>com.github.os72</groupId>
+                <artifactId>protoc-jar-maven-plugin</artifactId>
+                <version>3.6.0.2</version>
+                <executions>
+                    <execution>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -95,11 +111,13 @@
                     <header>com/mycila/maven/plugin/license/templates/APACHE-2.txt</header>
                     <mapping>
                         <java>SLASHSTAR_STYLE</java>
+                        <proto>DOUBLESLASH_STYLE</proto>
                     </mapping>
                     <properties>
                         <owner>Andrew Rice</owner>
                         <email>acr31@cam.ac.uk</email>
-                        <project.description>Compiler plugin for extracting features from Java programs</project.description>
+                        <project.description>Compiler plugin for extracting features from Java programs
+                        </project.description>
                         <project.inceptionYear>2018</project.inceptionYear>
                     </properties>
                     <excludes>

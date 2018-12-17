@@ -24,8 +24,8 @@ import com.sun.source.util.TreeScanner;
 import java.util.List;
 import uk.ac.cam.acr31.features.javac.graph.EdgeType;
 import uk.ac.cam.acr31.features.javac.graph.FeatureGraph;
-import uk.ac.cam.acr31.features.javac.graph.FeatureNode;
-import uk.ac.cam.acr31.features.javac.graph.NodeType;
+import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureNode;
+import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureNode.NodeType;
 
 public class ReturnsToScanner extends TreeScanner<Void, Void> {
 

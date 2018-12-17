@@ -23,6 +23,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.function.Predicate;
+import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureNode;
+import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureNode.NodeType;
 
 public class DotOutput {
 
@@ -57,9 +59,9 @@ public class DotOutput {
   private static String dotNode(FeatureNode node) {
     return String.format(
         "%d [ label=\"%d:%s\"];\n",
-        node.nodeId(),
-        node.nodeId(),
-        node.contents().isEmpty() ? node.nodeType() : node.contents());
+        node.getId(),
+        node.getId(),
+        node.getContents().isEmpty() ? node.getType() : node.getContents());
   }
 
   private static String dotEdge(EndpointPair<FeatureNode> edge, FeatureGraph graph) {
@@ -99,7 +101,7 @@ public class DotOutput {
       default:
         ports = "";
     }
-    return String.format("%d -> %d [ %s];\n", edge.nodeU().nodeId(), edge.nodeV().nodeId(), ports);
+    return String.format("%d -> %d [ %s];\n", edge.nodeU().getId(), edge.nodeV().getId(), ports);
   }
 
   private static void writeSubgraph(PrintWriter w, ImmutableSet<FeatureNode> nodeSet, String rank) {
