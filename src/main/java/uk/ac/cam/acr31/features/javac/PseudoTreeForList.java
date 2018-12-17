@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package uk.ac.cam.acr31.features.javac;
 
 import com.sun.source.tree.Tree;
@@ -63,15 +64,15 @@ class PseudoTreeForList extends JCTree {
   public void accept(Visitor v) {}
 
   @Override
-  public Kind getKind() {
+  public <R, D> R accept(TreeVisitor<R, D> v, D d) {
+    if (d instanceof FeatureNode && v instanceof GraphScanner) {
+      acceptScanner((GraphScanner) v, (FeatureNode) d);
+    }
     return null;
   }
 
   @Override
-  public <R, D> R accept(TreeVisitor<R, D> v, D d) {
-    if (d instanceof FeatureNode && v instanceof GraphScanner) {
-      accept((GraphScanner) v, (FeatureNode) d);
-    }
+  public Kind getKind() {
     return null;
   }
 
@@ -106,7 +107,7 @@ class PseudoTreeForList extends JCTree {
     return Position.NOPOS;
   }
 
-  private void accept(GraphScanner v, FeatureNode graphParent) {
+  private void acceptScanner(GraphScanner v, FeatureNode graphParent) {
     if (childList == null || childList.isEmpty()) {
       return;
     }

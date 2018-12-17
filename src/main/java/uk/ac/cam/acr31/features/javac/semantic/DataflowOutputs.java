@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package uk.ac.cam.acr31.features.javac.semantic;
 
 import static com.google.common.collect.ImmutableList.toImmutableList;
@@ -58,7 +59,7 @@ public class DataflowOutputs {
       ImmutableMap.Builder<MethodTree, DataflowOutputs> methodResult = ImmutableMap.builder();
       for (MethodTree methodTree : getMethods(classTree)) {
         Optional<DataflowOutputs> results =
-            DataflowOutputs.create(
+            DataflowOutputs.createForMethod(
                 compilationUnitTree, classTree, methodTree, processingEnvironment);
         results.ifPresent(r -> methodResult.put(methodTree, r));
       }
@@ -84,7 +85,7 @@ public class DataflowOutputs {
         .collect(toImmutableList());
   }
 
-  private static Optional<DataflowOutputs> create(
+  private static Optional<DataflowOutputs> createForMethod(
       CompilationUnitTree compilationUnitTree,
       ClassTree classTree,
       MethodTree methodTree,

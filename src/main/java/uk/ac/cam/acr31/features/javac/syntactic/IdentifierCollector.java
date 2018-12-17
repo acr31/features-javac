@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package uk.ac.cam.acr31.features.javac.syntactic;
 
 import com.sun.source.tree.IdentifierTree;
@@ -25,8 +26,8 @@ class IdentifierCollector extends TreeScanner<Void, Void> {
   List<IdentifierTree> identifiers = new ArrayList<>();
 
   @Override
-  public Void visitIdentifier(IdentifierTree node, Void aVoid) {
+  public Void visitIdentifier(IdentifierTree node, Void ignored) {
     identifiers.add(node);
-    return super.visitIdentifier(node, aVoid);
+    return super.visitIdentifier(node, ignored);
   }
 }

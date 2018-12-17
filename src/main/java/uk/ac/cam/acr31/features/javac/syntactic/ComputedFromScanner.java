@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package uk.ac.cam.acr31.features.javac.syntactic;
 
 import com.sun.source.tree.AssignmentTree;
@@ -38,7 +39,7 @@ public class ComputedFromScanner extends TreeScanner<Void, Void> {
   }
 
   @Override
-  public Void visitAssignment(AssignmentTree node, Void aVoid) {
+  public Void visitAssignment(AssignmentTree node, Void ignored) {
 
     IdentifierCollector rhsCollector = new IdentifierCollector();
     node.getExpression().accept(rhsCollector, null);

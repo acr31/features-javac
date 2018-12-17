@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package uk.ac.cam.acr31.features.javac.syntactic;
 
 import com.sun.source.tree.CompilationUnitTree;
@@ -40,11 +41,11 @@ public class GuardedByScanner extends TreeScanner<Void, Void> {
   }
 
   @Override
-  public Void visitIf(IfTree node, Void aVoid) {
+  public Void visitIf(IfTree node, Void ignored) {
     findIdentifiers(node.getCondition(), node.getThenStatement(), EdgeType.GUARDED_BY);
     findIdentifiers(node.getCondition(), node.getElseStatement(), EdgeType.GUARDED_BY_NEGATION);
 
-    return super.visitIf(node, aVoid);
+    return super.visitIf(node, ignored);
   }
 
   private void findIdentifiers(Tree root, Tree node, EdgeType edgeType) {

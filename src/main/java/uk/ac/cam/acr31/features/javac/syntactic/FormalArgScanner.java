@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package uk.ac.cam.acr31.features.javac.syntactic;
 
 import com.google.common.collect.ImmutableMap;
@@ -42,23 +43,23 @@ public class FormalArgScanner extends TreeScanner<Void, Void> {
     Symbol.MethodSymbol sym = null;
 
     @Override
-    public Void visitMemberSelect(MemberSelectTree node, Void aVoid) {
+    public Void visitMemberSelect(MemberSelectTree node, Void ignored) {
       JCTree.JCFieldAccess fieldAccess = (JCTree.JCFieldAccess) node;
       if (fieldAccess.sym instanceof Symbol.MethodSymbol) {
         sym = (Symbol.MethodSymbol) fieldAccess.sym;
         return null;
       }
-      return super.visitMemberSelect(node, aVoid);
+      return super.visitMemberSelect(node, ignored);
     }
 
     @Override
-    public Void visitIdentifier(IdentifierTree node, Void aVoid) {
+    public Void visitIdentifier(IdentifierTree node, Void ignored) {
       JCTree.JCIdent ident = (JCTree.JCIdent) node;
       if (ident.sym instanceof Symbol.MethodSymbol) {
         sym = (Symbol.MethodSymbol) ident.sym;
         return null;
       }
-      return super.visitIdentifier(node, aVoid);
+      return super.visitIdentifier(node, ignored);
     }
 
     private static Symbol.MethodSymbol collect(Tree compilationUnitTree) {
@@ -74,10 +75,10 @@ public class FormalArgScanner extends TreeScanner<Void, Void> {
         ImmutableMap.builder();
 
     @Override
-    public Void visitMethod(MethodTree node, Void aVoid) {
+    public Void visitMethod(MethodTree node, Void ignored) {
       var methodDecl = (JCTree.JCMethodDecl) node;
       methodSymbols.put(methodDecl.sym, node);
-      return super.visitMethod(node, aVoid);
+      return super.visitMethod(node, ignored);
     }
 
     private static ImmutableMap<Symbol.MethodSymbol, MethodTree> collect(
@@ -101,7 +102,7 @@ public class FormalArgScanner extends TreeScanner<Void, Void> {
   }
 
   @Override
-  public Void visitMethodInvocation(MethodInvocationTree node, Void aVoid) {
+  public Void visitMethodInvocation(MethodInvocationTree node, Void ignored) {
     Symbol.MethodSymbol sym = MethodSymbolVisitor.collect(node);
     if (sym != null && methodSymbols.containsKey(sym)) {
       MethodTree methodTree = methodSymbols.get(sym);
@@ -121,6 +122,6 @@ public class FormalArgScanner extends TreeScanner<Void, Void> {
         }
       }
     }
-    return super.visitMethodInvocation(node, aVoid);
+    return super.visitMethodInvocation(node, ignored);
   }
 }

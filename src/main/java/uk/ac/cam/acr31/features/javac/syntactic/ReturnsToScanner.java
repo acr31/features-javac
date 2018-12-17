@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package uk.ac.cam.acr31.features.javac.syntactic;
 
 import com.sun.source.tree.CompilationUnitTree;
@@ -45,7 +46,7 @@ public class ReturnsToScanner extends TreeScanner<Void, Void> {
     List<IdentifierTree> identifiers;
 
     @Override
-    public Void visitReturn(ReturnTree node, Void aVoid) {
+    public Void visitReturn(ReturnTree node, Void ignored) {
       if (node.getExpression() == null) {
         return null;
       }
@@ -57,7 +58,7 @@ public class ReturnsToScanner extends TreeScanner<Void, Void> {
   }
 
   @Override
-  public Void visitMethod(MethodTree node, Void aVoid) {
+  public Void visitMethod(MethodTree node, Void ignored) {
     if (node.getBody() == null) {
       return null;
     }
@@ -75,6 +76,6 @@ public class ReturnsToScanner extends TreeScanner<Void, Void> {
         }
       }
     }
-    return super.visitMethod(node, aVoid);
+    return super.visitMethod(node, ignored);
   }
 }

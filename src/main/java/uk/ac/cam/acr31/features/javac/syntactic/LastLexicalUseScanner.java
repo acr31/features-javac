@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package uk.ac.cam.acr31.features.javac.syntactic;
 
 import com.google.common.collect.ImmutableMultimap;
@@ -56,17 +57,18 @@ public class LastLexicalUseScanner extends TreeScanner<Void, Void> {
   }
 
   @Override
-  public Void visitVariable(VariableTree node, Void aVoid) {
+  public Void visitVariable(VariableTree node, Void ignored) {
     var variableDecl = (JCTree.JCVariableDecl) node;
     symbolMap.put(variableDecl.sym, node);
-    return super.visitVariable(node, aVoid);
+    return super.visitVariable(node, ignored);
   }
 
   @Override
-  public Void visitIdentifier(IdentifierTree node, Void aVoid) {
+  public Void visitIdentifier(IdentifierTree node, Void ignored) {
     var ident = (JCTree.JCIdent) node;
-    if (ident.sym != null)
-       symbolMap.put(ident.sym, node);
-    return super.visitIdentifier(node, aVoid);
+    if (ident.sym != null) {
+      symbolMap.put(ident.sym, node);
+    }
+    return super.visitIdentifier(node, ignored);
   }
 }

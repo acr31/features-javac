@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package uk.ac.cam.acr31.features.javac.semantic;
 
 import java.util.List;
@@ -34,7 +35,7 @@ public class LastWriteTransferFunction
 
   @Override
   public PossibleTreeSetStore initialStore(
-      UnderlyingAST underlyingAST, List<LocalVariableNode> parameters) {
+      UnderlyingAST underlyingAst, List<LocalVariableNode> parameters) {
     PossibleTreeSetStore store = new PossibleTreeSetStore();
     for (LocalVariableNode n : parameters) {
       store.setInformation(n, new PossibleTreeSet(n.getTree()));

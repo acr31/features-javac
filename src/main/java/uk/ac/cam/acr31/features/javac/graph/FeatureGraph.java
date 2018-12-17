@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package uk.ac.cam.acr31.features.javac.graph;
 
 import static com.google.common.collect.ImmutableSet.toImmutableSet;
@@ -77,16 +78,16 @@ public class FeatureGraph {
         .collect(toImmutableSet());
   }
 
-  public Set<FeatureNode> successors(FeatureNode node) {
-    return graph.successors(node);
-  }
-
   public EdgeType edgeValue(FeatureNode nodeU, FeatureNode nodeV) {
     return graph.edgeValueOrDefault(nodeU, nodeV, EdgeType.NONE);
   }
 
   public Set<EndpointPair<FeatureNode>> edges() {
     return graph.edges();
+  }
+
+  public Set<FeatureNode> successors(FeatureNode node) {
+    return graph.successors(node);
   }
 
   public ImmutableSet<FeatureNode> successors(FeatureNode node, NodeType nodeType) {
