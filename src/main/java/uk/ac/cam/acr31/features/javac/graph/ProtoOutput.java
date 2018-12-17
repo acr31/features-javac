@@ -22,9 +22,11 @@ import java.io.IOException;
 
 public class ProtoOutput {
 
-  public static void write(File outputFile, FeatureGraph featureGraph) throws IOException {
+  public static void write(File outputFile, FeatureGraph featureGraph) {
     try (FileOutputStream fos = new FileOutputStream(outputFile)) {
       featureGraph.toProtobuf().writeTo(fos);
+    } catch (IOException e) {
+      throw new RuntimeException("Failed to write protobuf", e);
     }
   }
 }

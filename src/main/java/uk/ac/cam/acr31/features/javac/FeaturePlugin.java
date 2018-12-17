@@ -27,7 +27,6 @@ import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.Options;
 import java.io.File;
-import java.io.IOException;
 import uk.ac.cam.acr31.features.javac.graph.DotOutput;
 import uk.ac.cam.acr31.features.javac.graph.FeatureGraph;
 import uk.ac.cam.acr31.features.javac.graph.ProtoOutput;
@@ -78,7 +77,6 @@ public class FeaturePlugin implements Plugin {
     if (options.isSet(FEATURES_OUTPUT_DIRECTORY)) {
       featuresOutputDirectory = options.get(FEATURES_OUTPUT_DIRECTORY);
     }
-
     FeatureGraph featureGraph = new FeatureGraph(e.getSourceFile().getName());
 
     var compilerTokens = Tokens.getTokens(e.getSourceFile(), context);
@@ -100,13 +98,12 @@ public class FeaturePlugin implements Plugin {
     File outputFile = new File(featuresOutputDirectory, e.getSourceFile().getName() + ".dot");
     outputFile.getParentFile().mkdirs();
     DotOutput.writeToDot(outputFile, featureGraph);
-    try {
-      File protoFile = new File(featuresOutputDirectory, e.getSourceFile().getName() + ".proto");
-      protoFile.getParentFile().mkdirs();
-      ProtoOutput.write(protoFile, featureGraph);
-    } catch (IOException e1) {
-      e1.printStackTrace();
-    }
+    System.out.println("Wrote: " + outputFile);
+
+    File protoFile = new File(featuresOutputDirectory, e.getSourceFile().getName() + ".proto");
+    protoFile.getParentFile().mkdirs();
+    ProtoOutput.write(protoFile, featureGraph);
+    System.out.println("Wrote: " + protoFile);
   }
 
   private static void addAstAndLinkToTokens(
