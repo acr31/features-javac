@@ -25,6 +25,7 @@ import com.sun.tools.javac.api.BasicJavacTask;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.util.Context;
+import com.sun.tools.javac.util.Options;
 import java.io.File;
 import java.io.IOException;
 import uk.ac.cam.acr31.features.javac.graph.DotOutput;
@@ -41,6 +42,8 @@ import uk.ac.cam.acr31.features.javac.syntactic.LastLexicalUseScanner;
 import uk.ac.cam.acr31.features.javac.syntactic.ReturnsToScanner;
 
 public class FeaturePlugin implements Plugin {
+
+  public static final String FEATURES_OUTPUT_DIRECTORY = "featuresOutputDirectory";
 
   @Override
   public String getName() {
@@ -69,7 +72,14 @@ public class FeaturePlugin implements Plugin {
     JavacProcessingEnvironment processingEnvironment = JavacProcessingEnvironment.instance(context);
     JCTree.JCCompilationUnit compilationUnit = (JCTree.JCCompilationUnit) e.getCompilationUnit();
 
-    FeatureGraph featureGraph = new FeatureGraph();
+    Options options = Options.instance(context);
+
+    String featuresOutputDirectory = ".";
+    if (options.isSet(FEATURES_OUTPUT_DIRECTORY)) {
+      featuresOutputDirectory = options.get(FEATURES_OUTPUT_DIRECTORY);
+    }
+
+    FeatureGraph featureGraph = new FeatureGraph(e.getSourceFile().getName());
 
     var compilerTokens = Tokens.getTokens(e.getSourceFile(), context);
     var tokens = Tokens.addToFeatureGraph(compilerTokens, featureGraph);
@@ -87,10 +97,13 @@ public class FeaturePlugin implements Plugin {
     // prune all ast nodes with no successors (these are leaves not connected to tokens)
     featureGraph.pruneLeaves(NodeType.AST_ELEMENT);
 
-    File outputFile = new File(e.getSourceFile().getName() + ".dot");
+    File outputFile = new File(featuresOutputDirectory, e.getSourceFile().getName() + ".dot");
+    outputFile.getParentFile().mkdirs();
     DotOutput.writeToDot(outputFile, featureGraph);
     try {
-      ProtoOutput.write(new File(e.getSourceFile().getName() + ".proto"), featureGraph);
+      File protoFile = new File(featuresOutputDirectory, e.getSourceFile().getName() + ".proto");
+      protoFile.getParentFile().mkdirs();
+      ProtoOutput.write(protoFile, featureGraph);
     } catch (IOException e1) {
       e1.printStackTrace();
     }

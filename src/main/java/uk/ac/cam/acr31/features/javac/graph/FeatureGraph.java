@@ -34,11 +34,13 @@ import uk.ac.cam.acr31.features.javac.proto.GraphProtos.Graph;
 
 public class FeatureGraph {
 
+  private final String sourceFileName;
   private final MutableNetwork<FeatureNode, FeatureEdge> graph;
   private final Map<Tree, FeatureNode> nodeMap;
   private int nodeIdCounter = 0;
 
-  public FeatureGraph() {
+  public FeatureGraph(String sourceFileName) {
+    this.sourceFileName = sourceFileName;
     this.graph = NetworkBuilder.directed().allowsSelfLoops(true).allowsParallelEdges(true).build();
     this.nodeMap = new HashMap<>();
   }
@@ -142,6 +144,10 @@ public class FeatureGraph {
   }
 
   public Graph toProtobuf() {
-    return Graph.newBuilder().addAllNode(nodes()).addAllEdge(edges()).build();
+    return Graph.newBuilder()
+        .setSourceFile(sourceFileName)
+        .addAllNode(nodes())
+        .addAllEdge(edges())
+        .build();
   }
 }
