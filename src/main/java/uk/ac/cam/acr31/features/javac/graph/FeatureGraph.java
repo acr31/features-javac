@@ -17,6 +17,7 @@ package uk.ac.cam.acr31.features.javac.graph;
 
 import static com.google.common.collect.ImmutableSet.toImmutableSet;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.graph.EndpointPair;
 import com.google.common.graph.MutableValueGraph;
@@ -67,8 +68,13 @@ public class FeatureGraph {
     }
   }
 
-  public ImmutableSet<FeatureNode> nodes(NodeType nodeType) {
-    return graph.nodes().stream().filter(n -> n.nodeType() == nodeType).collect(toImmutableSet());
+  public ImmutableSet<FeatureNode> nodes(NodeType... nodeTypes) {
+    ImmutableList<NodeType> nodes = ImmutableList.copyOf(nodeTypes);
+    return graph
+        .nodes()
+        .stream()
+        .filter(n -> nodes.contains(n.nodeType()))
+        .collect(toImmutableSet());
   }
 
   public Set<FeatureNode> successors(FeatureNode node) {
