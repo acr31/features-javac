@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import org.apache.commons.text.StringEscapeUtils;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureEdge;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureEdge.EdgeType;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureNode;
@@ -58,10 +59,14 @@ public class DotOutput {
 
   private static String dotNode(FeatureNode node) {
     return String.format(
-        "%d [ label=\"%d:%s\"];\n",
-        node.getId(),
-        node.getId(),
-        node.getContents().isEmpty() ? node.getType() : node.getContents());
+        "%d [ label=\"%d:%s\"];\n", node.getId(), node.getId(), escapeContents(node));
+  }
+
+  private static String escapeContents(FeatureNode node) {
+    if (node.getContents().isEmpty()) {
+      return node.getType().toString();
+    }
+    return StringEscapeUtils.escapeJava(node.getContents());
   }
 
   private static String dotEdge(FeatureEdge edge, FeatureGraph graph) {
