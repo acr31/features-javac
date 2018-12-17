@@ -67,7 +67,7 @@ public class Tokens {
           featureGraph.createFeatureNode(NodeType.TOKEN, tokenToString(token));
       result.put(entry.getKey(), featureNode);
       if (previous != null) {
-          featureGraph.putEdgeValue(previous,featureNode,EdgeType.NEXT_TOKEN);
+        featureGraph.addEdge(previous, featureNode, EdgeType.NEXT_TOKEN);
       }
       previous = featureNode;
       if (token.comments != null) {
@@ -75,7 +75,7 @@ public class Tokens {
           if (comment.getText() != null) {
             FeatureNode commentNode =
                 featureGraph.createFeatureNode(getCommentNodeType(comment), comment.getText());
-            featureGraph.putEdgeValue(featureNode, commentNode, EdgeType.COMMENT);
+            featureGraph.addEdge(featureNode, commentNode, EdgeType.COMMENT);
           }
         }
       }
@@ -99,12 +99,10 @@ public class Tokens {
   private static String tokenToString(Token token) {
     switch (String.valueOf(token.kind.tag)) {
       case "STRING":
+      case "NUMERIC":
         return token.stringVal();
       case "NAMED":
         return token.name().toString();
-
-      case "NUMERIC":
-        return String.valueOf(token.radix());
       default:
         return token.kind.name();
     }

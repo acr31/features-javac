@@ -71,7 +71,7 @@ public class ReturnsToScanner extends TreeScanner<Void, Void> {
         FeatureNode featureNode = graph.getFeatureNode(identifierTree);
         if (featureNode != null) {
           for (FeatureNode succ : graph.successors(featureNode, NodeType.TOKEN)) {
-            graph.putEdgeValue(succ, dest, EdgeType.RETURNS_TO);
+            graph.addEdge(succ, dest, EdgeType.RETURNS_TO);
           }
         }
       }

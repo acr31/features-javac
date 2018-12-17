@@ -20,26 +20,24 @@ import static com.google.common.collect.ImmutableSet.toImmutableSet;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.graph.EndpointPair;
-import com.google.common.graph.MutableValueGraph;
-import com.google.common.graph.ValueGraphBuilder;
+import com.google.common.graph.MutableNetwork;
+import com.google.common.graph.NetworkBuilder;
 import com.sun.source.tree.Tree;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureEdge;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureEdge.EdgeType;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureNode;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureNode.NodeType;
 
 public class FeatureGraph {
 
-  private final MutableValueGraph<FeatureNode, EdgeType> graph;
+  private final MutableNetwork<FeatureNode, FeatureEdge> graph;
   private final Map<Tree, FeatureNode> nodeMap;
 
   public FeatureGraph() {
-    this.graph = ValueGraphBuilder.directed().allowsSelfLoops(true).build();
+    this.graph = NetworkBuilder.directed().allowsSelfLoops(true).allowsParallelEdges(true).build();
     this.nodeMap = new HashMap<>();
   }
 
@@ -57,20 +55,6 @@ public class FeatureGraph {
     return FeatureNodes.create(nodeType, contents);
   }
 
-  public void putEdgeValue(FeatureNode nodeU, FeatureNode nodeV, EdgeType value) {
-    graph.putEdgeValue(nodeU, nodeV, value);
-  }
-
-  public void linkNodes(Collection<FeatureNode> nodes, EdgeType edgeType) {
-    Iterator<FeatureNode> step = nodes.iterator();
-    FeatureNode prev = step.next();
-    while (step.hasNext()) {
-      FeatureNode current = step.next();
-      graph.putEdgeValue(prev, current, edgeType);
-      prev = current;
-    }
-  }
-
   public ImmutableSet<FeatureNode> nodes() {
     return ImmutableSet.copyOf(graph.nodes());
   }
@@ -84,11 +68,7 @@ public class FeatureGraph {
         .collect(toImmutableSet());
   }
 
-  public EdgeType edgeValue(FeatureNode nodeU, FeatureNode nodeV) {
-    return graph.edgeValueOrDefault(nodeU, nodeV, EdgeType.NONE);
-  }
-
-  public Set<EndpointPair<FeatureNode>> edges() {
+  public Set<FeatureEdge> edges() {
     return graph.edges();
   }
 
@@ -99,6 +79,27 @@ public class FeatureGraph {
   public ImmutableSet<FeatureNode> successors(FeatureNode node, NodeType nodeType) {
     return graph
         .successors(node)
+        .stream()
+        .filter(n -> n.getType().equals(nodeType))
+        .collect(toImmutableSet());
+  }
+
+  public ImmutableSet<FeatureNode> successors(FeatureNode node, EdgeType edgeType) {
+    return graph
+        .successors(node)
+        .stream()
+        .filter(
+            n ->
+                graph
+                    .edgesConnecting(node, n)
+                    .stream()
+                    .anyMatch(edge -> edge.getType().equals(edgeType)))
+        .collect(toImmutableSet());
+  }
+
+  public ImmutableSet<FeatureNode> predecessors(FeatureNode node, NodeType nodeType) {
+    return graph
+        .predecessors(node)
         .stream()
         .filter(n -> n.getType().equals(nodeType))
         .collect(toImmutableSet());
@@ -121,5 +122,16 @@ public class FeatureGraph {
             .collect(toImmutableSet());
     toRemove.forEach(graph::removeNode);
     return !toRemove.isEmpty();
+  }
+
+  public void addEdge(FeatureNode source, FeatureNode dest, EdgeType type) {
+    graph.addEdge(
+        source,
+        dest,
+        FeatureEdge.newBuilder()
+            .setSourceId(source.getId())
+            .setDestinationId(dest.getId())
+            .setType(type)
+            .build());
   }
 }

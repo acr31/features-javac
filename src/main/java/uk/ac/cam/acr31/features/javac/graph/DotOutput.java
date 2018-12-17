@@ -17,12 +17,11 @@
 package uk.ac.cam.acr31.features.javac.graph;
 
 import com.google.common.collect.ImmutableSet;
-import com.google.common.graph.EndpointPair;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.function.Predicate;
+import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureEdge;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureEdge.EdgeType;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureNode;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureNode.NodeType;
@@ -37,7 +36,7 @@ public class DotOutput {
       ImmutableSet<FeatureNode> nodeSet = graph.nodes(NodeType.AST_ROOT);
       while (!nodeSet.isEmpty()) {
         writeSubgraph(w, nodeSet, "same");
-        nodeSet = getSuccessors(nodeSet, graph, e -> e == EdgeType.AST_CHILD);
+        nodeSet = getSuccessors(nodeSet, graph, EdgeType.AST_CHILD);
       }
 
       ImmutableSet<FeatureNode> commentSet =
@@ -47,7 +46,7 @@ public class DotOutput {
       ImmutableSet<FeatureNode> tokenSet = graph.nodes(NodeType.TOKEN);
       writeSubgraph(w, tokenSet, "max");
 
-      for (EndpointPair<FeatureNode> edge : graph.edges()) {
+      for (FeatureEdge edge : graph.edges()) {
         w.println(dotEdge(edge, graph));
       }
 
@@ -65,8 +64,8 @@ public class DotOutput {
         node.getContents().isEmpty() ? node.getType() : node.getContents());
   }
 
-  private static String dotEdge(EndpointPair<FeatureNode> edge, FeatureGraph graph) {
-    EdgeType edgeType = graph.edgeValue(edge.nodeU(), edge.nodeV());
+  private static String dotEdge(FeatureEdge edge, FeatureGraph graph) {
+    EdgeType edgeType = edge.getType();
     String ports;
     switch (edgeType) {
       case NEXT_TOKEN:
@@ -102,7 +101,7 @@ public class DotOutput {
       default:
         ports = "";
     }
-    return String.format("%d -> %d [ %s];\n", edge.nodeU().getId(), edge.nodeV().getId(), ports);
+    return String.format("%d -> %d [ %s];\n", edge.getSourceId(), edge.getDestinationId(), ports);
   }
 
   private static void writeSubgraph(PrintWriter w, ImmutableSet<FeatureNode> nodeSet, String rank) {
@@ -113,14 +112,10 @@ public class DotOutput {
   }
 
   private static ImmutableSet<FeatureNode> getSuccessors(
-      ImmutableSet<FeatureNode> nodeSet, FeatureGraph graph, Predicate<EdgeType> edgeFilter) {
+      ImmutableSet<FeatureNode> nodeSet, FeatureGraph graph, EdgeType edgeType) {
     ImmutableSet.Builder<FeatureNode> result = ImmutableSet.builder();
     for (FeatureNode node : nodeSet) {
-      graph
-          .successors(node)
-          .stream()
-          .filter(n -> edgeFilter.test(graph.edgeValue(node, n)))
-          .forEach(result::add);
+      graph.successors(node, edgeType).stream().forEach(result::add);
     }
     return result.build();
   }

@@ -117,7 +117,7 @@ public class DataflowOutputsScanner extends TreeScanner<Void, ScanContext> {
     }
     for (FeatureNode s : sourceSucc) {
       for (FeatureNode d : destSucc) {
-        graph.putEdgeValue(s, d, type);
+        graph.addEdge(s, d, type);
       }
     }
   }

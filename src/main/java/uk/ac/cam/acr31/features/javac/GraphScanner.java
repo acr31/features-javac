@@ -600,7 +600,7 @@ public class GraphScanner implements TreeVisitor<Void, FeatureNode> {
     }
     FeatureNode myNode =
         featureGraph.createFeatureNode(NodeType.AST_ELEMENT, astNode.getKind().toString(), astNode);
-    featureGraph.putEdgeValue(graphParent, myNode, EdgeType.AST_CHILD);
+    featureGraph.addEdge(graphParent, myNode, EdgeType.AST_CHILD);
     Optional<Integer> lastEndPos = getStartPosition(astNode);
     for (JCTree child : childNodes) {
       Optional<Integer> startPosition = getStartPosition(child);
@@ -629,7 +629,7 @@ public class GraphScanner implements TreeVisitor<Void, FeatureNode> {
     ImmutableCollection<FeatureNode> tokens =
         this.tokens.subRangeMap(range).asMapOfRanges().values();
     for (FeatureNode tokenNode : tokens) {
-      featureGraph.putEdgeValue(node, tokenNode, EdgeType.ASSOCIATED_TOKEN);
+      featureGraph.addEdge(node, tokenNode, EdgeType.ASSOCIATED_TOKEN);
     }
   }
 }

@@ -112,7 +112,7 @@ class PseudoTreeForList extends JCTree {
       return;
     }
     FeatureNode listNode = graph.createFeatureNode(NodeType.AST_ELEMENT, "list");
-    graph.putEdgeValue(graphParent, listNode, EdgeType.AST_CHILD);
+    graph.addEdge(graphParent, listNode, EdgeType.AST_CHILD);
     Optional<Integer> previousEnd = Optional.empty();
     for (Tree element : childList) {
       Optional<Integer> start = GraphScanner.getStartPosition((JCTree) element);
