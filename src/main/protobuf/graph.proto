@@ -36,3 +36,22 @@ message FeatureNode {
     optional NodeType type = 2;
     optional string contents = 3;
 }
+
+message FeatureEdge {
+
+    enum EdgeType {
+        ASSOCIATED_TOKEN = 1;
+        NEXT_TOKEN = 2;
+        AST_CHILD = 3;
+        NONE = 4;
+        LAST_WRITE = 5;
+        LAST_USE = 6;
+        COMPUTED_FROM = 7;
+        RETURNS_TO = 8;
+        FORMAL_ARG_NAME = 9;
+        GUARDED_BY = 10;
+        GUARDED_BY_NEGATION = 11;
+        LAST_LEXICAL_USE = 12;
+        COMMENT = 13;
+    }
+}

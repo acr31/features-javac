@@ -24,8 +24,8 @@ import com.sun.tools.javac.util.Position;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import uk.ac.cam.acr31.features.javac.graph.EdgeType;
 import uk.ac.cam.acr31.features.javac.graph.FeatureGraph;
+import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureEdge.EdgeType;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureNode;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureNode.NodeType;
 

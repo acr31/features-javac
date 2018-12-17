@@ -27,8 +27,9 @@ import com.sun.tools.javac.tree.JCTree;
 import java.util.Collection;
 import java.util.Iterator;
 import uk.ac.cam.acr31.features.javac.DataflowOutputsScanner;
-import uk.ac.cam.acr31.features.javac.graph.EdgeType;
 import uk.ac.cam.acr31.features.javac.graph.FeatureGraph;
+import uk.ac.cam.acr31.features.javac.proto.GraphProtos;
+import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureEdge.EdgeType;
 
 public class LastLexicalUseScanner extends TreeScanner<Void, Void> {
 

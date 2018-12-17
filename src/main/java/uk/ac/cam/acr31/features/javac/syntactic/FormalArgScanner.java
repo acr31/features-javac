@@ -30,8 +30,8 @@ import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.tree.JCTree;
 import java.util.Map;
 import uk.ac.cam.acr31.features.javac.DataflowOutputsScanner;
-import uk.ac.cam.acr31.features.javac.graph.EdgeType;
 import uk.ac.cam.acr31.features.javac.graph.FeatureGraph;
+import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureEdge.EdgeType;
 
 public class FormalArgScanner extends TreeScanner<Void, Void> {
 
