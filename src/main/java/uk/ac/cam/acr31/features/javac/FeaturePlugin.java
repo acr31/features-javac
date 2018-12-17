@@ -26,10 +26,11 @@ import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.util.Context;
 import java.io.File;
+import java.io.IOException;
 import uk.ac.cam.acr31.features.javac.graph.DotOutput;
 import uk.ac.cam.acr31.features.javac.graph.FeatureGraph;
+import uk.ac.cam.acr31.features.javac.graph.ProtoOutput;
 import uk.ac.cam.acr31.features.javac.lexical.Tokens;
-import uk.ac.cam.acr31.features.javac.proto.GraphProtos;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureNode;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureNode.NodeType;
 import uk.ac.cam.acr31.features.javac.semantic.DataflowOutputs;
@@ -88,6 +89,11 @@ public class FeaturePlugin implements Plugin {
 
     File outputFile = new File(e.getSourceFile().getName() + ".dot");
     DotOutput.writeToDot(outputFile, featureGraph);
+    try {
+      ProtoOutput.write(new File(e.getSourceFile().getName() + ".proto"), featureGraph);
+    } catch (IOException e1) {
+      e1.printStackTrace();
+    }
   }
 
   private static void addAstAndLinkToTokens(

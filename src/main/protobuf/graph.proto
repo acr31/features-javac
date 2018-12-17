@@ -54,4 +54,15 @@ message FeatureEdge {
         LAST_LEXICAL_USE = 12;
         COMMENT = 13;
     }
+
+    optional int64 sourceId = 1;
+    optional int64 destinationId = 2;
+    optional EdgeType type = 3;
+}
+
+message Graph {
+
+    repeated FeatureNode node = 1;
+    repeated FeatureEdge edge = 2;
+    optional string sourceFile = 3;
 }

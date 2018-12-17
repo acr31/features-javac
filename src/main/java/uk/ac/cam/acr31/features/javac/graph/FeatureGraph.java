@@ -26,7 +26,6 @@ import com.google.common.graph.ValueGraphBuilder;
 import com.sun.source.tree.Tree;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -70,6 +69,10 @@ public class FeatureGraph {
       graph.putEdgeValue(prev, current, edgeType);
       prev = current;
     }
+  }
+
+  public ImmutableSet<FeatureNode> nodes() {
+    return ImmutableSet.copyOf(graph.nodes());
   }
 
   public ImmutableSet<FeatureNode> nodes(NodeType... nodeTypes) {
