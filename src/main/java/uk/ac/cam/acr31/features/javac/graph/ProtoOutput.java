@@ -19,7 +19,6 @@ package uk.ac.cam.acr31.features.javac.graph;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureEdge;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.Graph;
 
 public class ProtoOutput {
@@ -31,12 +30,9 @@ public class ProtoOutput {
   }
 
   static Graph toGraph(FeatureGraph featureGraph) {
-    Graph.Builder result = Graph.newBuilder().addAllNode(featureGraph.nodes());
-    featureGraph
-        .edges()
-        .stream()
-        .map(p -> FeatureEdge.newBuilder().build())
-        .forEach(result::addEdge);
-    return result.build();
+    return Graph.newBuilder()
+        .addAllNode(featureGraph.nodes())
+        .addAllEdge(featureGraph.edges())
+        .build();
   }
 }
