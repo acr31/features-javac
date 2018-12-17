@@ -15,31 +15,31 @@
  */
 package uk.ac.cam.acr31.features.javac.lexical;
 
-import static com.google.common.collect.ImmutableRangeMap.toImmutableRangeMap;
-
 import com.google.common.collect.ImmutableRangeMap;
 import com.google.common.collect.Range;
 import com.sun.tools.javac.parser.Scanner;
 import com.sun.tools.javac.parser.ScannerFactory;
+import com.sun.tools.javac.parser.Tokens.Comment;
+import com.sun.tools.javac.parser.Tokens.Token;
 import com.sun.tools.javac.util.Context;
 import java.io.IOException;
 import java.util.Map;
 import javax.tools.JavaFileObject;
+import uk.ac.cam.acr31.features.javac.graph.EdgeType;
 import uk.ac.cam.acr31.features.javac.graph.FeatureGraph;
 import uk.ac.cam.acr31.features.javac.graph.FeatureNode;
 import uk.ac.cam.acr31.features.javac.graph.NodeType;
 
 public class Tokens {
 
-  public static ImmutableRangeMap<Integer, com.sun.tools.javac.parser.Tokens.Token> getTokens(
+  public static ImmutableRangeMap<Integer, Token> getTokens(
       JavaFileObject sourceFile, Context context) {
     ScannerFactory scannerFactory = ScannerFactory.instance(context);
     Scanner tokenScanner = scannerFactory.newScanner(getSourceFileContent(sourceFile), true);
-    ImmutableRangeMap.Builder<Integer, com.sun.tools.javac.parser.Tokens.Token> tokenMap =
-        ImmutableRangeMap.builder();
+    ImmutableRangeMap.Builder<Integer, Token> tokenMap = ImmutableRangeMap.builder();
     while (true) {
       tokenScanner.nextToken();
-      com.sun.tools.javac.parser.Tokens.Token token = tokenScanner.token();
+      Token token = tokenScanner.token();
       if (token.kind == com.sun.tools.javac.parser.Tokens.TokenKind.EOF) {
         break;
       }
@@ -57,35 +57,50 @@ public class Tokens {
   }
 
   public static ImmutableRangeMap<Integer, FeatureNode> addToFeatureGraph(
-      ImmutableRangeMap<Integer, com.sun.tools.javac.parser.Tokens.Token> tokens,
-      FeatureGraph featureGraph) {
-    return tokens
-        .asMapOfRanges()
-        .entrySet()
-        .stream()
-        .collect(
-            toImmutableRangeMap(
-                Map.Entry::getKey,
-                entry ->
-                    featureGraph.createFeatureNode(
-                        NodeType.TOKEN, tokenToString(entry.getValue()))));
+      ImmutableRangeMap<Integer, Token> tokens, FeatureGraph featureGraph) {
+    ImmutableRangeMap.Builder<Integer, FeatureNode> result = ImmutableRangeMap.builder();
+    for (Map.Entry<Range<Integer>, Token> entry : tokens.asMapOfRanges().entrySet()) {
+      Token token = entry.getValue();
+      FeatureNode featureNode =
+          featureGraph.createFeatureNode(NodeType.TOKEN, tokenToString(token));
+      result.put(entry.getKey(), featureNode);
+      if (token.comments != null) {
+        for (Comment comment : token.comments) {
+          if (comment.getText() != null) {
+            FeatureNode commentNode =
+                featureGraph.createFeatureNode(getCommentNodeType(comment), comment.getText());
+            featureGraph.putEdgeValue(featureNode, commentNode, EdgeType.COMMENT);
+          }
+        }
+      }
+    }
+    return result.build();
   }
 
-  private static String tokenToString(com.sun.tools.javac.parser.Tokens.Token token) {
-    String content;
+  private static NodeType getCommentNodeType(Comment comment) {
+    Comment.CommentStyle style = comment.getStyle();
+    switch (style) {
+      case LINE:
+        return NodeType.COMMENT_LINE;
+      case BLOCK:
+        return NodeType.COMMENT_BLOCK;
+      case JAVADOC:
+        return NodeType.COMMENT_JAVADOC;
+    }
+    throw new IllegalArgumentException("Unrecognised comment type");
+  }
+
+  private static String tokenToString(Token token) {
     switch (String.valueOf(token.kind.tag)) {
       case "STRING":
-        content = token.stringVal();
-        break;
+        return token.stringVal();
       case "NAMED":
-        content = token.name().toString();
-        break;
+        return token.name().toString();
+
       case "NUMERIC":
-        content = String.valueOf(token.radix());
-        break;
+        return String.valueOf(token.radix());
       default:
-        content = token.kind.name();
+        return token.kind.name();
     }
-    return content;
   }
 }

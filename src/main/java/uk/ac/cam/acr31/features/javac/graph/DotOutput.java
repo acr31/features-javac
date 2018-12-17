@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.function.Predicate;
 
 public class DotOutput {
 
@@ -32,11 +33,15 @@ public class DotOutput {
       ImmutableSet<FeatureNode> nodeSet = graph.nodes(NodeType.AST_ROOT);
       while (!nodeSet.isEmpty()) {
         writeSubgraph(w, nodeSet, "same");
-        nodeSet = getSuccessors(nodeSet, graph);
+        nodeSet = getSuccessors(nodeSet, graph, e -> e == EdgeType.AST_CHILD);
       }
 
-      nodeSet = graph.nodes(NodeType.TOKEN);
-      writeSubgraph(w, nodeSet, "max");
+      ImmutableSet<FeatureNode> commentSet =
+          graph.nodes(NodeType.COMMENT_BLOCK, NodeType.COMMENT_JAVADOC, NodeType.COMMENT_LINE);
+      writeSubgraph(w, commentSet, "same");
+
+      ImmutableSet<FeatureNode> tokenSet = graph.nodes(NodeType.TOKEN);
+      writeSubgraph(w, tokenSet, "max");
 
       for (EndpointPair<FeatureNode> edge : graph.edges()) {
         w.println(dotEdge(edge, graph));
@@ -63,7 +68,7 @@ public class DotOutput {
       case NEXT_TOKEN:
         ports = "headport=n, tailport=s, weight=1000";
         break;
-      case CHILD:
+      case AST_CHILD:
         ports = "headport=w, tailport=e";
         break;
       case LAST_WRITE:
@@ -104,15 +109,14 @@ public class DotOutput {
   }
 
   private static ImmutableSet<FeatureNode> getSuccessors(
-      ImmutableSet<FeatureNode> nodeSet, FeatureGraph graph) {
+      ImmutableSet<FeatureNode> nodeSet, FeatureGraph graph, Predicate<EdgeType> edgeFilter) {
     ImmutableSet.Builder<FeatureNode> result = ImmutableSet.builder();
     for (FeatureNode node : nodeSet) {
-      for (FeatureNode succ : graph.successors(node)) {
-        EdgeType edgeType = graph.edgeValue(node, succ);
-        if (edgeType.equals(EdgeType.CHILD) && !succ.nodeType().equals(NodeType.TOKEN)) {
-          result.add(succ);
-        }
-      }
+      graph
+          .successors(node)
+          .stream()
+          .filter(n -> edgeFilter.test(graph.edgeValue(node, n)))
+          .forEach(result::add);
     }
     return result.build();
   }
