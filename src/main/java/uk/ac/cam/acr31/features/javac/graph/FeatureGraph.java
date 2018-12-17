@@ -30,11 +30,13 @@ import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureEdge;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureEdge.EdgeType;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureNode;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureNode.NodeType;
+import uk.ac.cam.acr31.features.javac.proto.GraphProtos.Graph;
 
 public class FeatureGraph {
 
   private final MutableNetwork<FeatureNode, FeatureEdge> graph;
   private final Map<Tree, FeatureNode> nodeMap;
+  private int nodeIdCounter = 0;
 
   public FeatureGraph() {
     this.graph = NetworkBuilder.directed().allowsSelfLoops(true).allowsParallelEdges(true).build();
@@ -46,13 +48,17 @@ public class FeatureGraph {
   }
 
   public FeatureNode createFeatureNode(NodeType nodeType, String contents, Tree tree) {
-    FeatureNode result = FeatureNodes.create(nodeType, contents);
+    FeatureNode result = createFeatureNode(nodeType, contents);
     nodeMap.put(tree, result);
     return result;
   }
 
   public FeatureNode createFeatureNode(NodeType nodeType, String contents) {
-    return FeatureNodes.create(nodeType, contents);
+    return FeatureNode.newBuilder()
+        .setId(nodeIdCounter++)
+        .setType(nodeType)
+        .setContents(contents)
+        .build();
   }
 
   public ImmutableSet<FeatureNode> nodes() {
@@ -133,5 +139,9 @@ public class FeatureGraph {
             .setDestinationId(dest.getId())
             .setType(type)
             .build());
+  }
+
+  public Graph toProtobuf() {
+    return Graph.newBuilder().addAllNode(nodes()).addAllEdge(edges()).build();
   }
 }

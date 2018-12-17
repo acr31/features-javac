@@ -19,20 +19,12 @@ package uk.ac.cam.acr31.features.javac.graph;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import uk.ac.cam.acr31.features.javac.proto.GraphProtos.Graph;
 
 public class ProtoOutput {
 
   public static void write(File outputFile, FeatureGraph featureGraph) throws IOException {
     try (FileOutputStream fos = new FileOutputStream(outputFile)) {
-      toGraph(featureGraph).writeTo(fos);
+      featureGraph.toProtobuf().writeTo(fos);
     }
-  }
-
-  static Graph toGraph(FeatureGraph featureGraph) {
-    return Graph.newBuilder()
-        .addAllNode(featureGraph.nodes())
-        .addAllEdge(featureGraph.edges())
-        .build();
   }
 }
