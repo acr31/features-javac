@@ -101,6 +101,7 @@ public class FeatureGraph {
         .collect(toImmutableSet());
   }
 
+  /** Remove all nodes with the specified type that have no successors. */
   public void pruneLeaves(NodeType nodeType) {
     while (pruneLeavesOnce(nodeType)) {
       // do nothing
@@ -108,14 +109,13 @@ public class FeatureGraph {
   }
 
   private boolean pruneLeavesOnce(NodeType nodeType) {
-    Set<FeatureNode> toRemove = new HashSet<>();
-    for (FeatureNode n : graph.nodes()) {
-      if (!n.getType().equals(nodeType)) {
-        if (graph.successors(n).isEmpty()) {
-          toRemove.add(n);
-        }
-      }
-    }
+    ImmutableSet<FeatureNode> toRemove =
+        graph
+            .nodes()
+            .stream()
+            .filter(n -> n.getType().equals(nodeType))
+            .filter(n -> graph.successors(n).isEmpty())
+            .collect(toImmutableSet());
     toRemove.forEach(graph::removeNode);
     return !toRemove.isEmpty();
   }
