@@ -16,8 +16,9 @@
 package uk.ac.cam.acr31.features.javac.graph;
 
 public enum EdgeType {
+  ASSOCIATED_TOKEN,
   NEXT_TOKEN,
-  CHILD,
+  AST_CHILD,
   NONE,
   LAST_WRITE,
   LAST_USE,
