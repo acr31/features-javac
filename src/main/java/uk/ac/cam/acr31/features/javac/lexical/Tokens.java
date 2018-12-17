@@ -60,11 +60,16 @@ public class Tokens {
   public static ImmutableRangeMap<Integer, FeatureNode> addToFeatureGraph(
       ImmutableRangeMap<Integer, Token> tokens, FeatureGraph featureGraph) {
     ImmutableRangeMap.Builder<Integer, FeatureNode> result = ImmutableRangeMap.builder();
+    FeatureNode previous = null;
     for (Map.Entry<Range<Integer>, Token> entry : tokens.asMapOfRanges().entrySet()) {
       Token token = entry.getValue();
       FeatureNode featureNode =
           featureGraph.createFeatureNode(NodeType.TOKEN, tokenToString(token));
       result.put(entry.getKey(), featureNode);
+      if (previous != null) {
+          featureGraph.putEdgeValue(previous,featureNode,EdgeType.NEXT_TOKEN);
+      }
+      previous = featureNode;
       if (token.comments != null) {
         for (Comment comment : token.comments) {
           if (comment.getText() != null) {
