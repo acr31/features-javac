@@ -19,7 +19,7 @@ package uk.ac.cam.acr31.features.javac;
 import static com.google.common.truth.Truth.assertThat;
 import static uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureNode.NodeType;
 import static uk.ac.cam.acr31.features.javac.testing.FeatureGraphChecks.getNodeContents;
-import static uk.ac.cam.acr31.features.javac.testing.FeatureGraphChecks.pathTo;
+import static uk.ac.cam.acr31.features.javac.testing.FeatureGraphChecks.astPathToToken;
 
 import com.google.common.collect.ImmutableList;
 import org.junit.Test;
@@ -60,7 +60,7 @@ public class TokenAssociationTest {
         FeaturePlugin.createFeatureGraph(compilation.compilationUnit(), compilation.context());
 
     // ASSERT
-    ImmutableList<String> route = pathTo(graph, "args");
+    ImmutableList<String> route = astPathToToken(graph, "args");
     assertThat(route).containsAllIn(ImmutableList.of("CLASS", "METHOD", "VARIABLE"));
   }
 }
