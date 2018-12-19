@@ -84,6 +84,10 @@ public class FeatureGraph {
     return graph.edges();
   }
 
+  public Set<FeatureEdge> edges(FeatureNode source, FeatureNode destination) {
+    return graph.edgesConnecting(source, destination);
+  }
+
   public Set<FeatureNode> successors(FeatureNode node) {
     return graph.successors(node);
   }
