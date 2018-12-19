@@ -25,6 +25,7 @@ import uk.ac.cam.acr31.features.javac.graph.FeatureGraph;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureEdge.EdgeType;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureNode;
 
+/** Add edges connecting v to all variables in expr when we see an assignment v = expr. */
 public class ComputedFromScanner extends TreeScanner<Void, Void> {
 
   private final FeatureGraph graph;
