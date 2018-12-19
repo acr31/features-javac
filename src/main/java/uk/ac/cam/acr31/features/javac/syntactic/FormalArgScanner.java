@@ -33,6 +33,10 @@ import uk.ac.cam.acr31.features.javac.DataflowOutputsScanner;
 import uk.ac.cam.acr31.features.javac.graph.FeatureGraph;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureEdge.EdgeType;
 
+/**
+ * Creates edges between actual parameters (method arguments) and formal parameters within the same
+ * compilation unit.
+ */
 public class FormalArgScanner extends TreeScanner<Void, Void> {
 
   private final FeatureGraph graph;
