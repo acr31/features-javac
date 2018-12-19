@@ -16,6 +16,7 @@
 
 package uk.ac.cam.acr31.features.javac.syntactic;
 
+import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMultimap;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.IdentifierTree;
@@ -28,12 +29,12 @@ import java.util.Collection;
 import java.util.Iterator;
 import uk.ac.cam.acr31.features.javac.DataflowOutputsScanner;
 import uk.ac.cam.acr31.features.javac.graph.FeatureGraph;
-import uk.ac.cam.acr31.features.javac.proto.GraphProtos;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureEdge.EdgeType;
 
+/** Adds edges between each usage of a variable in lexical order in the file. */
 public class LastLexicalUseScanner extends TreeScanner<Void, Void> {
 
-  private ImmutableMultimap.Builder<Symbol, Tree> symbolMap = ImmutableMultimap.builder();
+  private ImmutableMultimap.Builder<Symbol, Tree> symbolMap = ImmutableListMultimap.builder();
 
   public static void addToGraph(
       CompilationUnitTree compilationUnitTree, FeatureGraph featureGraph) {
