@@ -11,6 +11,7 @@ import com.sun.tools.javac.util.Context;
 import java.io.IOError;
 import java.io.IOException;
 import java.net.URI;
+import javax.tools.DiagnosticListener;
 import javax.tools.JavaFileObject;
 import javax.tools.SimpleJavaFileObject;
 
@@ -36,7 +37,12 @@ public abstract class TestCompilation {
                 return Joiner.on("\n").join(source);
               }
             });
-    JavacTask task = javacTool.getTask(null, null, null, null, null, compilationUnits, context);
+    DiagnosticListener<? super JavaFileObject> diagnosticListener =
+        diagnostic -> {
+          throw new AssertionError("Compilation failed: " + diagnostic.toString());
+        };
+    JavacTask task =
+        javacTool.getTask(null, null, diagnosticListener, null, null, compilationUnits, context);
     try {
       JCTree.JCCompilationUnit compilationUnit =
           (JCTree.JCCompilationUnit) Iterables.getOnlyElement(task.parse());
