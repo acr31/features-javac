@@ -24,8 +24,14 @@ import com.sun.source.util.TreeScanner;
 import uk.ac.cam.acr31.features.javac.graph.FeatureGraph;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureEdge.EdgeType;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureNode;
-import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureNode.NodeType;
 
+/**
+ * Add GUARDED_BY and GUARDED_BY_NEGATION edges between variable usages and the expression guarding
+ * them in an if-statement.
+ *
+ * <p>e.g. {@code if (x>y) { ... x ...} else { ... y ....}} results in GUARDED_BY edge from x to
+ * (x>y) and a GUARDED_BY_NEGATION edge from y to (x>y).
+ */
 public class GuardedByScanner extends TreeScanner<Void, Void> {
 
   private final FeatureGraph graph;
@@ -58,7 +64,7 @@ public class GuardedByScanner extends TreeScanner<Void, Void> {
     for (IdentifierTree identifierTree : ic.identifiers) {
       FeatureNode featureNode = graph.getFeatureNode(identifierTree);
       if (featureNode != null) {
-        for (FeatureNode succ : graph.successors(featureNode, NodeType.TOKEN)) {
+        for (FeatureNode succ : graph.successors(featureNode, FeatureNode.NodeType.TOKEN)) {
           graph.addEdge(succ, dest, edgeType);
         }
       }
