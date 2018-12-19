@@ -68,22 +68,41 @@ public class FeaturePlugin implements Plugin {
   }
 
   private static void process(TaskEvent e, Context context) {
-    JavacProcessingEnvironment processingEnvironment = JavacProcessingEnvironment.instance(context);
     JCTree.JCCompilationUnit compilationUnit = (JCTree.JCCompilationUnit) e.getCompilationUnit();
-
+    FeatureGraph featureGraph = createFeatureGraph(compilationUnit, context);
     Options options = Options.instance(context);
-
     String featuresOutputDirectory = ".";
     if (options.isSet(FEATURES_OUTPUT_DIRECTORY)) {
       featuresOutputDirectory = options.get(FEATURES_OUTPUT_DIRECTORY);
     }
-    FeatureGraph featureGraph = new FeatureGraph(e.getSourceFile().getName());
+    writeOutput(featureGraph, featuresOutputDirectory, context);
+  }
 
-    var compilerTokens = Tokens.getTokens(e.getSourceFile(), context);
+  private static void writeOutput(
+      FeatureGraph featureGraph, String featuresOutputDirectory, Context context) {
+
+    File outputFile = new File(featuresOutputDirectory, featureGraph.getSourceFileName() + ".dot");
+    outputFile.getParentFile().mkdirs();
+    DotOutput.writeToDot(outputFile, featureGraph);
+    System.out.println("Wrote: " + outputFile);
+
+    File protoFile = new File(featuresOutputDirectory, featureGraph.getSourceFileName() + ".proto");
+    protoFile.getParentFile().mkdirs();
+    ProtoOutput.write(protoFile, featureGraph);
+    System.out.println("Wrote: " + protoFile);
+  }
+
+  static FeatureGraph createFeatureGraph(
+      JCTree.JCCompilationUnit compilationUnit, Context context) {
+    JavacProcessingEnvironment processingEnvironment = JavacProcessingEnvironment.instance(context);
+
+    FeatureGraph featureGraph = new FeatureGraph(compilationUnit.getSourceFile().getName());
+
+    var compilerTokens = Tokens.getTokens(compilationUnit.getSourceFile(), context);
     var tokens = Tokens.addToFeatureGraph(compilerTokens, featureGraph);
     addAstAndLinkToTokens(compilationUnit, tokens, featureGraph);
 
-    var analysisResults = DataflowOutputs.create(e.getCompilationUnit(), processingEnvironment);
+    var analysisResults = DataflowOutputs.create(compilationUnit, processingEnvironment);
     DataflowOutputsScanner.addToGraph(compilationUnit, analysisResults, featureGraph);
 
     ComputedFromScanner.addToGraph(compilationUnit, featureGraph);
@@ -94,16 +113,7 @@ public class FeaturePlugin implements Plugin {
 
     // prune all ast nodes with no successors (these are leaves not connected to tokens)
     featureGraph.pruneLeaves(NodeType.AST_ELEMENT);
-
-    File outputFile = new File(featuresOutputDirectory, e.getSourceFile().getName() + ".dot");
-    outputFile.getParentFile().mkdirs();
-    DotOutput.writeToDot(outputFile, featureGraph);
-    System.out.println("Wrote: " + outputFile);
-
-    File protoFile = new File(featuresOutputDirectory, e.getSourceFile().getName() + ".proto");
-    protoFile.getParentFile().mkdirs();
-    ProtoOutput.write(protoFile, featureGraph);
-    System.out.println("Wrote: " + protoFile);
+    return featureGraph;
   }
 
   private static void addAstAndLinkToTokens(
