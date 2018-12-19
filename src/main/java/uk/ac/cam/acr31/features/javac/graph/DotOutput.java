@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Set;
 import org.apache.commons.text.StringEscapeUtils;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureEdge;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureEdge.EdgeType;
@@ -34,17 +35,17 @@ public class DotOutput {
       w.println("digraph {");
       w.println(" rankdir=LR;");
 
-      ImmutableSet<FeatureNode> nodeSet = graph.nodes(NodeType.AST_ROOT);
+      Set<FeatureNode> nodeSet = graph.nodes(NodeType.AST_ROOT);
       while (!nodeSet.isEmpty()) {
         writeSubgraph(w, nodeSet, "same");
         nodeSet = getSuccessors(nodeSet, graph, EdgeType.AST_CHILD);
       }
 
-      ImmutableSet<FeatureNode> commentSet =
+      Set<FeatureNode> commentSet =
           graph.nodes(NodeType.COMMENT_BLOCK, NodeType.COMMENT_JAVADOC, NodeType.COMMENT_LINE);
       writeSubgraph(w, commentSet, "same");
 
-      ImmutableSet<FeatureNode> tokenSet = graph.nodes(NodeType.TOKEN);
+      Set<FeatureNode> tokenSet = graph.nodes(NodeType.TOKEN);
       writeSubgraph(w, tokenSet, "max");
 
       for (FeatureEdge edge : graph.edges()) {
@@ -109,15 +110,15 @@ public class DotOutput {
     return String.format("%d -> %d [ %s];\n", edge.getSourceId(), edge.getDestinationId(), ports);
   }
 
-  private static void writeSubgraph(PrintWriter w, ImmutableSet<FeatureNode> nodeSet, String rank) {
+  private static void writeSubgraph(PrintWriter w, Set<FeatureNode> nodeSet, String rank) {
     w.println(" subgraph {");
     w.println(String.format("  rank=%s;", rank));
     nodeSet.forEach(n -> w.println(dotNode(n)));
     w.println(" }");
   }
 
-  private static ImmutableSet<FeatureNode> getSuccessors(
-      ImmutableSet<FeatureNode> nodeSet, FeatureGraph graph, EdgeType edgeType) {
+  private static Set<FeatureNode> getSuccessors(
+      Set<FeatureNode> nodeSet, FeatureGraph graph, EdgeType edgeType) {
     ImmutableSet.Builder<FeatureNode> result = ImmutableSet.builder();
     for (FeatureNode node : nodeSet) {
       graph.successors(node, edgeType).stream().forEach(result::add);
