@@ -1,6 +1,6 @@
 package uk.ac.cam.acr31.features.javac;
 
-import static com.google.common.truth.Truth8.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -37,16 +37,16 @@ public class GuardedByTest {
         FeaturePlugin.createFeatureGraph(compilation.compilationUnit(), compilation.context());
 
     // ASSERT
-    assertThat(
+    assertThat(graph.edges(EdgeType.GUARDED_BY))
+        .containsExactly(
             FeatureGraphChecks.edgeBetween(
-                graph, "IF,PARENTHESIZED", "POSTFIX_INCREMENT,IDENTIFIER,x", EdgeType.GUARDED_BY))
-        .isPresent();
-    assertThat(
+                graph, "POSTFIX_INCREMENT,IDENTIFIER,x", "IF,PARENTHESIZED", EdgeType.GUARDED_BY));
+    assertThat(graph.edges(EdgeType.GUARDED_BY_NEGATION))
+        .containsExactly(
             FeatureGraphChecks.edgeBetween(
                 graph,
-                "IF,PARENTHESIZED",
                 "POSTFIX_INCREMENT,IDENTIFIER,y",
-                EdgeType.GUARDED_BY_NEGATION))
-        .isPresent();
+                "IF,PARENTHESIZED",
+                EdgeType.GUARDED_BY_NEGATION));
   }
 }

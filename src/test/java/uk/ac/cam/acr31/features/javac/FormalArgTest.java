@@ -1,12 +1,12 @@
 package uk.ac.cam.acr31.features.javac;
 
-import static com.google.common.truth.Truth8.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import uk.ac.cam.acr31.features.javac.graph.FeatureGraph;
-import uk.ac.cam.acr31.features.javac.proto.GraphProtos;
+import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureEdge.EdgeType;
 import uk.ac.cam.acr31.features.javac.testing.FeatureGraphChecks;
 import uk.ac.cam.acr31.features.javac.testing.TestCompilation;
 
@@ -32,12 +32,9 @@ public class FormalArgTest {
         FeaturePlugin.createFeatureGraph(compilation.compilationUnit(), compilation.context());
 
     // ASSERT
-    assertThat(
+    assertThat(graph.edges(EdgeType.FORMAL_ARG_NAME))
+        .containsExactly(
             FeatureGraphChecks.edgeBetween(
-                graph,
-                "IDENTIFIER,a",
-                "VARIABLE,formalParameter",
-                GraphProtos.FeatureEdge.EdgeType.FORMAL_ARG_NAME))
-        .isPresent();
+                graph, "IDENTIFIER,a", "VARIABLE,formalParameter", EdgeType.FORMAL_ARG_NAME));
   }
 }

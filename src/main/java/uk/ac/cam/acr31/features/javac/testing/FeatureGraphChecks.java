@@ -6,7 +6,6 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
 import uk.ac.cam.acr31.features.javac.graph.FeatureGraph;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureEdge;
@@ -15,7 +14,7 @@ import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureNode;
 
 public class FeatureGraphChecks {
 
-  public static Optional<FeatureEdge> edgeBetween(
+  public static FeatureEdge edgeBetween(
       FeatureGraph graph, String source, String destination, EdgeType edgeType) {
     FeatureNode sourceNode = findNode(graph, source);
     FeatureNode destinationNode = findNode(graph, destination);
@@ -23,7 +22,16 @@ public class FeatureGraphChecks {
         .edges(sourceNode, destinationNode)
         .stream()
         .filter(e -> e.getType().equals(edgeType))
-        .findAny();
+        .findAny()
+        .orElseThrow(
+            () ->
+                new AssertionError(
+                    "Failed to find an edge from "
+                        + source
+                        + " to "
+                        + destination
+                        + " with type "
+                        + edgeType));
   }
 
   public static ImmutableList<String> astPathToToken(FeatureGraph graph, String destination) {

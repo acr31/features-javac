@@ -1,6 +1,6 @@
 package uk.ac.cam.acr31.features.javac;
 
-import static com.google.common.truth.Truth8.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -14,7 +14,7 @@ import uk.ac.cam.acr31.features.javac.testing.TestCompilation;
 public class ComputedFromTest {
 
   @Test
-  public void computedFrom_addsEdgesToLocalVariables() {
+  public void computedFrom_addsEdgesToLocalVariables_inAssignment() {
     // ARRANGE
     TestCompilation compilation =
         TestCompilation.compile(
@@ -23,7 +23,8 @@ public class ComputedFromTest {
             "  public static void main(String[] args) {",
             "    int a = 0;",
             "    int b = 0;",
-            "    int c = a + b;",
+            "    int c;",
+            "    c = a + b;",
             "  }",
             "}");
 
@@ -32,14 +33,12 @@ public class ComputedFromTest {
         FeaturePlugin.createFeatureGraph(compilation.compilationUnit(), compilation.context());
 
     // ASSERT
-    assertThat(
+    assertThat(graph.edges(EdgeType.COMPUTED_FROM))
+        .containsExactly(
             FeatureGraphChecks.edgeBetween(
-                graph, "VARIABLE,c", "VARIABLE,a", EdgeType.COMPUTED_FROM))
-        .isPresent();
-    assertThat(
+                graph, "IDENTIFIER,c", "IDENTIFIER,a", EdgeType.COMPUTED_FROM),
             FeatureGraphChecks.edgeBetween(
-                graph, "VARIABLE,c", "VARIABLE,b", EdgeType.COMPUTED_FROM))
-        .isPresent();
+                graph, "IDENTIFIER,c", "IDENTIFIER,b", EdgeType.COMPUTED_FROM));
   }
 
   @Test
@@ -52,7 +51,8 @@ public class ComputedFromTest {
             "  static int a = 0;",
             "  public static void main(String[] args) {",
             "    int b = 0;",
-            "    int c = a + b;",
+            "    int c;",
+            "    c = a + b;",
             "  }",
             "}");
 
@@ -61,13 +61,11 @@ public class ComputedFromTest {
         FeaturePlugin.createFeatureGraph(compilation.compilationUnit(), compilation.context());
 
     // ASSERT
-    assertThat(
+    assertThat(graph.edges(EdgeType.COMPUTED_FROM))
+        .containsExactly(
             FeatureGraphChecks.edgeBetween(
-                graph, "VARIABLE,c", "VARIABLE,a", EdgeType.COMPUTED_FROM))
-        .isPresent();
-    assertThat(
+                graph, "IDENTIFIER,c", "IDENTIFIER,a", EdgeType.COMPUTED_FROM),
             FeatureGraphChecks.edgeBetween(
-                graph, "VARIABLE,c", "VARIABLE,b", EdgeType.COMPUTED_FROM))
-        .isPresent();
+                graph, "IDENTIFIER,c", "IDENTIFIER,b", EdgeType.COMPUTED_FROM));
   }
 }
