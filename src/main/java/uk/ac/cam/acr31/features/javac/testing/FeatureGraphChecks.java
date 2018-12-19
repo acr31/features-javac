@@ -2,6 +2,7 @@ package uk.ac.cam.acr31.features.javac.testing;
 
 import static com.google.common.collect.ImmutableList.toImmutableList;
 
+import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import java.util.HashSet;
@@ -11,15 +12,6 @@ import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureEdge.EdgeType;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureNode;
 
 public class FeatureGraphChecks {
-
-  private static FeatureNode findNode(FeatureGraph graph, String contents) {
-    return Iterables.getOnlyElement(
-        graph
-            .nodes()
-            .stream()
-            .filter(n -> n.getContents().equals(contents))
-            .collect(toImmutableList()));
-  }
 
   public static boolean edgeBetween(
       FeatureGraph graph, String source, String destination, EdgeType edgeType) {
@@ -62,5 +54,37 @@ public class FeatureGraphChecks {
   public static ImmutableList<String> getNodeContents(
       FeatureGraph graph, FeatureNode.NodeType nodeType) {
     return graph.nodes(nodeType).stream().map(FeatureNode::getContents).collect(toImmutableList());
+  }
+
+  private static FeatureNode findNode(FeatureGraph graph, String contents) {
+    ImmutableList<String> path = ImmutableList.copyOf(Splitter.on(",").splitToList(contents));
+    FeatureNode result = findNode(graph, null, path);
+    if (result == null) {
+      throw new AssertionError("Failed to find node: " + contents);
+    }
+    return result;
+  }
+
+  private static FeatureNode findNode(
+      FeatureGraph graph, FeatureNode searchPoint, ImmutableList<String> path) {
+    if (path.isEmpty()) {
+      return searchPoint;
+    }
+
+    Set<FeatureNode> successors =
+        searchPoint == null ? graph.nodes() : graph.successors(searchPoint);
+    FeatureNode found = null;
+    for (FeatureNode node : successors) {
+      if (node.getContents().equals(path.get(0))) {
+        FeatureNode result = findNode(graph, node, path.subList(1, path.size()));
+        if (result != null) {
+          if (found != null) {
+            throw new AssertionError("Found more than one matching node");
+          }
+          found = result;
+        }
+      }
+    }
+    return found;
   }
 }
