@@ -20,6 +20,7 @@ import static com.google.common.collect.ImmutableSet.toImmutableSet;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 import com.google.common.graph.MutableNetwork;
 import com.google.common.graph.NetworkBuilder;
 import com.sun.source.tree.Tree;
@@ -72,13 +73,25 @@ public class FeatureGraph {
     return graph.nodes();
   }
 
-  public Set<FeatureNode> nodes(NodeType... nodeTypes) {
+  private Set<FeatureNode> nodes(NodeType... nodeTypes) {
     ImmutableList<NodeType> nodes = ImmutableList.copyOf(nodeTypes);
     return graph
         .nodes()
         .stream()
         .filter(n -> nodes.contains(n.getType()))
         .collect(toImmutableSet());
+  }
+
+  public FeatureNode root() {
+    return Iterables.getOnlyElement(nodes(NodeType.AST_ROOT));
+  }
+
+  public Set<FeatureNode> tokens() {
+    return nodes(NodeType.TOKEN, NodeType.IDENTIFIER_TOKEN);
+  }
+
+  public Set<FeatureNode> comments() {
+    return nodes(NodeType.COMMENT_BLOCK, NodeType.COMMENT_JAVADOC, NodeType.COMMENT_LINE);
   }
 
   public Set<FeatureEdge> edges() {
@@ -104,14 +117,6 @@ public class FeatureGraph {
     return graph.successors(node);
   }
 
-  public Set<FeatureNode> successors(FeatureNode node, NodeType nodeType) {
-    return graph
-        .successors(node)
-        .stream()
-        .filter(n -> n.getType().equals(nodeType))
-        .collect(toImmutableSet());
-  }
-
   public Set<FeatureNode> successors(FeatureNode node, EdgeType... edgeTypes) {
     ImmutableList<EdgeType> edgeTypeList = ImmutableList.copyOf(edgeTypes);
     return graph
@@ -123,15 +128,6 @@ public class FeatureGraph {
                     .edgesConnecting(node, n)
                     .stream()
                     .anyMatch(e -> edgeTypeList.contains(e.getType())))
-        .collect(toImmutableSet());
-  }
-
-  public Set<FeatureNode> predecessors(FeatureNode node, NodeType... nodeTypes) {
-    ImmutableList<NodeType> nodeTypeList = ImmutableList.copyOf(nodeTypes);
-    return graph
-        .predecessors(node)
-        .stream()
-        .filter(n -> nodeTypeList.contains(n.getType()))
         .collect(toImmutableSet());
   }
 

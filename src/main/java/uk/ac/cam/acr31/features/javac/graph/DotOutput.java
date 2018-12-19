@@ -26,7 +26,6 @@ import org.apache.commons.text.StringEscapeUtils;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureEdge;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureEdge.EdgeType;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureNode;
-import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureNode.NodeType;
 
 public class DotOutput {
 
@@ -35,17 +34,16 @@ public class DotOutput {
       w.println("digraph {");
       w.println(" rankdir=LR;");
 
-      Set<FeatureNode> nodeSet = graph.nodes(NodeType.AST_ROOT);
+      Set<FeatureNode> nodeSet = ImmutableSet.of(graph.root());
       while (!nodeSet.isEmpty()) {
         writeSubgraph(w, nodeSet, "same");
         nodeSet = getSuccessors(nodeSet, graph, EdgeType.AST_CHILD);
       }
 
-      Set<FeatureNode> commentSet =
-          graph.nodes(NodeType.COMMENT_BLOCK, NodeType.COMMENT_JAVADOC, NodeType.COMMENT_LINE);
+      Set<FeatureNode> commentSet = graph.comments();
       writeSubgraph(w, commentSet, "same");
 
-      Set<FeatureNode> tokenSet = graph.nodes(NodeType.TOKEN);
+      Set<FeatureNode> tokenSet = graph.tokens();
       writeSubgraph(w, tokenSet, "max");
 
       for (FeatureEdge edge : graph.edges()) {

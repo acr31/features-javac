@@ -30,6 +30,7 @@ message FeatureNode {
         COMMENT_BLOCK = 4;
         COMMENT_JAVADOC = 5;
         AST_ROOT = 6;
+        IDENTIFIER_TOKEN = 7;
     }
 
     optional int64 id = 1;

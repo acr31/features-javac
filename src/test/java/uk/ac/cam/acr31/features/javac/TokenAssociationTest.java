@@ -17,15 +17,15 @@
 package uk.ac.cam.acr31.features.javac;
 
 import static com.google.common.truth.Truth.assertThat;
-import static uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureNode.NodeType;
-import static uk.ac.cam.acr31.features.javac.testing.FeatureGraphChecks.getNodeContents;
 import static uk.ac.cam.acr31.features.javac.testing.FeatureGraphChecks.astPathToToken;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.truth.Correspondence;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import uk.ac.cam.acr31.features.javac.graph.FeatureGraph;
+import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureNode;
 import uk.ac.cam.acr31.features.javac.testing.TestCompilation;
 
 @RunWith(JUnit4.class)
@@ -41,7 +41,19 @@ public class TokenAssociationTest {
         FeaturePlugin.createFeatureGraph(compilation.compilationUnit(), compilation.context());
 
     // ASSERT
-    assertThat(getNodeContents(graph, NodeType.TOKEN))
+    assertThat(graph.tokens())
+        .comparingElementsUsing(
+            new Correspondence<FeatureNode, String>() {
+              @Override
+              public boolean compare(FeatureNode actual, String expected) {
+                return actual.getContents().equals(expected);
+              }
+
+              @Override
+              public String toString() {
+                return "content equals";
+              }
+            })
         .containsExactly("PUBLIC", "CLASS", "Test", "LBRACE", "RBRACE");
   }
 

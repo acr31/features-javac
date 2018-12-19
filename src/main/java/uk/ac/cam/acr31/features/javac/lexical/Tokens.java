@@ -22,6 +22,7 @@ import com.sun.tools.javac.parser.Scanner;
 import com.sun.tools.javac.parser.ScannerFactory;
 import com.sun.tools.javac.parser.Tokens.Comment;
 import com.sun.tools.javac.parser.Tokens.Token;
+import com.sun.tools.javac.parser.Tokens.TokenKind;
 import com.sun.tools.javac.util.Context;
 import java.io.IOException;
 import java.util.Map;
@@ -41,7 +42,7 @@ public class Tokens {
     while (true) {
       tokenScanner.nextToken();
       Token token = tokenScanner.token();
-      if (token.kind == com.sun.tools.javac.parser.Tokens.TokenKind.EOF) {
+      if (token.kind == TokenKind.EOF) {
         break;
       }
       tokenMap.put(Range.closedOpen(token.pos, token.endPos), token);
@@ -64,7 +65,9 @@ public class Tokens {
     for (Map.Entry<Range<Integer>, Token> entry : tokens.asMapOfRanges().entrySet()) {
       Token token = entry.getValue();
       FeatureNode featureNode =
-          featureGraph.createFeatureNode(NodeType.TOKEN, tokenToString(token));
+          featureGraph.createFeatureNode(
+              token.kind.equals(TokenKind.IDENTIFIER) ? NodeType.IDENTIFIER_TOKEN : NodeType.TOKEN,
+              tokenToString(token));
       result.put(entry.getKey(), featureNode);
       if (previous != null) {
         featureGraph.addEdge(previous, featureNode, EdgeType.NEXT_TOKEN);

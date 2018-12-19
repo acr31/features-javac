@@ -16,9 +16,12 @@
 
 package uk.ac.cam.acr31.features.javac;
 
+import static com.google.common.collect.ImmutableList.toImmutableList;
 import static com.google.common.truth.Truth.assertThat;
 
+import com.google.common.collect.ImmutableList;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.junit.Before;
@@ -27,7 +30,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import uk.ac.cam.acr31.features.javac.graph.FeatureGraph;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureEdge.EdgeType;
-import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureNode.NodeType;
+import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureNode;
 import uk.ac.cam.acr31.features.javac.testing.TestCompilation;
 
 @RunWith(JUnit4.class)
@@ -50,15 +53,10 @@ public class FeatureGraphInvariantTests {
   }
 
   @Test
-  public void featureGraph_containsSingleAstRoot() {
-    assertThat(featureGraph.nodes(NodeType.AST_ROOT)).hasSize(1);
-  }
-
-  @Test
   public void featureGraph_tokensHaveSingleRelatedAstNode() {
     assertThat(
             featureGraph
-                .nodes(NodeType.TOKEN)
+                .tokens()
                 .stream()
                 .map(
                     node ->
@@ -68,22 +66,42 @@ public class FeatureGraphInvariantTests {
   }
 
   @Test
+  public void featureGraph_singleStartToken() {
+    ImmutableList<FeatureNode> nodes =
+        featureGraph
+            .tokens()
+            .stream()
+            .filter(node -> featureGraph.predecessors(node, EdgeType.NEXT_TOKEN).isEmpty())
+            .collect(toImmutableList());
+    assertThat(nodes).hasSize(1);
+  }
+
+  @Test
+  public void featureGraph_tokensHaveZeroOrOneNextToken() {
+    Map<Integer, Long> counts =
+        featureGraph
+            .tokens()
+            .stream()
+            .map(node -> featureGraph.successors(node, EdgeType.NEXT_TOKEN).size())
+            .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
+    assertThat(counts.keySet()).containsExactly(0, 1);
+  }
+
+  @Test
   public void featureGraph_nextTokenFormsASequence() {
-    Map<Long, Long> successorCounts =
+    Optional<FeatureNode> token =
         featureGraph
-            .nodes(NodeType.TOKEN)
+            .tokens()
             .stream()
-            .map(node -> featureGraph.successors(node, EdgeType.NEXT_TOKEN).stream().count())
-            .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
-    Map<Long, Long> predecessorCounts =
-        featureGraph
-            .nodes(NodeType.TOKEN)
-            .stream()
-            .map(node -> featureGraph.predecessors(node, EdgeType.NEXT_TOKEN).stream().count())
-            .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
-    assertThat(successorCounts.keySet()).containsExactly(0L, 1L);
-    assertThat(successorCounts.get(0L)).isEqualTo(1);
-    assertThat(predecessorCounts.keySet()).containsExactly(0L, 1L);
-    assertThat(predecessorCounts.get(0L)).isEqualTo(1);
+            .filter(node -> featureGraph.predecessors(node, EdgeType.NEXT_TOKEN).isEmpty())
+            .findAny();
+    ImmutableList.Builder<FeatureNode> tokensBuilder = ImmutableList.builder();
+    while (token.isPresent()) {
+      tokensBuilder.add(token.get());
+      token = featureGraph.successors(token.get(), EdgeType.NEXT_TOKEN).stream().findFirst();
+    }
+    ImmutableList<FeatureNode> tokens = tokensBuilder.build();
+
+    assertThat(featureGraph.tokens()).containsAllIn(tokens);
   }
 }

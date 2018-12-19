@@ -15,11 +15,8 @@
  */
 package uk.ac.cam.acr31.features.javac.testing;
 
-import static com.google.common.collect.ImmutableList.toImmutableList;
-
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
 import java.util.HashSet;
 import java.util.Set;
 import uk.ac.cam.acr31.features.javac.graph.FeatureGraph;
@@ -51,11 +48,7 @@ public class FeatureGraphChecks {
 
   public static ImmutableList<String> astPathToToken(FeatureGraph graph, String destination) {
     FeatureNode destinationNode = findNode(graph, destination);
-    return astPathToToken(
-        graph,
-        Iterables.getOnlyElement(graph.nodes(FeatureNode.NodeType.AST_ROOT)),
-        destinationNode,
-        new HashSet<>());
+    return astPathToToken(graph, graph.root(), destinationNode, new HashSet<>());
   }
 
   private static ImmutableList<String> astPathToToken(
@@ -75,11 +68,6 @@ public class FeatureGraphChecks {
       }
     }
     return ImmutableList.of();
-  }
-
-  public static ImmutableList<String> getNodeContents(
-      FeatureGraph graph, FeatureNode.NodeType nodeType) {
-    return graph.nodes(nodeType).stream().map(FeatureNode::getContents).collect(toImmutableList());
   }
 
   private static FeatureNode findNode(FeatureGraph graph, String contents) {

@@ -29,7 +29,6 @@ import org.checkerframework.dataflow.analysis.AnalysisResult;
 import uk.ac.cam.acr31.features.javac.graph.FeatureGraph;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureEdge.EdgeType;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureNode;
-import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureNode.NodeType;
 import uk.ac.cam.acr31.features.javac.semantic.DataflowOutputs;
 import uk.ac.cam.acr31.features.javac.semantic.PossibleTreeSet;
 import uk.ac.cam.acr31.features.javac.semantic.PossibleTreeSetStore;
@@ -105,13 +104,16 @@ public class DataflowOutputsScanner extends TreeScanner<Void, ScanContext> {
     }
   }
 
+  /**
+   * Connect the tokens linked from the source node to the tokens linked from the destination node.
+   */
   public static void linkTokens(
       FeatureNode source, FeatureNode dest, EdgeType type, FeatureGraph graph) {
     if (source == null || dest == null) {
       return;
     }
-    Set<FeatureNode> sourceSucc = graph.successors(source, NodeType.TOKEN);
-    Set<FeatureNode> destSucc = graph.successors(dest, NodeType.TOKEN);
+    Set<FeatureNode> sourceSucc = graph.successors(source, EdgeType.ASSOCIATED_TOKEN);
+    Set<FeatureNode> destSucc = graph.successors(dest, EdgeType.ASSOCIATED_TOKEN);
     if (sourceSucc.size() != 1 || destSucc.size() != 1) {
       // System.out.println("Warning too many successors for " + source + " and " + dest);
     }
