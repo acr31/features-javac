@@ -45,6 +45,10 @@ public class FeatureGraph {
     this.nodeMap = new HashMap<>();
   }
 
+  public String getSourceFileName() {
+    return sourceFileName;
+  }
+
   public FeatureNode getFeatureNode(Tree tree) {
     return nodeMap.get(tree);
   }
@@ -92,7 +96,8 @@ public class FeatureGraph {
         .collect(toImmutableSet());
   }
 
-  public ImmutableSet<FeatureNode> successors(FeatureNode node, EdgeType edgeType) {
+  public ImmutableSet<FeatureNode> successors(FeatureNode node, EdgeType... edgeTypes) {
+    ImmutableList<EdgeType> edgeTypeList = ImmutableList.copyOf(edgeTypes);
     return graph
         .successors(node)
         .stream()
@@ -101,15 +106,30 @@ public class FeatureGraph {
                 graph
                     .edgesConnecting(node, n)
                     .stream()
-                    .anyMatch(edge -> edge.getType().equals(edgeType)))
+                    .anyMatch(e -> edgeTypeList.contains(e.getType())))
         .collect(toImmutableSet());
   }
 
-  public ImmutableSet<FeatureNode> predecessors(FeatureNode node, NodeType nodeType) {
+  public ImmutableSet<FeatureNode> predecessors(FeatureNode node, NodeType... nodeTypes) {
+    ImmutableList<NodeType> nodeTypeList = ImmutableList.copyOf(nodeTypes);
     return graph
         .predecessors(node)
         .stream()
-        .filter(n -> n.getType().equals(nodeType))
+        .filter(n -> nodeTypeList.contains(n.getType()))
+        .collect(toImmutableSet());
+  }
+
+  public ImmutableSet<FeatureNode> predecessors(FeatureNode node, EdgeType... edgeTypes) {
+    ImmutableList<EdgeType> edgeTypeList = ImmutableList.copyOf(edgeTypes);
+    return graph
+        .predecessors(node)
+        .stream()
+        .filter(
+            n ->
+                graph
+                    .edgesConnecting(n, node)
+                    .stream()
+                    .anyMatch(e -> edgeTypeList.contains(e.getType())))
         .collect(toImmutableSet());
   }
 
