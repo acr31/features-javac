@@ -67,11 +67,12 @@ public class FeatureGraph {
         .build();
   }
 
-  public ImmutableSet<FeatureNode> nodes() {
-    return ImmutableSet.copyOf(graph.nodes());
+  public Set<FeatureNode> nodes() {
+    // returns an unmodifiable set
+    return graph.nodes();
   }
 
-  public ImmutableSet<FeatureNode> nodes(NodeType... nodeTypes) {
+  public Set<FeatureNode> nodes(NodeType... nodeTypes) {
     ImmutableList<NodeType> nodes = ImmutableList.copyOf(nodeTypes);
     return graph
         .nodes()
@@ -81,18 +82,21 @@ public class FeatureGraph {
   }
 
   public Set<FeatureEdge> edges() {
+    // returns an unmodifiable set
     return graph.edges();
   }
 
   public Set<FeatureEdge> edges(FeatureNode source, FeatureNode destination) {
+    // returns an unmodifiable set
     return graph.edgesConnecting(source, destination);
   }
 
   public Set<FeatureNode> successors(FeatureNode node) {
+    // returns an unmodifiable set
     return graph.successors(node);
   }
 
-  public ImmutableSet<FeatureNode> successors(FeatureNode node, NodeType nodeType) {
+  public Set<FeatureNode> successors(FeatureNode node, NodeType nodeType) {
     return graph
         .successors(node)
         .stream()
@@ -100,7 +104,7 @@ public class FeatureGraph {
         .collect(toImmutableSet());
   }
 
-  public ImmutableSet<FeatureNode> successors(FeatureNode node, EdgeType... edgeTypes) {
+  public Set<FeatureNode> successors(FeatureNode node, EdgeType... edgeTypes) {
     ImmutableList<EdgeType> edgeTypeList = ImmutableList.copyOf(edgeTypes);
     return graph
         .successors(node)
@@ -114,7 +118,7 @@ public class FeatureGraph {
         .collect(toImmutableSet());
   }
 
-  public ImmutableSet<FeatureNode> predecessors(FeatureNode node, NodeType... nodeTypes) {
+  public Set<FeatureNode> predecessors(FeatureNode node, NodeType... nodeTypes) {
     ImmutableList<NodeType> nodeTypeList = ImmutableList.copyOf(nodeTypes);
     return graph
         .predecessors(node)
@@ -123,7 +127,7 @@ public class FeatureGraph {
         .collect(toImmutableSet());
   }
 
-  public ImmutableSet<FeatureNode> predecessors(FeatureNode node, EdgeType... edgeTypes) {
+  public Set<FeatureNode> predecessors(FeatureNode node, EdgeType... edgeTypes) {
     ImmutableList<EdgeType> edgeTypeList = ImmutableList.copyOf(edgeTypes);
     return graph
         .predecessors(node)
