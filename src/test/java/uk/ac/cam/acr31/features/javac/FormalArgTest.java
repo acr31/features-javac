@@ -51,6 +51,9 @@ public class FormalArgTest {
     assertThat(graph.edges(EdgeType.FORMAL_ARG_NAME))
         .containsExactly(
             FeatureGraphChecks.edgeBetween(
-                graph, "IDENTIFIER,a", "VARIABLE,formalParameter", EdgeType.FORMAL_ARG_NAME));
+                graph,
+                "METHOD_INVOCATION,list,IDENTIFIER,a",
+                "formalParameter",
+                EdgeType.FORMAL_ARG_NAME));
   }
 }

@@ -17,6 +17,7 @@
 package uk.ac.cam.acr31.features.javac;
 
 import com.google.common.collect.ImmutableRangeMap;
+import com.google.common.collect.Iterables;
 import com.sun.source.util.JavacTask;
 import com.sun.source.util.Plugin;
 import com.sun.source.util.TaskEvent;
@@ -31,6 +32,8 @@ import uk.ac.cam.acr31.features.javac.graph.DotOutput;
 import uk.ac.cam.acr31.features.javac.graph.FeatureGraph;
 import uk.ac.cam.acr31.features.javac.graph.ProtoOutput;
 import uk.ac.cam.acr31.features.javac.lexical.Tokens;
+import uk.ac.cam.acr31.features.javac.proto.GraphProtos;
+import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureEdge.EdgeType;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureNode;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureNode.NodeType;
 import uk.ac.cam.acr31.features.javac.semantic.DataflowOutputs;
@@ -92,6 +95,37 @@ public class FeaturePlugin implements Plugin {
     System.out.println("Wrote: " + protoFile);
   }
 
+  private static void addIdentifierNodesForIdentifierTokens(FeatureGraph featureGraph) {
+
+    for (FeatureNode token : featureGraph.tokens()) {
+      if (!token.getType().equals(NodeType.IDENTIFIER_TOKEN)) {
+        continue;
+      }
+
+      FeatureNode predecessor =
+          Iterables.getOnlyElement(featureGraph.predecessors(token, EdgeType.ASSOCIATED_TOKEN));
+      if (predecessor.getContents().equals("IDENTIFIER")) {
+        continue;
+      }
+
+      GraphProtos.FeatureEdge edge =
+          featureGraph
+              .edges(predecessor, token)
+              .stream()
+              .filter(e -> e.getType().equals(EdgeType.ASSOCIATED_TOKEN))
+              .findAny()
+              .orElseThrow(AssertionError::new);
+
+      featureGraph.removeEdge(edge);
+
+      FeatureNode newIdentifier =
+          featureGraph.createFeatureNode(NodeType.AST_ELEMENT, "IDENTIFIER");
+
+      featureGraph.addEdge(predecessor, newIdentifier, EdgeType.AST_CHILD);
+      featureGraph.addEdge(newIdentifier, token, EdgeType.ASSOCIATED_TOKEN);
+    }
+  }
+
   static FeatureGraph createFeatureGraph(
       JCTree.JCCompilationUnit compilationUnit, Context context) {
     JavacProcessingEnvironment processingEnvironment = JavacProcessingEnvironment.instance(context);
@@ -101,6 +135,8 @@ public class FeaturePlugin implements Plugin {
     var compilerTokens = Tokens.getTokens(compilationUnit.getSourceFile(), context);
     var tokens = Tokens.addToFeatureGraph(compilerTokens, featureGraph);
     addAstAndLinkToTokens(compilationUnit, tokens, featureGraph);
+
+    addIdentifierNodesForIdentifierTokens(featureGraph);
 
     var analysisResults = DataflowOutputs.create(compilationUnit, processingEnvironment);
     DataflowOutputsScanner.addToGraph(compilationUnit, analysisResults, featureGraph);

@@ -99,7 +99,7 @@ public class DataflowOutputsScanner extends TreeScanner<Void, ScanContext> {
     if (possibles != null) {
       for (Tree tree : possibles.nodes()) {
         FeatureNode targetNode = graph.getFeatureNode(tree);
-        linkTokens(sourceNode, targetNode, edgeType, graph);
+        linkIdentifierTokens(sourceNode, targetNode, edgeType, graph);
       }
     }
   }
@@ -107,16 +107,13 @@ public class DataflowOutputsScanner extends TreeScanner<Void, ScanContext> {
   /**
    * Connect the tokens linked from the source node to the tokens linked from the destination node.
    */
-  public static void linkTokens(
+  public static void linkIdentifierTokens(
       FeatureNode source, FeatureNode dest, EdgeType type, FeatureGraph graph) {
     if (source == null || dest == null) {
       return;
     }
-    Set<FeatureNode> sourceSucc = graph.successors(source, EdgeType.ASSOCIATED_TOKEN);
-    Set<FeatureNode> destSucc = graph.successors(dest, EdgeType.ASSOCIATED_TOKEN);
-    if (sourceSucc.size() != 1 || destSucc.size() != 1) {
-      // System.out.println("Warning too many successors for " + source + " and " + dest);
-    }
+    Set<FeatureNode> sourceSucc = graph.reachableIdentifierNodes(source);
+    Set<FeatureNode> destSucc = graph.reachableIdentifierNodes(dest);
     for (FeatureNode s : sourceSucc) {
       for (FeatureNode d : destSucc) {
         graph.addEdge(s, d, type);

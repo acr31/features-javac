@@ -51,7 +51,7 @@ public class ComputedFromScanner extends TreeScanner<Void, Void> {
     for (IdentifierTree lhs : lhsCollector.identifiers) {
       FeatureNode lhsFeatureNode = graph.getFeatureNode(lhs);
       for (IdentifierTree rhs : rhsCollector.identifiers) {
-        DataflowOutputsScanner.linkTokens(
+        DataflowOutputsScanner.linkIdentifierTokens(
             lhsFeatureNode, graph.getFeatureNode(rhs), EdgeType.COMPUTED_FROM, graph);
       }
     }

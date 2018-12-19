@@ -52,9 +52,9 @@ public class ComputedFromTest {
     assertThat(graph.edges(EdgeType.COMPUTED_FROM))
         .containsExactly(
             FeatureGraphChecks.edgeBetween(
-                graph, "IDENTIFIER,c", "IDENTIFIER,a", EdgeType.COMPUTED_FROM),
+                graph, "ASSIGNMENT,IDENTIFIER,c", "PLUS,IDENTIFIER,a", EdgeType.COMPUTED_FROM),
             FeatureGraphChecks.edgeBetween(
-                graph, "IDENTIFIER,c", "IDENTIFIER,b", EdgeType.COMPUTED_FROM));
+                graph, "ASSIGNMENT,IDENTIFIER,c", "PLUS,IDENTIFIER,b", EdgeType.COMPUTED_FROM));
   }
 
   @Test
@@ -80,8 +80,8 @@ public class ComputedFromTest {
     assertThat(graph.edges(EdgeType.COMPUTED_FROM))
         .containsExactly(
             FeatureGraphChecks.edgeBetween(
-                graph, "IDENTIFIER,c", "IDENTIFIER,a", EdgeType.COMPUTED_FROM),
+                graph, "ASSIGNMENT,IDENTIFIER,c", "PLUS,IDENTIFIER,a", EdgeType.COMPUTED_FROM),
             FeatureGraphChecks.edgeBetween(
-                graph, "IDENTIFIER,c", "IDENTIFIER,b", EdgeType.COMPUTED_FROM));
+                graph, "ASSIGNMENT,IDENTIFIER,c", "PLUS,IDENTIFIER,b", EdgeType.COMPUTED_FROM));
   }
 }

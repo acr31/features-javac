@@ -24,7 +24,10 @@ import com.google.common.collect.Iterables;
 import com.google.common.graph.MutableNetwork;
 import com.google.common.graph.NetworkBuilder;
 import com.sun.source.tree.Tree;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureEdge;
@@ -131,6 +134,28 @@ public class FeatureGraph {
         .collect(toImmutableSet());
   }
 
+  public Set<FeatureNode> reachableIdentifierNodes(FeatureNode node) {
+    ImmutableSet.Builder<FeatureNode> result = ImmutableSet.builder();
+    Deque<FeatureNode> work = new ArrayDeque<>();
+    Set<FeatureNode> visited = new HashSet<>();
+    work.add(node);
+    while (!work.isEmpty()) {
+      FeatureNode next = work.poll();
+      for (FeatureNode succ : successors(next, EdgeType.AST_CHILD, EdgeType.ASSOCIATED_TOKEN)) {
+        if (visited.contains(succ)) {
+          continue;
+        }
+        visited.add(succ);
+        if (succ.getType().equals(NodeType.IDENTIFIER_TOKEN)) {
+          result.add(succ);
+        } else {
+          work.add(succ);
+        }
+      }
+    }
+    return result.build();
+  }
+
   public Set<FeatureNode> predecessors(FeatureNode node, EdgeType... edgeTypes) {
     ImmutableList<EdgeType> edgeTypeList = ImmutableList.copyOf(edgeTypes);
     return graph
@@ -173,6 +198,10 @@ public class FeatureGraph {
             .setDestinationId(dest.getId())
             .setType(type)
             .build());
+  }
+
+  public void removeEdge(FeatureEdge edge) {
+    graph.removeEdge(edge);
   }
 
   public Graph toProtobuf() {

@@ -118,7 +118,7 @@ public class FormalArgScanner extends TreeScanner<Void, Void> {
         IdentifierCollector c = new IdentifierCollector();
         argument.accept(c, null);
         for (IdentifierTree identifierTree : c.identifiers) {
-          DataflowOutputsScanner.linkTokens(
+          DataflowOutputsScanner.linkIdentifierTokens(
               graph.getFeatureNode(identifierTree),
               graph.getFeatureNode(parameter),
               EdgeType.FORMAL_ARG_NAME,

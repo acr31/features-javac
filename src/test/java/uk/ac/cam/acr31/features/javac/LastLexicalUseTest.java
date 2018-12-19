@@ -18,7 +18,6 @@ package uk.ac.cam.acr31.features.javac;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -31,7 +30,6 @@ import uk.ac.cam.acr31.features.javac.testing.TestCompilation;
 public class LastLexicalUseTest {
 
   @Test
-  @Ignore
   public void lastLexicalUse_chainsInOrder() {
     // ARRANGE
     TestCompilation compilation =
@@ -57,7 +55,10 @@ public class LastLexicalUseTest {
     assertThat(graph.edges(EdgeType.LAST_LEXICAL_USE))
         .containsExactly(
             FeatureGraphChecks.edgeBetween(
-                graph, "VARIABLE,x", "GREATER_THAN,IDENTIFIER,x", EdgeType.LAST_LEXICAL_USE),
+                graph,
+                "VARIABLE,IDENTIFIER,x",
+                "GREATER_THAN,IDENTIFIER,x",
+                EdgeType.LAST_LEXICAL_USE),
             FeatureGraphChecks.edgeBetween(
                 graph,
                 "GREATER_THAN,IDENTIFIER,x",
