@@ -15,7 +15,7 @@ import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureNode.NodeType;
 import uk.ac.cam.acr31.features.javac.testing.TestCompilation;
 
 @RunWith(JUnit4.class)
-public class FeatureGraphInvariantChecks {
+public class FeatureGraphInvariantTests {
 
   private FeatureGraph featureGraph;
 
