@@ -58,7 +58,7 @@ public class FeatureGraphChecks {
 
   private static FeatureNode findNode(FeatureGraph graph, String contents) {
     ImmutableList<String> path = ImmutableList.copyOf(Splitter.on(",").splitToList(contents));
-    FeatureNode result = findNode(graph, null, path);
+    FeatureNode result = findNode(graph, null, path, contents);
     if (result == null) {
       throw new AssertionError("Failed to find node: " + contents);
     }
@@ -66,7 +66,10 @@ public class FeatureGraphChecks {
   }
 
   private static FeatureNode findNode(
-      FeatureGraph graph, FeatureNode searchPoint, ImmutableList<String> path) {
+      FeatureGraph graph,
+      FeatureNode searchPoint,
+      ImmutableList<String> path,
+      String originalContents) {
     if (path.isEmpty()) {
       return searchPoint;
     }
@@ -76,10 +79,10 @@ public class FeatureGraphChecks {
     FeatureNode found = null;
     for (FeatureNode node : successors) {
       if (node.getContents().equals(path.get(0))) {
-        FeatureNode result = findNode(graph, node, path.subList(1, path.size()));
+        FeatureNode result = findNode(graph, node, path.subList(1, path.size()), originalContents);
         if (result != null) {
           if (found != null) {
-            throw new AssertionError("Found more than one matching node");
+            throw new AssertionError("Found more than one matching node for: " + originalContents);
           }
           found = result;
         }
