@@ -1,6 +1,6 @@
 package uk.ac.cam.acr31.features.javac;
 
-import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.Truth8.assertThat;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -33,10 +33,11 @@ public class FormalArgTest {
 
     // ASSERT
     assertThat(
-        FeatureGraphChecks.edgeBetween(
-            graph,
-            "IDENTIFIER,a",
-            "VARIABLE,formalParameter",
-            GraphProtos.FeatureEdge.EdgeType.FORMAL_ARG_NAME));
+            FeatureGraphChecks.edgeBetween(
+                graph,
+                "IDENTIFIER,a",
+                "VARIABLE,formalParameter",
+                GraphProtos.FeatureEdge.EdgeType.FORMAL_ARG_NAME))
+        .isPresent();
   }
 }

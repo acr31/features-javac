@@ -1,6 +1,6 @@
 package uk.ac.cam.acr31.features.javac;
 
-import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.Truth8.assertThat;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -14,7 +14,7 @@ import uk.ac.cam.acr31.features.javac.testing.TestCompilation;
 public class GuardedByTest {
 
   @Test
-  public void test() {
+  public void guardedBy_linksIfStatementBodyToCondition() {
     // ARRANGE
     TestCompilation compilation =
         TestCompilation.compile(
@@ -38,10 +38,15 @@ public class GuardedByTest {
 
     // ASSERT
     assertThat(
-        FeatureGraphChecks.edgeBetween(
-            graph, "IF,PARENTHESIZED", "POSTFIX_INCREMENT,IDENTIFIER,x", EdgeType.GUARDED_BY));
+            FeatureGraphChecks.edgeBetween(
+                graph, "IF,PARENTHESIZED", "POSTFIX_INCREMENT,IDENTIFIER,x", EdgeType.GUARDED_BY))
+        .isPresent();
     assertThat(
-        FeatureGraphChecks.edgeBetween(
-            graph, "IF,PARENTHESIZED", "POSTFIX_INCREMENT,IDENTIFIER,y", EdgeType.GUARDED_BY_NEGATION));
+            FeatureGraphChecks.edgeBetween(
+                graph,
+                "IF,PARENTHESIZED",
+                "POSTFIX_INCREMENT,IDENTIFIER,y",
+                EdgeType.GUARDED_BY_NEGATION))
+        .isPresent();
   }
 }

@@ -1,6 +1,6 @@
 package uk.ac.cam.acr31.features.javac;
 
-import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.Truth8.assertThat;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -33,9 +33,13 @@ public class ComputedFromTest {
 
     // ASSERT
     assertThat(
-        FeatureGraphChecks.edgeBetween(graph, "VARIABLE,c", "VARIABLE,a", EdgeType.COMPUTED_FROM));
+            FeatureGraphChecks.edgeBetween(
+                graph, "VARIABLE,c", "VARIABLE,a", EdgeType.COMPUTED_FROM))
+        .isPresent();
     assertThat(
-        FeatureGraphChecks.edgeBetween(graph, "VARIABLE,c", "VARIABLE,b", EdgeType.COMPUTED_FROM));
+            FeatureGraphChecks.edgeBetween(
+                graph, "VARIABLE,c", "VARIABLE,b", EdgeType.COMPUTED_FROM))
+        .isPresent();
   }
 
   @Test
@@ -58,8 +62,12 @@ public class ComputedFromTest {
 
     // ASSERT
     assertThat(
-        FeatureGraphChecks.edgeBetween(graph, "VARIABLE,c", "VARIABLE,a", EdgeType.COMPUTED_FROM));
+            FeatureGraphChecks.edgeBetween(
+                graph, "VARIABLE,c", "VARIABLE,a", EdgeType.COMPUTED_FROM))
+        .isPresent();
     assertThat(
-        FeatureGraphChecks.edgeBetween(graph, "VARIABLE,c", "VARIABLE,b", EdgeType.COMPUTED_FROM));
+            FeatureGraphChecks.edgeBetween(
+                graph, "VARIABLE,c", "VARIABLE,b", EdgeType.COMPUTED_FROM))
+        .isPresent();
   }
 }

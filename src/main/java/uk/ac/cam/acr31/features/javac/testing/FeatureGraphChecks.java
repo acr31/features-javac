@@ -6,21 +6,24 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 import uk.ac.cam.acr31.features.javac.graph.FeatureGraph;
+import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureEdge;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureEdge.EdgeType;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureNode;
 
 public class FeatureGraphChecks {
 
-  public static boolean edgeBetween(
+  public static Optional<FeatureEdge> edgeBetween(
       FeatureGraph graph, String source, String destination, EdgeType edgeType) {
     FeatureNode sourceNode = findNode(graph, source);
     FeatureNode destinationNode = findNode(graph, destination);
     return graph
         .edges(sourceNode, destinationNode)
         .stream()
-        .anyMatch(e -> e.getType().equals(edgeType));
+        .filter(e -> e.getType().equals(edgeType))
+        .findAny();
   }
 
   public static ImmutableList<String> astPathToToken(FeatureGraph graph, String destination) {

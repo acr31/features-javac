@@ -86,6 +86,14 @@ public class FeatureGraph {
     return graph.edges();
   }
 
+  public Set<FeatureEdge> edges(EdgeType edgeType) {
+    return graph
+        .edges()
+        .stream()
+        .filter(e -> e.getType().equals(edgeType))
+        .collect(toImmutableSet());
+  }
+
   public Set<FeatureEdge> edges(FeatureNode source, FeatureNode destination) {
     // returns an unmodifiable set
     return graph.edgesConnecting(source, destination);
