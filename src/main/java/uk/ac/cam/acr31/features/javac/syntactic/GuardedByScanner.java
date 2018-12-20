@@ -63,11 +63,7 @@ public class GuardedByScanner extends TreeScanner<Void, Void> {
     FeatureNode dest = graph.getFeatureNode(root);
     for (IdentifierTree identifierTree : ic.identifiers) {
       FeatureNode featureNode = graph.getFeatureNode(identifierTree);
-      if (featureNode != null) {
-        for (FeatureNode succ : graph.successors(featureNode, EdgeType.ASSOCIATED_TOKEN)) {
-          graph.addEdge(succ, dest, edgeType);
-        }
-      }
+      graph.addEdge(featureNode, dest, edgeType);
     }
   }
 }

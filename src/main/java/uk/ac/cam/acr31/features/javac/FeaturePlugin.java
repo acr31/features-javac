@@ -30,16 +30,19 @@ import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.Options;
 import java.io.File;
+import java.io.IOError;
+import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.Comparator;
 import java.util.Deque;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import uk.ac.cam.acr31.features.javac.graph.DotOutput;
 import uk.ac.cam.acr31.features.javac.graph.FeatureGraph;
 import uk.ac.cam.acr31.features.javac.graph.ProtoOutput;
 import uk.ac.cam.acr31.features.javac.lexical.Tokens;
-import uk.ac.cam.acr31.features.javac.proto.GraphProtos;
+import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureEdge;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureEdge.EdgeType;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureNode;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureNode.NodeType;
@@ -52,7 +55,7 @@ import uk.ac.cam.acr31.features.javac.syntactic.ReturnsToScanner;
 
 public class FeaturePlugin implements Plugin {
 
-  public static final String FEATURES_OUTPUT_DIRECTORY = "featuresOutputDirectory";
+  private static final String FEATURES_OUTPUT_DIRECTORY = "featuresOutputDirectory";
 
   @Override
   public String getName() {
@@ -85,67 +88,39 @@ public class FeaturePlugin implements Plugin {
     if (options.isSet(FEATURES_OUTPUT_DIRECTORY)) {
       featuresOutputDirectory = options.get(FEATURES_OUTPUT_DIRECTORY);
     }
-    writeOutput(featureGraph, featuresOutputDirectory, context);
+    writeOutput(featureGraph, featuresOutputDirectory);
   }
 
-  private static void writeOutput(
-      FeatureGraph featureGraph, String featuresOutputDirectory, Context context) {
+  private static void writeOutput(FeatureGraph featureGraph, String featuresOutputDirectory) {
 
     File outputFile = new File(featuresOutputDirectory, featureGraph.getSourceFileName() + ".dot");
-    outputFile.getParentFile().mkdirs();
+    if (!outputFile.getParentFile().mkdirs()) {
+      throw new IOError(new IOException("Failed to create directory " + outputFile.getParent()));
+    }
     DotOutput.writeToDot(outputFile, featureGraph);
     System.out.println("Wrote: " + outputFile);
 
     File protoFile = new File(featuresOutputDirectory, featureGraph.getSourceFileName() + ".proto");
-    protoFile.getParentFile().mkdirs();
+    if (!protoFile.getParentFile().mkdirs()) {
+      throw new IOError(new IOException("Failed to create directory " + protoFile.getParent()));
+    }
     ProtoOutput.write(protoFile, featureGraph);
     System.out.println("Wrote: " + protoFile);
   }
 
-  private static void addIdentifierNodesForIdentifierTokens(FeatureGraph featureGraph) {
-
-    for (FeatureNode token : featureGraph.tokens()) {
-      if (!token.getType().equals(NodeType.IDENTIFIER_TOKEN)) {
-        continue;
-      }
-
-      FeatureNode predecessor =
-          Iterables.getOnlyElement(featureGraph.predecessors(token, EdgeType.ASSOCIATED_TOKEN));
-      if (predecessor.getContents().equals("IDENTIFIER")) {
-        continue;
-      }
-
-      GraphProtos.FeatureEdge edge =
-          featureGraph
-              .edges(predecessor, token)
-              .stream()
-              .filter(e -> e.getType().equals(EdgeType.ASSOCIATED_TOKEN))
-              .findAny()
-              .orElseThrow(AssertionError::new);
-
-      featureGraph.removeEdge(edge);
-
-      FeatureNode newIdentifier =
-          featureGraph.createFeatureNode(NodeType.AST_ELEMENT, "IDENTIFIER", 0, 0);
-
-      featureGraph.addEdge(predecessor, newIdentifier, EdgeType.AST_CHILD);
-      featureGraph.addEdge(newIdentifier, token, EdgeType.ASSOCIATED_TOKEN);
-    }
-  }
-
   static FeatureGraph createFeatureGraph(
       JCTree.JCCompilationUnit compilationUnit, Context context) {
-    JavacProcessingEnvironment processingEnvironment = JavacProcessingEnvironment.instance(context);
-
     FeatureGraph featureGraph =
         new FeatureGraph(
             compilationUnit.getSourceFile().getName(),
             compilationUnit.endPositions,
+            compilationUnit.lineMap);
     AstScanner.addToGraph(compilationUnit, featureGraph);
     Tokens.addToGraph(compilationUnit.getSourceFile(), context, featureGraph);
     linkTokensToAstNodes(featureGraph);
-    addIdentifierNodesForIdentifierTokens(featureGraph);
+    removeIdentifierAstNodes(featureGraph);
 
+    JavacProcessingEnvironment processingEnvironment = JavacProcessingEnvironment.instance(context);
     var analysisResults = DataflowOutputs.create(compilationUnit, processingEnvironment);
     DataflowOutputsScanner.addToGraph(compilationUnit, analysisResults, featureGraph);
 
@@ -157,7 +132,23 @@ public class FeaturePlugin implements Plugin {
 
     // prune all ast nodes with no successors (these are leaves not connected to tokens)
     featureGraph.pruneLeaves(NodeType.AST_ELEMENT);
+
+    linkCommentsToAstNodes(featureGraph);
+
     return featureGraph;
+  }
+
+  private static void removeIdentifierAstNodes(FeatureGraph graph) {
+    for (FeatureNode node : graph.astNodes()) {
+      if (node.getContents().equals("IDENTIFIER")) {
+        FeatureNode source = Iterables.getOnlyElement(graph.predecessors(node, EdgeType.AST_CHILD));
+        FeatureNode dest =
+            Iterables.getOnlyElement(graph.successors(node, EdgeType.ASSOCIATED_TOKEN));
+        graph.removeNode(node);
+        graph.addEdge(source, dest, EdgeType.ASSOCIATED_TOKEN);
+        graph.replaceNodeInNodeMap(node, dest);
+      }
+    }
   }
 
   private static void linkTokensToAstNodes(FeatureGraph featureGraph) {
@@ -167,13 +158,13 @@ public class FeaturePlugin implements Plugin {
     work.add(featureGraph.root());
     Set<FeatureNode> visited = new HashSet<>();
     while (!work.isEmpty()) {
-      FeatureNode next = work.poll();
+      FeatureNode next = Objects.requireNonNull(work.poll());
       if (visited.contains(next)) {
         continue;
       }
       visited.add(next);
       astRanges.put(Range.closedOpen(next.getStartPosition(), next.getEndPosition()), next);
-      work.addAll(featureGraph.successors(next));
+      work.addAll(featureGraph.successors(next, EdgeType.AST_CHILD));
     }
 
     for (FeatureNode token : featureGraph.tokens()) {
@@ -189,6 +180,52 @@ public class FeaturePlugin implements Plugin {
               .orElseThrow(AssertionError::new)
               .getValue();
       featureGraph.addEdge(smallestNode, token, EdgeType.ASSOCIATED_TOKEN);
+    }
+  }
+
+  /**
+   * Find all comments which start on a different line to the token they precede and move them to
+   * associate with the largest ast node.
+   */
+  private static void linkCommentsToAstNodes(FeatureGraph featureGraph) {
+    for (FeatureNode comment : featureGraph.comments()) {
+      FeatureNode successor =
+          Iterables.getOnlyElement(featureGraph.successors(comment, EdgeType.COMMENT));
+      if (comment.getEndLineNumber() == successor.getStartLineNumber()) {
+        continue;
+      }
+      FeatureNode match = null;
+      for (FeatureNode astNode : featureGraph.nodes()) {
+        if (astNode.getType().equals(NodeType.SYNTHETIC_AST_ELEMENT)) {
+          continue;
+        }
+        int distance = astNode.getStartPosition() - comment.getEndPosition();
+        if (distance < 0) {
+          continue;
+        }
+        int size = astNode.getEndPosition() - astNode.getStartPosition();
+        if (match != null) {
+          int matchDistance = match.getStartPosition() - comment.getEndPosition();
+          int matchSize = match.getEndPosition() - match.getStartPosition();
+          if (distance < matchDistance) {
+            match = astNode;
+          } else if (distance == matchDistance && size > matchSize) {
+            match = astNode;
+          }
+        } else {
+          match = astNode;
+        }
+      }
+      if (match != null) {
+        featureGraph.removeEdge(
+            FeatureEdge.newBuilder()
+                .setSourceId(comment.getId())
+                .setDestinationId(successor.getId())
+                .setType(EdgeType.COMMENT)
+                .build());
+
+        featureGraph.addEdge(comment, match, EdgeType.COMMENT);
+      }
     }
   }
 }
