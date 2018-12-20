@@ -36,6 +36,8 @@ message FeatureNode {
     optional int64 id = 1;
     optional NodeType type = 2;
     optional string contents = 3;
+    optional int32 startPosition =4;
+    optional int32 endPosition = 5;
 }
 
 message FeatureEdge {
