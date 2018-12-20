@@ -16,12 +16,10 @@
 
 package uk.ac.cam.acr31.features.javac.lexical;
 
-import com.google.common.collect.ImmutableRangeMap;
-import com.google.common.collect.Range;
-import com.sun.tools.javac.parser.Scanner;
-import com.sun.tools.javac.parser.ScannerFactory;
+import com.google.common.collect.ImmutableList;
+import com.google.errorprone.util.ErrorProneToken;
+import com.google.errorprone.util.ErrorProneTokens;
 import com.sun.tools.javac.parser.Tokens.Comment;
-import com.sun.tools.javac.parser.Tokens.Token;
 import com.sun.tools.javac.parser.Tokens.TokenKind;
 import com.sun.tools.javac.util.Context;
 import java.io.IOException;
@@ -35,55 +33,41 @@ public class Tokens {
 
   public static void addToGraph(
       JavaFileObject sourceFile, Context context, FeatureGraph featureGraph) {
-    ScannerFactory scannerFactory = ScannerFactory.instance(context);
-    Scanner tokenScanner = scannerFactory.newScanner(getSourceFileContent(sourceFile), true);
-    FeatureNode previous = null;
-    while (true) {
-      tokenScanner.nextToken();
-      Token token = tokenScanner.token();
-      if (token.kind == TokenKind.EOF) {
+
+    ImmutableList<ErrorProneToken> tokens =
+        ErrorProneTokens.getTokens(getSourceFileContent(sourceFile).toString(), context);
+    FeatureNode previousTokenNode = null;
+    for (ErrorProneToken token : tokens) {
+      if (token.kind() == TokenKind.EOF) {
         break;
       }
-      FeatureNode featureNode =
+      FeatureNode tokenNode =
           featureGraph.createFeatureNode(
-              token.kind.equals(TokenKind.IDENTIFIER) ? NodeType.IDENTIFIER_TOKEN : NodeType.TOKEN,
+              token.kind().equals(TokenKind.IDENTIFIER)
+                  ? NodeType.IDENTIFIER_TOKEN
+                  : NodeType.TOKEN,
               tokenToString(token),
-              token.pos,
-              token.endPos);
-      if (previous != null) {
-        featureGraph.addEdge(previous, featureNode, EdgeType.NEXT_TOKEN);
+              token.pos(),
+              token.endPos());
+      if (previousTokenNode != null) {
+        featureGraph.addEdge(previousTokenNode, tokenNode, EdgeType.NEXT_TOKEN);
       }
-      previous = featureNode;
-      if (token.comments != null) {
-        for (Comment comment : token.comments) {
+      previousTokenNode = tokenNode;
+
+      if (token.comments() != null) {
+        for (Comment comment : token.comments()) {
           if (comment.getText() != null) {
             FeatureNode commentNode =
                 featureGraph.createFeatureNode(
                     getCommentNodeType(comment),
                     comment.getText(),
                     comment.getSourcePos(0),
-                    comment.getSourcePos(comment.getText().length()));
-            featureGraph.addEdge(featureNode, commentNode, EdgeType.COMMENT);
+                    comment.getSourcePos(comment.getText().length() - 1) + 1);
+            featureGraph.addEdge(commentNode, tokenNode, EdgeType.COMMENT);
           }
         }
       }
     }
-  }
-
-  public static ImmutableRangeMap<Integer, Token> getTokens(
-      JavaFileObject sourceFile, Context context) {
-    ScannerFactory scannerFactory = ScannerFactory.instance(context);
-    Scanner tokenScanner = scannerFactory.newScanner(getSourceFileContent(sourceFile), true);
-    ImmutableRangeMap.Builder<Integer, Token> tokenMap = ImmutableRangeMap.builder();
-    while (true) {
-      tokenScanner.nextToken();
-      Token token = tokenScanner.token();
-      if (token.kind == TokenKind.EOF) {
-        break;
-      }
-      tokenMap.put(Range.closedOpen(token.pos, token.endPos), token);
-    }
-    return tokenMap.build();
   }
 
   private static CharSequence getSourceFileContent(JavaFileObject sourceFile) {
@@ -107,15 +91,15 @@ public class Tokens {
     throw new IllegalArgumentException("Unrecognised comment type");
   }
 
-  private static String tokenToString(Token token) {
-    switch (String.valueOf(token.kind.tag)) {
+  private static String tokenToString(ErrorProneToken token) {
+    switch (String.valueOf(token.kind().tag)) {
       case "STRING":
       case "NUMERIC":
         return token.stringVal();
       case "NAMED":
         return token.name().toString();
       default:
-        return token.kind.name();
+        return token.kind().name();
     }
   }
 }
