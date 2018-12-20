@@ -48,7 +48,7 @@ public class DotOutput {
       Set<FeatureNode> nodeSet = ImmutableSet.of(graph.root());
       while (!nodeSet.isEmpty()) {
         writeSubgraph(w, nodeSet, "same");
-        nodeSet = getSuccessors(nodeSet, graph, EdgeType.AST_CHILD);
+        nodeSet = getAstChildren(nodeSet, graph);
       }
 
       Set<FeatureNode> commentSet = graph.comments();
@@ -58,7 +58,7 @@ public class DotOutput {
       writeSubgraph(w, tokenSet, "max");
 
       for (FeatureEdge edge : graph.edges()) {
-        w.println(dotEdge(edge, graph));
+        w.println(dotEdge(edge));
       }
 
       w.println("}");
@@ -78,7 +78,7 @@ public class DotOutput {
     return StringEscapeUtils.escapeJava(node.getContents());
   }
 
-  private static String dotEdge(FeatureEdge edge, FeatureGraph graph) {
+  private static String dotEdge(FeatureEdge edge) {
     EdgeType edgeType = edge.getType();
     String ports;
     switch (edgeType) {
@@ -125,11 +125,10 @@ public class DotOutput {
     w.println(" }");
   }
 
-  private static Set<FeatureNode> getSuccessors(
-      Set<FeatureNode> nodeSet, FeatureGraph graph, EdgeType edgeType) {
+  private static Set<FeatureNode> getAstChildren(Set<FeatureNode> nodeSet, FeatureGraph graph) {
     ImmutableSet.Builder<FeatureNode> result = ImmutableSet.builder();
     for (FeatureNode node : nodeSet) {
-      graph.successors(node, edgeType).stream().forEach(result::add);
+      graph.successors(node, EdgeType.AST_CHILD).forEach(result::add);
     }
     return result.build();
   }
