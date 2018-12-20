@@ -137,7 +137,10 @@ public class FeaturePlugin implements Plugin {
       JCTree.JCCompilationUnit compilationUnit, Context context) {
     JavacProcessingEnvironment processingEnvironment = JavacProcessingEnvironment.instance(context);
 
-    FeatureGraph featureGraph = new FeatureGraph(compilationUnit.getSourceFile().getName());
+    FeatureGraph featureGraph =
+        new FeatureGraph(
+            compilationUnit.getSourceFile().getName(),
+            compilationUnit.endPositions,
     AstScanner.addToGraph(compilationUnit, featureGraph);
     Tokens.addToGraph(compilationUnit.getSourceFile(), context, featureGraph);
     linkTokensToAstNodes(featureGraph);

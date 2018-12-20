@@ -29,6 +29,7 @@ import java.util.List;
 import uk.ac.cam.acr31.features.javac.graph.FeatureGraph;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureEdge.EdgeType;
+import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureNode.NodeType;
 
 class AstScanner {
 
@@ -47,7 +48,7 @@ class AstScanner {
       scanner.scanOrThrow(
           compilationUnit,
           featureGraph.createFeatureNode(
-              uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureNode.NodeType.AST_ROOT,
+              NodeType.AST_ROOT,
               "root",
               0,
               0));
@@ -61,11 +62,10 @@ class AstScanner {
 
     GraphProtos.FeatureNode newNode =
         featureGraph.createFeatureNode(
-            GraphProtos.FeatureNode.NodeType.AST_ELEMENT,
+            NodeType.AST_ELEMENT,
             node.getKind().toString(),
-            node,
-            node.getStartPosition(),
-            node.getEndPosition(endPosTable));
+            node
+        );
     featureGraph.addEdge(parent, newNode, EdgeType.AST_CHILD);
 
     // TODO(acr31) check this implements Tree
@@ -98,7 +98,7 @@ class AstScanner {
         JCTree lastChild = toProcess.peekLast();
         GraphProtos.FeatureNode holderNode =
             featureGraph.createFeatureNode(
-                GraphProtos.FeatureNode.NodeType.AST_ELEMENT,
+                NodeType.SYNTHETIC_AST_ELEMENT,
                 methodNameToNodeType(m.getName()),
                 firstChild.getStartPosition(),
                 lastChild.getEndPosition(endPosTable));

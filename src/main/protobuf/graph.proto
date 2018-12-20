@@ -38,6 +38,8 @@ message FeatureNode {
     optional string contents = 3;
     optional int32 startPosition =4;
     optional int32 endPosition = 5;
+    optional int32 startLineNumber = 6;
+    optional int32 endLineNumber = 7;
 }
 
 message FeatureEdge {

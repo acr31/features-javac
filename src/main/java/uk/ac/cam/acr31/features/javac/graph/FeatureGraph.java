@@ -18,13 +18,15 @@ package uk.ac.cam.acr31.features.javac.graph;
 
 import static com.google.common.collect.ImmutableSet.toImmutableSet;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.graph.MutableNetwork;
 import com.google.common.graph.NetworkBuilder;
+import com.sun.source.tree.LineMap;
 import com.sun.source.tree.Tree;
+import com.sun.tools.javac.tree.EndPosTable;
+import com.sun.tools.javac.tree.JCTree;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.HashMap;
@@ -43,11 +45,15 @@ public class FeatureGraph {
   private final MutableNetwork<FeatureNode, FeatureEdge> graph;
   private final Map<Tree, FeatureNode> nodeMap;
   private int nodeIdCounter = 0;
+  private final EndPosTable endPosTable;
+  private final LineMap lineMap;
 
-  public FeatureGraph(String sourceFileName) {
+  public FeatureGraph(String sourceFileName, EndPosTable endPosTable, LineMap lineMap) {
     this.sourceFileName = sourceFileName;
     this.graph = NetworkBuilder.directed().allowsSelfLoops(true).allowsParallelEdges(true).build();
     this.nodeMap = new HashMap<>();
+    this.endPosTable = endPosTable;
+    this.lineMap = lineMap;
   }
 
   public String getSourceFileName() {
@@ -58,8 +64,21 @@ public class FeatureGraph {
     return nodeMap.get(tree);
   }
 
-  public FeatureNode createFeatureNode(
-      NodeType nodeType, String contents, Tree tree, int startPosition, int endPosition) {
+  public void replaceNodeInNodeMap(FeatureNode original, FeatureNode replacement) {
+    Tree tree =
+        nodeMap
+            .entrySet()
+            .stream()
+            .filter(entry -> entry.getValue().equals(original))
+            .map(Map.Entry::getKey)
+            .findFirst()
+            .orElseThrow();
+    nodeMap.put(tree, replacement);
+  }
+
+  public FeatureNode createFeatureNode(NodeType nodeType, String contents, Tree tree) {
+    int startPosition = ((JCTree) tree).getStartPosition();
+    int endPosition = ((JCTree) tree).getEndPosition(endPosTable);
     FeatureNode result = createFeatureNode(nodeType, contents, startPosition, endPosition);
     nodeMap.put(tree, result);
     return result;
@@ -67,14 +86,16 @@ public class FeatureGraph {
 
   public FeatureNode createFeatureNode(
       NodeType nodeType, String contents, int startPosition, int endPosition) {
-//    Preconditions.checkArgument(startPosition != -1);
-//    Preconditions.checkArgument(endPosition != -1);
+    int startLine = (int) lineMap.getLineNumber(startPosition);
+    int endLine = (int) lineMap.getLineNumber(endPosition);
     return FeatureNode.newBuilder()
         .setId(nodeIdCounter++)
         .setType(nodeType)
         .setContents(contents)
         .setStartPosition(startPosition)
         .setEndPosition(endPosition)
+        .setStartLineNumber(startLine)
+        .setEndLineNumber(endLine)
         .build();
   }
 
