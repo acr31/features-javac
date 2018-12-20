@@ -25,6 +25,7 @@ import uk.ac.cam.acr31.features.javac.graph.FeatureGraph;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureEdge.EdgeType;
 import uk.ac.cam.acr31.features.javac.testing.FeatureGraphChecks;
 import uk.ac.cam.acr31.features.javac.testing.TestCompilation;
+import uk.ac.cam.acr31.features.javac.testing.Visualizer;
 
 @RunWith(JUnit4.class)
 public class LastLexicalUseTest {
@@ -56,18 +57,18 @@ public class LastLexicalUseTest {
         .containsExactly(
             FeatureGraphChecks.edgeBetween(
                 graph,
-                "VARIABLE,IDENTIFIER,x",
-                "GREATER_THAN,IDENTIFIER,x",
+                "STATEMENTS,VARIABLE,IDENTIFIER,x",
+                "GREATER_THAN,LEFT_OPERAND,IDENTIFIER,x",
                 EdgeType.LAST_LEXICAL_USE),
             FeatureGraphChecks.edgeBetween(
                 graph,
-                "GREATER_THAN,IDENTIFIER,x",
-                "POSTFIX_INCREMENT,IDENTIFIER,x",
+                "GREATER_THAN,LEFT_OPERAND,IDENTIFIER,x",
+                "POSTFIX_INCREMENT,EXPRESSION,IDENTIFIER,x",
                 EdgeType.LAST_LEXICAL_USE),
             FeatureGraphChecks.edgeBetween(
                 graph,
-                "POSTFIX_INCREMENT,IDENTIFIER,x",
-                "PLUS_ASSIGNMENT,IDENTIFIER,x",
+                "POSTFIX_INCREMENT,EXPRESSION,IDENTIFIER,x",
+                "PLUS_ASSIGNMENT,VARIABLE,IDENTIFIER,x",
                 EdgeType.LAST_LEXICAL_USE));
   }
 }

@@ -16,8 +16,10 @@
 
 package uk.ac.cam.acr31.features.javac;
 
-import com.google.common.collect.ImmutableRangeMap;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Range;
+import com.google.common.collect.RangeMap;
+import com.google.common.collect.TreeRangeMap;
 import com.sun.source.util.JavacTask;
 import com.sun.source.util.Plugin;
 import com.sun.source.util.TaskEvent;
@@ -28,6 +30,11 @@ import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.Options;
 import java.io.File;
+import java.util.ArrayDeque;
+import java.util.Comparator;
+import java.util.Deque;
+import java.util.HashSet;
+import java.util.Set;
 import uk.ac.cam.acr31.features.javac.graph.DotOutput;
 import uk.ac.cam.acr31.features.javac.graph.FeatureGraph;
 import uk.ac.cam.acr31.features.javac.graph.ProtoOutput;
@@ -119,7 +126,7 @@ public class FeaturePlugin implements Plugin {
       featureGraph.removeEdge(edge);
 
       FeatureNode newIdentifier =
-          featureGraph.createFeatureNode(NodeType.AST_ELEMENT, "IDENTIFIER");
+          featureGraph.createFeatureNode(NodeType.AST_ELEMENT, "IDENTIFIER", 0, 0);
 
       featureGraph.addEdge(predecessor, newIdentifier, EdgeType.AST_CHILD);
       featureGraph.addEdge(newIdentifier, token, EdgeType.ASSOCIATED_TOKEN);
@@ -131,11 +138,9 @@ public class FeaturePlugin implements Plugin {
     JavacProcessingEnvironment processingEnvironment = JavacProcessingEnvironment.instance(context);
 
     FeatureGraph featureGraph = new FeatureGraph(compilationUnit.getSourceFile().getName());
-
-    var compilerTokens = Tokens.getTokens(compilationUnit.getSourceFile(), context);
-    var tokens = Tokens.addToFeatureGraph(compilerTokens, featureGraph);
-    addAstAndLinkToTokens(compilationUnit, tokens, featureGraph);
-
+    AstScanner.addToGraph(compilationUnit, featureGraph);
+    Tokens.addToGraph(compilationUnit.getSourceFile(), context, featureGraph);
+    linkTokensToAstNodes(featureGraph);
     addIdentifierNodesForIdentifierTokens(featureGraph);
 
     var analysisResults = DataflowOutputs.create(compilationUnit, processingEnvironment);
@@ -152,12 +157,35 @@ public class FeaturePlugin implements Plugin {
     return featureGraph;
   }
 
-  private static void addAstAndLinkToTokens(
-      JCTree.JCCompilationUnit compilationUnitTree,
-      ImmutableRangeMap<Integer, FeatureNode> tokens,
-      FeatureGraph featureGraph) {
-    var graphScanner = new GraphScanner(featureGraph, tokens, compilationUnitTree.endPositions);
-    compilationUnitTree.accept(
-        graphScanner, featureGraph.createFeatureNode(NodeType.AST_ROOT, "root"));
+  private static void linkTokensToAstNodes(FeatureGraph featureGraph) {
+
+    RangeMap<Integer, FeatureNode> astRanges = TreeRangeMap.create();
+    Deque<FeatureNode> work = new ArrayDeque<>();
+    work.add(featureGraph.root());
+    Set<FeatureNode> visited = new HashSet<>();
+    while (!work.isEmpty()) {
+      FeatureNode next = work.poll();
+      if (visited.contains(next)) {
+        continue;
+      }
+      visited.add(next);
+      astRanges.put(Range.closedOpen(next.getStartPosition(), next.getEndPosition()), next);
+      work.addAll(featureGraph.successors(next));
+    }
+
+    for (FeatureNode token : featureGraph.tokens()) {
+      FeatureNode smallestNode =
+          astRanges
+              .subRangeMap(Range.closedOpen(token.getStartPosition(), token.getEndPosition()))
+              .asMapOfRanges()
+              .entrySet()
+              .stream()
+              .min(
+                  Comparator.comparing(
+                      entry -> entry.getKey().upperEndpoint() - entry.getKey().lowerEndpoint()))
+              .orElseThrow(AssertionError::new)
+              .getValue();
+      featureGraph.addEdge(smallestNode, token, EdgeType.ASSOCIATED_TOKEN);
+    }
   }
 }

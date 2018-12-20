@@ -25,7 +25,6 @@ import com.sun.tools.javac.parser.Tokens.Token;
 import com.sun.tools.javac.parser.Tokens.TokenKind;
 import com.sun.tools.javac.util.Context;
 import java.io.IOException;
-import java.util.Map;
 import javax.tools.JavaFileObject;
 import uk.ac.cam.acr31.features.javac.graph.FeatureGraph;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureEdge.EdgeType;
@@ -33,6 +32,43 @@ import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureNode;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureNode.NodeType;
 
 public class Tokens {
+
+  public static void addToGraph(
+      JavaFileObject sourceFile, Context context, FeatureGraph featureGraph) {
+    ScannerFactory scannerFactory = ScannerFactory.instance(context);
+    Scanner tokenScanner = scannerFactory.newScanner(getSourceFileContent(sourceFile), true);
+    FeatureNode previous = null;
+    while (true) {
+      tokenScanner.nextToken();
+      Token token = tokenScanner.token();
+      if (token.kind == TokenKind.EOF) {
+        break;
+      }
+      FeatureNode featureNode =
+          featureGraph.createFeatureNode(
+              token.kind.equals(TokenKind.IDENTIFIER) ? NodeType.IDENTIFIER_TOKEN : NodeType.TOKEN,
+              tokenToString(token),
+              token.pos,
+              token.endPos);
+      if (previous != null) {
+        featureGraph.addEdge(previous, featureNode, EdgeType.NEXT_TOKEN);
+      }
+      previous = featureNode;
+      if (token.comments != null) {
+        for (Comment comment : token.comments) {
+          if (comment.getText() != null) {
+            FeatureNode commentNode =
+                featureGraph.createFeatureNode(
+                    getCommentNodeType(comment),
+                    comment.getText(),
+                    comment.getSourcePos(0),
+                    comment.getSourcePos(comment.getText().length()));
+            featureGraph.addEdge(featureNode, commentNode, EdgeType.COMMENT);
+          }
+        }
+      }
+    }
+  }
 
   public static ImmutableRangeMap<Integer, Token> getTokens(
       JavaFileObject sourceFile, Context context) {
@@ -56,34 +92,6 @@ public class Tokens {
     } catch (IOException e) {
       throw new RuntimeException("IOException reading from " + sourceFile.getName());
     }
-  }
-
-  public static ImmutableRangeMap<Integer, FeatureNode> addToFeatureGraph(
-      ImmutableRangeMap<Integer, Token> tokens, FeatureGraph featureGraph) {
-    ImmutableRangeMap.Builder<Integer, FeatureNode> result = ImmutableRangeMap.builder();
-    FeatureNode previous = null;
-    for (Map.Entry<Range<Integer>, Token> entry : tokens.asMapOfRanges().entrySet()) {
-      Token token = entry.getValue();
-      FeatureNode featureNode =
-          featureGraph.createFeatureNode(
-              token.kind.equals(TokenKind.IDENTIFIER) ? NodeType.IDENTIFIER_TOKEN : NodeType.TOKEN,
-              tokenToString(token));
-      result.put(entry.getKey(), featureNode);
-      if (previous != null) {
-        featureGraph.addEdge(previous, featureNode, EdgeType.NEXT_TOKEN);
-      }
-      previous = featureNode;
-      if (token.comments != null) {
-        for (Comment comment : token.comments) {
-          if (comment.getText() != null) {
-            FeatureNode commentNode =
-                featureGraph.createFeatureNode(getCommentNodeType(comment), comment.getText());
-            featureGraph.addEdge(featureNode, commentNode, EdgeType.COMMENT);
-          }
-        }
-      }
-    }
-    return result.build();
   }
 
   private static NodeType getCommentNodeType(Comment comment) {

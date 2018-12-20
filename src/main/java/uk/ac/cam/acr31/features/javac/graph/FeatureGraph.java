@@ -18,6 +18,7 @@ package uk.ac.cam.acr31.features.javac.graph;
 
 import static com.google.common.collect.ImmutableSet.toImmutableSet;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
@@ -57,17 +58,23 @@ public class FeatureGraph {
     return nodeMap.get(tree);
   }
 
-  public FeatureNode createFeatureNode(NodeType nodeType, String contents, Tree tree) {
-    FeatureNode result = createFeatureNode(nodeType, contents);
+  public FeatureNode createFeatureNode(
+      NodeType nodeType, String contents, Tree tree, int startPosition, int endPosition) {
+    FeatureNode result = createFeatureNode(nodeType, contents, startPosition, endPosition);
     nodeMap.put(tree, result);
     return result;
   }
 
-  public FeatureNode createFeatureNode(NodeType nodeType, String contents) {
+  public FeatureNode createFeatureNode(
+      NodeType nodeType, String contents, int startPosition, int endPosition) {
+//    Preconditions.checkArgument(startPosition != -1);
+//    Preconditions.checkArgument(endPosition != -1);
     return FeatureNode.newBuilder()
         .setId(nodeIdCounter++)
         .setType(nodeType)
         .setContents(contents)
+        .setStartPosition(startPosition)
+        .setEndPosition(endPosition)
         .build();
   }
 
@@ -91,6 +98,10 @@ public class FeatureGraph {
 
   public Set<FeatureNode> tokens() {
     return nodes(NodeType.TOKEN, NodeType.IDENTIFIER_TOKEN);
+  }
+
+  public Set<FeatureNode> astNodes() {
+    return nodes(NodeType.AST_ELEMENT);
   }
 
   public Set<FeatureNode> comments() {

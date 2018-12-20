@@ -56,13 +56,16 @@ public class GuardedByTest {
     assertThat(graph.edges(EdgeType.GUARDED_BY))
         .containsExactly(
             FeatureGraphChecks.edgeBetween(
-                graph, "POSTFIX_INCREMENT,IDENTIFIER,x", "IF,PARENTHESIZED", EdgeType.GUARDED_BY));
+                graph,
+                "POSTFIX_INCREMENT,EXPRESSION,IDENTIFIER,x",
+                "IF,CONDITION,PARENTHESIZED",
+                EdgeType.GUARDED_BY));
     assertThat(graph.edges(EdgeType.GUARDED_BY_NEGATION))
         .containsExactly(
             FeatureGraphChecks.edgeBetween(
                 graph,
-                "POSTFIX_INCREMENT,IDENTIFIER,y",
-                "IF,PARENTHESIZED",
+                "POSTFIX_INCREMENT,EXPRESSION,IDENTIFIER,y",
+                "IF,CONDITION,PARENTHESIZED",
                 EdgeType.GUARDED_BY_NEGATION));
   }
 }

@@ -25,6 +25,7 @@ import uk.ac.cam.acr31.features.javac.graph.FeatureGraph;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureEdge.EdgeType;
 import uk.ac.cam.acr31.features.javac.testing.FeatureGraphChecks;
 import uk.ac.cam.acr31.features.javac.testing.TestCompilation;
+import uk.ac.cam.acr31.features.javac.testing.Visualizer;
 
 @RunWith(JUnit4.class)
 public class FormalArgTest {
@@ -52,7 +53,7 @@ public class FormalArgTest {
         .containsExactly(
             FeatureGraphChecks.edgeBetween(
                 graph,
-                "METHOD_INVOCATION,list,IDENTIFIER,a",
+                "METHOD_INVOCATION,ARGUMENTS,IDENTIFIER,a",
                 "formalParameter",
                 EdgeType.FORMAL_ARG_NAME));
   }
