@@ -142,9 +142,17 @@ public class FeatureGraph {
         .collect(toImmutableSet());
   }
 
+  public Set<FeatureEdge> edges(FeatureNode node) {
+    return graph.incidentEdges(node);
+  }
+
   public Set<FeatureEdge> edges(FeatureNode source, FeatureNode destination) {
     // returns an unmodifiable set
     return graph.edgesConnecting(source, destination);
+  }
+
+  public void removeNode(FeatureNode node) {
+    graph.removeNode(node);
   }
 
   public Set<FeatureNode> successors(FeatureNode node) {
@@ -168,6 +176,12 @@ public class FeatureGraph {
 
   public Set<FeatureNode> reachableIdentifierNodes(FeatureNode node) {
     ImmutableSet.Builder<FeatureNode> result = ImmutableSet.builder();
+
+    if (node.getType().equals(NodeType.IDENTIFIER_TOKEN)) {
+      result.add(node);
+      return result.build();
+    }
+
     Deque<FeatureNode> work = new ArrayDeque<>();
     Set<FeatureNode> visited = new HashSet<>();
     work.add(node);
@@ -188,6 +202,10 @@ public class FeatureGraph {
     return result.build();
   }
 
+  public Set<FeatureNode> predecessors(FeatureNode node) {
+    return graph.predecessors(node);
+  }
+
   public Set<FeatureNode> predecessors(FeatureNode node, EdgeType... edgeTypes) {
     ImmutableList<EdgeType> edgeTypeList = ImmutableList.copyOf(edgeTypes);
     return graph
@@ -204,6 +222,7 @@ public class FeatureGraph {
 
   /** Remove all nodes with the specified type that have no successors. */
   public void pruneLeaves(NodeType nodeType) {
+    //noinspection StatementWithEmptyBody
     while (pruneLeavesOnce(nodeType)) {
       // do nothing
     }
@@ -236,11 +255,19 @@ public class FeatureGraph {
     graph.removeEdge(edge);
   }
 
-  public Graph toProtobuf() {
+  Graph toProtobuf() {
     return Graph.newBuilder()
         .setSourceFile(sourceFileName)
         .addAllNode(nodes())
         .addAllEdge(edges())
         .build();
+  }
+
+  public Set<FeatureNode> findNode(int start, int end) {
+    return nodes()
+        .stream()
+        .filter(node -> node.getStartPosition() == start)
+        .filter(node -> node.getEndPosition() == end)
+        .collect(toImmutableSet());
   }
 }
