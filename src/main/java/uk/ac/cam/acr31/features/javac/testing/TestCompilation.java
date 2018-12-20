@@ -38,19 +38,24 @@ public abstract class TestCompilation {
 
   public abstract Context context();
 
-  private static TestCompilation create(JCTree.JCCompilationUnit compilationUnit, Context context) {
-    return new AutoValue_TestCompilation(compilationUnit, context);
+  public abstract String source();
+
+  private static TestCompilation create(
+      JCTree.JCCompilationUnit compilationUnit, Context context, String source) {
+    return new AutoValue_TestCompilation(compilationUnit, context, source);
   }
 
-  public static TestCompilation compile(String fileName, String... source) {
+  public static TestCompilation compile(String fileName, String... lines) {
     JavacTool javacTool = JavacTool.create();
     Context context = new Context();
+    String source = Joiner.on("\n").join(lines);
+
     ImmutableList<JavaFileObject> compilationUnits =
         ImmutableList.of(
             new SimpleJavaFileObject(URI.create(fileName), JavaFileObject.Kind.SOURCE) {
               @Override
               public CharSequence getCharContent(boolean ignoreEncodingErrors) {
-                return Joiner.on("\n").join(source);
+                return source;
               }
             });
     DiagnosticListener<? super JavaFileObject> diagnosticListener =
@@ -63,9 +68,23 @@ public abstract class TestCompilation {
       JCTree.JCCompilationUnit compilationUnit =
           (JCTree.JCCompilationUnit) Iterables.getOnlyElement(task.parse());
       task.analyze();
-      return create(compilationUnit, context);
+      return create(compilationUnit, context, source);
     } catch (IOException e) {
       throw new IOError(e);
     }
+  }
+
+  /** Return the source position of the first character of target. */
+  public SourceSpan sourceSpan(String target, String followedBy) {
+    int startPosition = source().indexOf(target + followedBy);
+    if (startPosition == -1) {
+      throw new AssertionError("Failed to find '" + target + followedBy + "' in source.");
+    }
+    int endPosition = startPosition + target.length();
+    return SourceSpan.create(startPosition, endPosition);
+  }
+
+  public SourceSpan sourceSpan(String target) {
+    return sourceSpan(target, "");
   }
 }
