@@ -16,9 +16,7 @@
 
 package uk.ac.cam.acr31.features.javac.testing;
 
-import com.google.common.base.Splitter;
-import com.google.common.collect.ImmutableList;
-import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 import uk.ac.cam.acr31.features.javac.graph.FeatureGraph;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureEdge;
@@ -28,81 +26,23 @@ import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureNode;
 public class FeatureGraphChecks {
 
   public static FeatureEdge edgeBetween(
-      FeatureGraph graph, String source, String destination, EdgeType edgeType) {
-    FeatureNode sourceNode = findNode(graph, source);
-    FeatureNode destinationNode = findNode(graph, destination);
-    return graph
-        .edges(sourceNode, destinationNode)
-        .stream()
-        .filter(e -> e.getType().equals(edgeType))
-        .findAny()
-        .orElseThrow(
-            () ->
-                new AssertionError(
-                    "Failed to find an edge from "
-                        + source
-                        + " to "
-                        + destination
-                        + " with type "
-                        + edgeType));
-  }
-
-  public static ImmutableList<String> astPathToToken(FeatureGraph graph, String destination) {
-    FeatureNode destinationNode = findNode(graph, destination);
-    return astPathToToken(graph, graph.root(), destinationNode, new HashSet<>());
-  }
-
-  private static ImmutableList<String> astPathToToken(
-      FeatureGraph graph, FeatureNode featureNode, FeatureNode destinationNode, Set<Long> visited) {
-    if (visited.contains(featureNode.getId())) {
-      return ImmutableList.of();
-    }
-    visited.add(featureNode.getId());
-    if (featureNode.equals(destinationNode)) {
-      return ImmutableList.of(featureNode.getContents());
-    }
-    for (FeatureNode node :
-        graph.successors(featureNode, EdgeType.AST_CHILD, EdgeType.ASSOCIATED_TOKEN)) {
-      ImmutableList<String> rest = astPathToToken(graph, node, destinationNode, visited);
-      if (!rest.isEmpty()) {
-        return ImmutableList.<String>builder().add(featureNode.getContents()).addAll(rest).build();
-      }
-    }
-    return ImmutableList.of();
-  }
-
-  private static FeatureNode findNode(FeatureGraph graph, String contents) {
-    ImmutableList<String> path = ImmutableList.copyOf(Splitter.on(",").splitToList(contents));
-    FeatureNode result = findNode(graph, null, path, contents);
-    if (result == null) {
-      throw new AssertionError("Failed to find node: " + contents);
-    }
-    return result;
-  }
-
-  private static FeatureNode findNode(
-      FeatureGraph graph,
-      FeatureNode searchPoint,
-      ImmutableList<String> path,
-      String originalContents) {
-    if (path.isEmpty()) {
-      return searchPoint;
-    }
-
-    Set<FeatureNode> successors =
-        searchPoint == null ? graph.nodes() : graph.successors(searchPoint);
-    FeatureNode found = null;
-    for (FeatureNode node : successors) {
-      if (node.getContents().equals(path.get(0))) {
-        FeatureNode result = findNode(graph, node, path.subList(1, path.size()), originalContents);
-        if (result != null) {
-          if (found != null) {
-            throw new AssertionError("Found more than one matching node for: " + originalContents);
-          }
-          found = result;
+      FeatureGraph graph, SourceSpan source, SourceSpan destination, EdgeType edgeType) {
+    Set<FeatureNode> sourceNodes = graph.findNode(source.start(), source.end());
+    Set<FeatureNode> destinationNodes = graph.findNode(destination.start(), destination.end());
+    for (FeatureNode sourceNode : sourceNodes) {
+      for (FeatureNode destinationNode : destinationNodes) {
+        Optional<FeatureEdge> edge =
+            graph
+                .edges(sourceNode, destinationNode)
+                .stream()
+                .filter(e -> e.getType().equals(edgeType))
+                .findAny();
+        if (edge.isPresent()) {
+          return edge.get();
         }
       }
     }
-    return found;
+    throw new AssertionError(
+        "Failed to find an edge from " + source + " to " + destination + " with type " + edgeType);
   }
 }

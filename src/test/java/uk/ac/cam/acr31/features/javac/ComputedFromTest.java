@@ -24,6 +24,7 @@ import org.junit.runners.JUnit4;
 import uk.ac.cam.acr31.features.javac.graph.FeatureGraph;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureEdge.EdgeType;
 import uk.ac.cam.acr31.features.javac.testing.FeatureGraphChecks;
+import uk.ac.cam.acr31.features.javac.testing.SourceSpan;
 import uk.ac.cam.acr31.features.javac.testing.TestCompilation;
 
 @RunWith(JUnit4.class)
@@ -43,6 +44,9 @@ public class ComputedFromTest {
             "    c = a + b;",
             "  }",
             "}");
+    SourceSpan a = compilation.sourceSpan("a", " + b;");
+    SourceSpan b = compilation.sourceSpan("b", ";");
+    SourceSpan c = compilation.sourceSpan("c", " = a + b;");
 
     // ACT
     FeatureGraph graph =
@@ -51,49 +55,7 @@ public class ComputedFromTest {
     // ASSERT
     assertThat(graph.edges(EdgeType.COMPUTED_FROM))
         .containsExactly(
-            FeatureGraphChecks.edgeBetween(
-                graph,
-                "ASSIGNMENT,VARIABLE,IDENTIFIER,c",
-                "PLUS,LEFT_OPERAND,IDENTIFIER,a",
-                EdgeType.COMPUTED_FROM),
-            FeatureGraphChecks.edgeBetween(
-                graph,
-                "ASSIGNMENT,VARIABLE,IDENTIFIER,c",
-                "PLUS,RIGHT_OPERAND,IDENTIFIER,b",
-                EdgeType.COMPUTED_FROM));
-  }
-
-  @Test
-  public void computedFrom_addsEdgesToFields() {
-    // ARRANGE
-    TestCompilation compilation =
-        TestCompilation.compile(
-            "Test.java", //
-            "public class Test {",
-            "  static int a = 0;",
-            "  public static void main(String[] args) {",
-            "    int b = 0;",
-            "    int c;",
-            "    c = a + b;",
-            "  }",
-            "}");
-
-    // ACT
-    FeatureGraph graph =
-        FeaturePlugin.createFeatureGraph(compilation.compilationUnit(), compilation.context());
-
-    // ASSERT
-    assertThat(graph.edges(EdgeType.COMPUTED_FROM))
-        .containsExactly(
-            FeatureGraphChecks.edgeBetween(
-                graph,
-                "ASSIGNMENT,VARIABLE,IDENTIFIER,c",
-                "PLUS,LEFT_OPERAND,IDENTIFIER,a",
-                EdgeType.COMPUTED_FROM),
-            FeatureGraphChecks.edgeBetween(
-                graph,
-                "ASSIGNMENT,VARIABLE,IDENTIFIER,c",
-                "PLUS,RIGHT_OPERAND,IDENTIFIER,b",
-                EdgeType.COMPUTED_FROM));
+            FeatureGraphChecks.edgeBetween(graph, c, a, EdgeType.COMPUTED_FROM),
+            FeatureGraphChecks.edgeBetween(graph, c, b, EdgeType.COMPUTED_FROM));
   }
 }

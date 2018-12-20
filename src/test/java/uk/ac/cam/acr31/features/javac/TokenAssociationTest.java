@@ -17,16 +17,18 @@
 package uk.ac.cam.acr31.features.javac;
 
 import static com.google.common.truth.Truth.assertThat;
-import static uk.ac.cam.acr31.features.javac.testing.FeatureGraphChecks.astPathToToken;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.truth.Correspondence;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import uk.ac.cam.acr31.features.javac.graph.FeatureGraph;
+import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureEdge.EdgeType;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureNode;
+import uk.ac.cam.acr31.features.javac.testing.FeatureGraphChecks;
+import uk.ac.cam.acr31.features.javac.testing.SourceSpan;
 import uk.ac.cam.acr31.features.javac.testing.TestCompilation;
+import uk.ac.cam.acr31.features.javac.testing.Visualizer;
 
 @RunWith(JUnit4.class)
 public class TokenAssociationTest {
@@ -66,13 +68,19 @@ public class TokenAssociationTest {
             "public class Test {",
             "  public static void main(String[] args) {}",
             "}");
+    SourceSpan args = compilation.sourceSpan("args");
+    SourceSpan variable = compilation.sourceSpan("String[] args");
 
     // ACT
     FeatureGraph graph =
         FeaturePlugin.createFeatureGraph(compilation.compilationUnit(), compilation.context());
 
+    Visualizer.show(graph);
+
     // ASSERT
-    ImmutableList<String> route = astPathToToken(graph, "args");
-    assertThat(route).containsAllIn(ImmutableList.of("CLASS", "METHOD", "VARIABLE"));
+    //    ImmutableList<String> route = astPathToToken(graph, "args");
+    assertThat(FeatureGraphChecks.edgeBetween(graph, variable, args, EdgeType.ASSOCIATED_TOKEN))
+        .isNotNull();
+    //    assertThat(route).containsAllIn(ImmutableList.of("CLASS", "METHOD", "VARIABLE"));
   }
 }

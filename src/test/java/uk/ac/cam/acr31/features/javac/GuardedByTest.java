@@ -24,6 +24,7 @@ import org.junit.runners.JUnit4;
 import uk.ac.cam.acr31.features.javac.graph.FeatureGraph;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureEdge.EdgeType;
 import uk.ac.cam.acr31.features.javac.testing.FeatureGraphChecks;
+import uk.ac.cam.acr31.features.javac.testing.SourceSpan;
 import uk.ac.cam.acr31.features.javac.testing.TestCompilation;
 
 @RunWith(JUnit4.class)
@@ -40,13 +41,16 @@ public class GuardedByTest {
             "    int x = 0;",
             "    int y = 0;",
             "    if (x>y) {",
-            "      x++;",
+            "      int a = x;",
             "    }",
             "    else {",
-            "      y++;",
+            "      int a = y;",
             "    }",
             "  }",
             "}");
+    SourceSpan condition = compilation.sourceSpan("(x>y)");
+    SourceSpan pos = compilation.sourceSpan("x", ";");
+    SourceSpan neg = compilation.sourceSpan("y", ";");
 
     // ACT
     FeatureGraph graph =
@@ -55,17 +59,9 @@ public class GuardedByTest {
     // ASSERT
     assertThat(graph.edges(EdgeType.GUARDED_BY))
         .containsExactly(
-            FeatureGraphChecks.edgeBetween(
-                graph,
-                "POSTFIX_INCREMENT,EXPRESSION,IDENTIFIER,x",
-                "IF,CONDITION,PARENTHESIZED",
-                EdgeType.GUARDED_BY));
+            FeatureGraphChecks.edgeBetween(graph, pos, condition, EdgeType.GUARDED_BY));
     assertThat(graph.edges(EdgeType.GUARDED_BY_NEGATION))
         .containsExactly(
-            FeatureGraphChecks.edgeBetween(
-                graph,
-                "POSTFIX_INCREMENT,EXPRESSION,IDENTIFIER,y",
-                "IF,CONDITION,PARENTHESIZED",
-                EdgeType.GUARDED_BY_NEGATION));
+            FeatureGraphChecks.edgeBetween(graph, neg, condition, EdgeType.GUARDED_BY_NEGATION));
   }
 }

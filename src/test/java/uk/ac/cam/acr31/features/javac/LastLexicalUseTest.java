@@ -18,14 +18,15 @@ package uk.ac.cam.acr31.features.javac;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import com.google.common.collect.Range;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import uk.ac.cam.acr31.features.javac.graph.FeatureGraph;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureEdge.EdgeType;
 import uk.ac.cam.acr31.features.javac.testing.FeatureGraphChecks;
+import uk.ac.cam.acr31.features.javac.testing.SourceSpan;
 import uk.ac.cam.acr31.features.javac.testing.TestCompilation;
-import uk.ac.cam.acr31.features.javac.testing.Visualizer;
 
 @RunWith(JUnit4.class)
 public class LastLexicalUseTest {
@@ -39,14 +40,18 @@ public class LastLexicalUseTest {
             "public class Test {",
             "  public static void main(String[] args) {",
             "    int x = 0;",
-            "    if (x>4) {",
+            "    if (x > 4) {",
             "      x++;",
             "    }",
             "    else {",
-            "      x+=1;",
+            "      x += 1;",
             "    }",
             "  }",
             "}");
+    SourceSpan firstUse = compilation.sourceSpan("x", " = 0;");
+    SourceSpan secondUse = compilation.sourceSpan("x", " > 4");
+    SourceSpan thirdUse = compilation.sourceSpan("x", "++");
+    SourceSpan fourthUse = compilation.sourceSpan("x", " += 1");
 
     // ACT
     FeatureGraph graph =
@@ -55,20 +60,8 @@ public class LastLexicalUseTest {
     // ASSERT
     assertThat(graph.edges(EdgeType.LAST_LEXICAL_USE))
         .containsExactly(
-            FeatureGraphChecks.edgeBetween(
-                graph,
-                "STATEMENTS,VARIABLE,IDENTIFIER,x",
-                "GREATER_THAN,LEFT_OPERAND,IDENTIFIER,x",
-                EdgeType.LAST_LEXICAL_USE),
-            FeatureGraphChecks.edgeBetween(
-                graph,
-                "GREATER_THAN,LEFT_OPERAND,IDENTIFIER,x",
-                "POSTFIX_INCREMENT,EXPRESSION,IDENTIFIER,x",
-                EdgeType.LAST_LEXICAL_USE),
-            FeatureGraphChecks.edgeBetween(
-                graph,
-                "POSTFIX_INCREMENT,EXPRESSION,IDENTIFIER,x",
-                "PLUS_ASSIGNMENT,VARIABLE,IDENTIFIER,x",
-                EdgeType.LAST_LEXICAL_USE));
+            FeatureGraphChecks.edgeBetween(graph, firstUse, secondUse, EdgeType.LAST_LEXICAL_USE),
+            FeatureGraphChecks.edgeBetween(graph, secondUse, thirdUse, EdgeType.LAST_LEXICAL_USE),
+            FeatureGraphChecks.edgeBetween(graph, thirdUse, fourthUse, EdgeType.LAST_LEXICAL_USE));
   }
 }

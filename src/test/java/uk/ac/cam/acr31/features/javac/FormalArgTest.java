@@ -24,8 +24,8 @@ import org.junit.runners.JUnit4;
 import uk.ac.cam.acr31.features.javac.graph.FeatureGraph;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureEdge.EdgeType;
 import uk.ac.cam.acr31.features.javac.testing.FeatureGraphChecks;
+import uk.ac.cam.acr31.features.javac.testing.SourceSpan;
 import uk.ac.cam.acr31.features.javac.testing.TestCompilation;
-import uk.ac.cam.acr31.features.javac.testing.Visualizer;
 
 @RunWith(JUnit4.class)
 public class FormalArgTest {
@@ -43,6 +43,8 @@ public class FormalArgTest {
             "    b(a);",
             "  }",
             "}");
+    SourceSpan formalParameter = compilation.sourceSpan("formalParameter");
+    SourceSpan a = compilation.sourceSpan("a", ");");
 
     // ACT
     FeatureGraph graph =
@@ -51,10 +53,6 @@ public class FormalArgTest {
     // ASSERT
     assertThat(graph.edges(EdgeType.FORMAL_ARG_NAME))
         .containsExactly(
-            FeatureGraphChecks.edgeBetween(
-                graph,
-                "METHOD_INVOCATION,ARGUMENTS,IDENTIFIER,a",
-                "formalParameter",
-                EdgeType.FORMAL_ARG_NAME));
+            FeatureGraphChecks.edgeBetween(graph, a, formalParameter, EdgeType.FORMAL_ARG_NAME));
   }
 }
