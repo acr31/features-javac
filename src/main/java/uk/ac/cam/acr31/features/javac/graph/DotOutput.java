@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Set;
 import org.apache.commons.text.StringEscapeUtils;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureEdge;
@@ -30,7 +31,17 @@ import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureNode;
 public class DotOutput {
 
   public static void writeToDot(File outputFile, FeatureGraph graph) {
-    try (PrintWriter w = new PrintWriter(new FileWriter(outputFile))) {
+    try (FileWriter w = new FileWriter(outputFile)) {
+      w.write(createDot(graph));
+
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public static String createDot(FeatureGraph graph) {
+    StringWriter result = new StringWriter();
+    try (PrintWriter w = new PrintWriter(result)) {
       w.println("digraph {");
       w.println(" rankdir=LR;");
 
@@ -51,9 +62,8 @@ public class DotOutput {
       }
 
       w.println("}");
-    } catch (IOException e) {
-      throw new RuntimeException("Failed to write to " + outputFile);
     }
+    return result.toString();
   }
 
   private static String dotNode(FeatureNode node) {
