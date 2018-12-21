@@ -92,8 +92,7 @@ public class FeaturePlugin implements Plugin {
       }
       writeOutput(featureGraph, featuresOutputDirectory);
     } catch (AssertionError | RuntimeException e) {
-      throw new RuntimeException(
-          "Failed to extract features from " + taskEvent.getSourceFile().getName(), e);
+      System.out.println("Feature extraction failed: " + taskEvent.getSourceFile().getName());
     }
   }
 
@@ -112,12 +111,10 @@ public class FeaturePlugin implements Plugin {
     File outputFile = new File(featuresOutputDirectory, featureGraph.getSourceFileName() + ".dot");
     mkdirFor(outputFile);
     DotOutput.writeToDot(outputFile, featureGraph);
-    System.out.println("Wrote: " + outputFile);
 
     File protoFile = new File(featuresOutputDirectory, featureGraph.getSourceFileName() + ".proto");
     mkdirFor(protoFile);
     ProtoOutput.write(protoFile, featureGraph);
-    System.out.println("Wrote: " + protoFile);
   }
 
   static FeatureGraph createFeatureGraph(
