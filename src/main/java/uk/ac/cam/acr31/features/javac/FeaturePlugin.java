@@ -98,19 +98,25 @@ public class FeaturePlugin implements Plugin {
     }
   }
 
+  private static void mkdirFor(File file) {
+    File directory = file.getParentFile();
+    if (directory.exists()) {
+      return;
+    }
+    if (!directory.mkdirs()) {
+      throw new IOError(new IOException("Failed to create directory for " + file));
+    }
+  }
+
   private static void writeOutput(FeatureGraph featureGraph, String featuresOutputDirectory) {
 
     File outputFile = new File(featuresOutputDirectory, featureGraph.getSourceFileName() + ".dot");
-    if (!outputFile.getParentFile().mkdirs()) {
-      throw new IOError(new IOException("Failed to create directory " + outputFile.getParent()));
-    }
+    mkdirFor(outputFile);
     DotOutput.writeToDot(outputFile, featureGraph);
     System.out.println("Wrote: " + outputFile);
 
     File protoFile = new File(featuresOutputDirectory, featureGraph.getSourceFileName() + ".proto");
-    if (!protoFile.getParentFile().mkdirs()) {
-      throw new IOError(new IOException("Failed to create directory " + protoFile.getParent()));
-    }
+    mkdirFor(protoFile);
     ProtoOutput.write(protoFile, featureGraph);
     System.out.println("Wrote: " + protoFile);
   }
