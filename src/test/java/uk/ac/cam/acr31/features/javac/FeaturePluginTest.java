@@ -18,6 +18,7 @@ package uk.ac.cam.acr31.features.javac;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -44,6 +45,25 @@ public class FeaturePluginTest {
   public void createIsSuccessful_fromPackageInfo() {
     // ARRANGE
     TestCompilation compilation = TestCompilation.compile("package-info.java", "package foo.bar;");
+
+    // ACT
+    FeatureGraph featureGraph =
+        FeaturePlugin.createFeatureGraph(compilation.compilationUnit(), compilation.context());
+
+    // ASSERT
+    assertThat(featureGraph.astNodes()).isNotEmpty();
+  }
+
+  @Test
+  @Ignore
+  public void createIsSuccessful_multiVariableDecl() {
+    // ARRANGE
+    TestCompilation compilation =
+        TestCompilation.compile(
+            "Test.java",
+            "public class Test {", //
+            "  private static final String a = \"A\", b = \"B\";",
+            "}");
 
     // ACT
     FeatureGraph featureGraph =
