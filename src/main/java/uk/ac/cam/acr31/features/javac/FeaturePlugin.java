@@ -57,6 +57,7 @@ import uk.ac.cam.acr31.features.javac.syntactic.SymbolScanner;
 public class FeaturePlugin implements Plugin {
 
   private static final String FEATURES_OUTPUT_DIRECTORY = "featuresOutputDirectory";
+  private static final String ABORT_ON_ERROR = "abortOnError";
 
   @Override
   public String getName() {
@@ -82,18 +83,29 @@ public class FeaturePlugin implements Plugin {
   }
 
   private static void process(TaskEvent taskEvent, Context context) {
+
+    Options options = Options.instance(context);
+
+    boolean abortOnError = options.getBoolean(ABORT_ON_ERROR);
+
+    String featuresOutputDirectory = ".";
+    if (options.isSet(FEATURES_OUTPUT_DIRECTORY)) {
+      featuresOutputDirectory = options.get(FEATURES_OUTPUT_DIRECTORY);
+    }
+
+    JCTree.JCCompilationUnit compilationUnit =
+        (JCTree.JCCompilationUnit) taskEvent.getCompilationUnit();
+
     try {
-      JCTree.JCCompilationUnit compilationUnit =
-          (JCTree.JCCompilationUnit) taskEvent.getCompilationUnit();
       FeatureGraph featureGraph = createFeatureGraph(compilationUnit, context);
-      Options options = Options.instance(context);
-      String featuresOutputDirectory = ".";
-      if (options.isSet(FEATURES_OUTPUT_DIRECTORY)) {
-        featuresOutputDirectory = options.get(FEATURES_OUTPUT_DIRECTORY);
-      }
       writeOutput(featureGraph, featuresOutputDirectory);
     } catch (AssertionError | RuntimeException e) {
-      System.out.println("Feature extraction failed: " + taskEvent.getSourceFile().getName());
+      String message = "Feature extraction failed: " + taskEvent.getSourceFile().getName();
+      if (abortOnError) {
+        throw new RuntimeException(message, e);
+      } else {
+        System.out.println(message);
+      }
     }
   }
 
