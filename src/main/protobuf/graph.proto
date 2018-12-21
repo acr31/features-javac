@@ -32,12 +32,13 @@ message FeatureNode {
         AST_ROOT = 6;
         IDENTIFIER_TOKEN = 7;
         SYNTHETIC_AST_ELEMENT = 8;
+        SYMBOL = 9;
     }
 
     optional int64 id = 1;
     optional NodeType type = 2;
     optional string contents = 3;
-    optional int32 startPosition =4;
+    optional int32 startPosition = 4;
     optional int32 endPosition = 5;
     optional int32 startLineNumber = 6;
     optional int32 endLineNumber = 7;
@@ -59,6 +60,7 @@ message FeatureEdge {
         GUARDED_BY_NEGATION = 11;
         LAST_LEXICAL_USE = 12;
         COMMENT = 13;
+        ASSOCIATED_SYMBOL = 14;
     }
 
     optional int64 sourceId = 1;

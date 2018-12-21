@@ -21,9 +21,9 @@ import com.google.auto.value.AutoValue;
 @AutoValue
 public abstract class SourceSpan {
 
-  abstract int start();
+  public abstract int start();
 
-  abstract int end();
+  public abstract int end();
 
   public static SourceSpan create(int start, int end) {
     return new AutoValue_SourceSpan(start, end);

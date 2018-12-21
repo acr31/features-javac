@@ -52,7 +52,10 @@ public class DotOutput {
       }
 
       Set<FeatureNode> commentSet = graph.comments();
-      writeSubgraph(w, commentSet, "same");
+      writeSubgraph(w, commentSet, null);
+
+      Set<FeatureNode> symbolSet = graph.symbols();
+      writeSubgraph(w, symbolSet, null);
 
       Set<FeatureNode> tokenSet = graph.tokens();
       writeSubgraph(w, tokenSet, "max");
@@ -120,7 +123,9 @@ public class DotOutput {
 
   private static void writeSubgraph(PrintWriter w, Set<FeatureNode> nodeSet, String rank) {
     w.println(" subgraph {");
-    w.println(String.format("  rank=%s;", rank));
+    if (rank != null) {
+      w.println(String.format("  rank=%s;", rank));
+    }
     nodeSet.forEach(n -> w.println(dotNode(n)));
     w.println(" }");
   }

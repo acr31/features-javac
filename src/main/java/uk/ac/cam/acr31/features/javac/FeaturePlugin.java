@@ -52,6 +52,7 @@ import uk.ac.cam.acr31.features.javac.syntactic.FormalArgScanner;
 import uk.ac.cam.acr31.features.javac.syntactic.GuardedByScanner;
 import uk.ac.cam.acr31.features.javac.syntactic.LastLexicalUseScanner;
 import uk.ac.cam.acr31.features.javac.syntactic.ReturnsToScanner;
+import uk.ac.cam.acr31.features.javac.syntactic.SymbolScanner;
 
 public class FeaturePlugin implements Plugin {
 
@@ -141,7 +142,7 @@ public class FeaturePlugin implements Plugin {
     ReturnsToScanner.addToGraph(compilationUnit, featureGraph);
     FormalArgScanner.addToGraph(compilationUnit, featureGraph);
     GuardedByScanner.addToGraph(compilationUnit, featureGraph);
-
+    SymbolScanner.addToGraph(compilationUnit, featureGraph);
     linkCommentsToAstNodes(featureGraph);
 
     return featureGraph;

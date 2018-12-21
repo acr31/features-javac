@@ -130,6 +130,10 @@ public class FeatureGraph {
     return nodes(NodeType.COMMENT_BLOCK, NodeType.COMMENT_JAVADOC, NodeType.COMMENT_LINE);
   }
 
+  public Set<FeatureNode> symbols() {
+    return nodes(NodeType.SYMBOL);
+  }
+
   public Set<FeatureEdge> edges() {
     // returns an unmodifiable set
     return graph.edges();
