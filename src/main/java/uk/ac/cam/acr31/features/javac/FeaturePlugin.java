@@ -80,15 +80,21 @@ public class FeaturePlugin implements Plugin {
         });
   }
 
-  private static void process(TaskEvent e, Context context) {
-    JCTree.JCCompilationUnit compilationUnit = (JCTree.JCCompilationUnit) e.getCompilationUnit();
-    FeatureGraph featureGraph = createFeatureGraph(compilationUnit, context);
-    Options options = Options.instance(context);
-    String featuresOutputDirectory = ".";
-    if (options.isSet(FEATURES_OUTPUT_DIRECTORY)) {
-      featuresOutputDirectory = options.get(FEATURES_OUTPUT_DIRECTORY);
+  private static void process(TaskEvent taskEvent, Context context) {
+    try {
+      JCTree.JCCompilationUnit compilationUnit =
+          (JCTree.JCCompilationUnit) taskEvent.getCompilationUnit();
+      FeatureGraph featureGraph = createFeatureGraph(compilationUnit, context);
+      Options options = Options.instance(context);
+      String featuresOutputDirectory = ".";
+      if (options.isSet(FEATURES_OUTPUT_DIRECTORY)) {
+        featuresOutputDirectory = options.get(FEATURES_OUTPUT_DIRECTORY);
+      }
+      writeOutput(featureGraph, featuresOutputDirectory);
+    } catch (AssertionError e) {
+      throw new RuntimeException(
+          "Failed to extract features from " + taskEvent.getSourceFile().getName(), e);
     }
-    writeOutput(featureGraph, featuresOutputDirectory);
   }
 
   private static void writeOutput(FeatureGraph featureGraph, String featuresOutputDirectory) {
