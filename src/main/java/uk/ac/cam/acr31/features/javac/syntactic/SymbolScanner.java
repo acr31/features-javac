@@ -87,7 +87,8 @@ public class SymbolScanner extends TreeScanner<Void, Void> {
     if (symbol == null) {
       return;
     }
-    String name = symbol.toString();
+    String name = symbol.kind + ":" + symbol.toString();
+
     FeatureNode featureNode = featureGraph.createFeatureNode(NodeType.SYMBOL, name, -1, -1);
     FeatureNode target = featureGraph.getFeatureNode(node);
     if (target != null) {

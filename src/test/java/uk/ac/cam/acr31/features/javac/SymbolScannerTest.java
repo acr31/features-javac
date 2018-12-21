@@ -46,7 +46,7 @@ public class SymbolScannerTest {
     // ASSERT
     Set<FeatureNode> classNodes = graph.findNode(clazz.start(), clazz.end());
     FeatureNode symbolNode = findSymbolNode(graph, classNodes);
-    assertThat(symbolNode.getContents()).isEqualTo("Test");
+    assertThat(symbolNode.getContents()).isEqualTo("TYP:Test");
   }
 
   @Test
@@ -70,7 +70,7 @@ public class SymbolScannerTest {
     // ASSERT
     Set<FeatureNode> methodNodes = graph.findNode(method.start(), method.end());
     FeatureNode symbolNode = findSymbolNode(graph, methodNodes);
-    assertThat(symbolNode.getContents()).isEqualTo("method(double)");
+    assertThat(symbolNode.getContents()).isEqualTo("MTH:method(double)");
   }
 
   @Test
@@ -91,7 +91,7 @@ public class SymbolScannerTest {
     // ASSERT
     Set<FeatureNode> invocationNode = graph.findNode(inv.start(), inv.end());
     FeatureNode symbolNode = findSymbolNode(graph, invocationNode);
-    assertThat(symbolNode.getContents()).isEqualTo("valueOf(int)");
+    assertThat(symbolNode.getContents()).isEqualTo("MTH:valueOf(int)");
   }
 
   @Test
@@ -113,7 +113,7 @@ public class SymbolScannerTest {
     // ASSERT
     Set<FeatureNode> invocationNode = graph.findNode(inv.start(), inv.end());
     FeatureNode symbolNode = findSymbolNode(graph, invocationNode);
-    assertThat(symbolNode.getContents()).isEqualTo("a");
+    assertThat(symbolNode.getContents()).isEqualTo("VAR:a");
   }
 
   private FeatureNode findSymbolNode(FeatureGraph graph, Set<FeatureNode> methodNodes) {
