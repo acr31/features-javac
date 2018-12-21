@@ -27,7 +27,7 @@ import com.sun.source.tree.LineMap;
 import com.sun.source.tree.Tree;
 import com.sun.tools.javac.tree.EndPosTable;
 import com.sun.tools.javac.tree.JCTree;
-import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureEdge;
@@ -48,7 +48,7 @@ public class FeatureGraph {
   public FeatureGraph(String sourceFileName, EndPosTable endPosTable, LineMap lineMap) {
     this.sourceFileName = sourceFileName;
     this.graph = NetworkBuilder.directed().allowsSelfLoops(true).allowsParallelEdges(true).build();
-    this.nodeMap = new HashMap<>();
+    this.nodeMap = new IdentityHashMap<>();
     this.endPosTable = endPosTable;
     this.lineMap = lineMap;
   }
