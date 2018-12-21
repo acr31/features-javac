@@ -18,9 +18,10 @@ package uk.ac.cam.acr31.features.javac.syntactic;
 
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreeScanner;
-import uk.ac.cam.acr31.features.javac.DataflowOutputsScanner;
 import uk.ac.cam.acr31.features.javac.graph.FeatureGraph;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureEdge.EdgeType;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureNode;
@@ -51,9 +52,27 @@ public class ComputedFromScanner extends TreeScanner<Void, Void> {
     for (IdentifierTree lhs : lhsCollector.identifiers) {
       FeatureNode lhsFeatureNode = graph.getFeatureNode(lhs);
       for (IdentifierTree rhs : rhsCollector.identifiers) {
-        DataflowOutputsScanner.linkIdentifierTokens(
-            lhsFeatureNode, graph.getFeatureNode(rhs), EdgeType.COMPUTED_FROM, graph);
+        graph.addEdge(
+            graph.toIdentifierNode(lhsFeatureNode),
+            graph.toIdentifierNode(graph.getFeatureNode(rhs)),
+            EdgeType.COMPUTED_FROM);
       }
+    }
+    return null;
+  }
+
+  @Override
+  public Void visitVariable(VariableTree node, Void ignored) {
+    ExpressionTree initializer = node.getInitializer();
+    if (initializer == null) {
+      return null;
+    }
+    IdentifierCollector rhsCollector = new IdentifierCollector();
+    initializer.accept(rhsCollector, null);
+
+    FeatureNode lhs = graph.toIdentifierNode(graph.getFeatureNode(node));
+    for (IdentifierTree rhs : rhsCollector.identifiers) {
+      graph.addEdge(lhs, graph.toIdentifierNode(graph.getFeatureNode(rhs)), EdgeType.COMPUTED_FROM);
     }
     return null;
   }

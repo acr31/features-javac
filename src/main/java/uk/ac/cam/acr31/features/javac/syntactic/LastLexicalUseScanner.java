@@ -27,7 +27,6 @@ import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.tree.JCTree;
 import java.util.Collection;
 import java.util.Iterator;
-import uk.ac.cam.acr31.features.javac.DataflowOutputsScanner;
 import uk.ac.cam.acr31.features.javac.graph.FeatureGraph;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureEdge.EdgeType;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureNode;
@@ -51,8 +50,10 @@ public class LastLexicalUseScanner extends TreeScanner<Void, Void> {
         Tree next = idIterator.next();
         FeatureNode prevNode = featureGraph.getFeatureNode(prevItem);
         FeatureNode nextNode = featureGraph.getFeatureNode(next);
-        DataflowOutputsScanner.linkIdentifierTokens(
-            prevNode, nextNode, EdgeType.LAST_LEXICAL_USE, featureGraph);
+        featureGraph.addEdge(
+            featureGraph.toIdentifierNode(prevNode),
+            featureGraph.toIdentifierNode(nextNode),
+            EdgeType.LAST_LEXICAL_USE);
         prevItem = next;
       }
     }

@@ -24,7 +24,6 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreeScanner;
-import java.util.Set;
 import org.checkerframework.dataflow.analysis.AnalysisResult;
 import uk.ac.cam.acr31.features.javac.graph.FeatureGraph;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureEdge.EdgeType;
@@ -98,25 +97,10 @@ public class DataflowOutputsScanner extends TreeScanner<Void, ScanContext> {
     FeatureNode sourceNode = graph.getFeatureNode(node);
     if (possibles != null) {
       for (Tree tree : possibles.nodes()) {
-        FeatureNode targetNode = graph.getFeatureNode(tree);
-        linkIdentifierTokens(sourceNode, targetNode, edgeType, graph);
-      }
-    }
-  }
-
-  /**
-   * Connect the tokens linked from the source node to the tokens linked from the destination node.
-   */
-  public static void linkIdentifierTokens(
-      FeatureNode source, FeatureNode dest, EdgeType type, FeatureGraph graph) {
-    if (source == null || dest == null) {
-      return;
-    }
-    Set<FeatureNode> sourceSucc = graph.reachableIdentifierNodes(source);
-    Set<FeatureNode> destSucc = graph.reachableIdentifierNodes(dest);
-    for (FeatureNode s : sourceSucc) {
-      for (FeatureNode d : destSucc) {
-        graph.addEdge(s, d, type);
+        graph.addEdge(
+            graph.toIdentifierNode(sourceNode),
+            graph.toIdentifierNode(graph.getFeatureNode(tree)),
+            edgeType);
       }
     }
   }

@@ -27,10 +27,7 @@ import com.sun.source.tree.LineMap;
 import com.sun.source.tree.Tree;
 import com.sun.tools.javac.tree.EndPosTable;
 import com.sun.tools.javac.tree.JCTree;
-import java.util.ArrayDeque;
-import java.util.Deque;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureEdge;
@@ -174,32 +171,16 @@ public class FeatureGraph {
         .collect(toImmutableSet());
   }
 
-  public Set<FeatureNode> reachableIdentifierNodes(FeatureNode node) {
-    ImmutableSet.Builder<FeatureNode> result = ImmutableSet.builder();
-
+  public FeatureNode toIdentifierNode(FeatureNode node) {
     if (node.getType().equals(NodeType.IDENTIFIER_TOKEN)) {
-      result.add(node);
-      return result.build();
+      return node;
     }
 
-    Deque<FeatureNode> work = new ArrayDeque<>();
-    Set<FeatureNode> visited = new HashSet<>();
-    work.add(node);
-    while (!work.isEmpty()) {
-      FeatureNode next = work.poll();
-      for (FeatureNode succ : successors(next, EdgeType.AST_CHILD, EdgeType.ASSOCIATED_TOKEN)) {
-        if (visited.contains(succ)) {
-          continue;
-        }
-        visited.add(succ);
-        if (succ.getType().equals(NodeType.IDENTIFIER_TOKEN)) {
-          result.add(succ);
-        } else {
-          work.add(succ);
-        }
-      }
-    }
-    return result.build();
+    return successors(node, EdgeType.ASSOCIATED_TOKEN)
+        .stream()
+        .filter(n -> n.getType().equals(NodeType.IDENTIFIER_TOKEN))
+        .findAny()
+        .orElseThrow();
   }
 
   public Set<FeatureNode> predecessors(FeatureNode node) {

@@ -18,6 +18,7 @@ package uk.ac.cam.acr31.features.javac;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -42,6 +43,34 @@ public class ComputedFromTest {
             "    int b = 0;",
             "    int c;",
             "    c = a + b;",
+            "  }",
+            "}");
+    SourceSpan a = compilation.sourceSpan("a", " + b;");
+    SourceSpan b = compilation.sourceSpan("b", ";");
+    SourceSpan c = compilation.sourceSpan("c", " = a + b;");
+
+    // ACT
+    FeatureGraph graph =
+        FeaturePlugin.createFeatureGraph(compilation.compilationUnit(), compilation.context());
+
+    // ASSERT
+    assertThat(graph.edges(EdgeType.COMPUTED_FROM))
+        .containsExactly(
+            FeatureGraphChecks.edgeBetween(graph, c, a, EdgeType.COMPUTED_FROM),
+            FeatureGraphChecks.edgeBetween(graph, c, b, EdgeType.COMPUTED_FROM));
+  }
+
+  @Test
+  public void computedFrom_addsEdgesToLocalVariables_inVariable() {
+    // ARRANGE
+    TestCompilation compilation =
+        TestCompilation.compile(
+            "Test.java", //
+            "public class Test {",
+            "  public static void main(String[] args) {",
+            "    int a = 0;",
+            "    int b = 0;",
+            "    int c = a + b;",
             "  }",
             "}");
     SourceSpan a = compilation.sourceSpan("a", " + b;");

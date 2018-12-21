@@ -29,7 +29,6 @@ import com.sun.source.util.TreeScanner;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.tree.JCTree;
 import java.util.Map;
-import uk.ac.cam.acr31.features.javac.DataflowOutputsScanner;
 import uk.ac.cam.acr31.features.javac.graph.FeatureGraph;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureEdge.EdgeType;
 
@@ -118,11 +117,10 @@ public class FormalArgScanner extends TreeScanner<Void, Void> {
         IdentifierCollector c = new IdentifierCollector();
         argument.accept(c, null);
         for (IdentifierTree identifierTree : c.identifiers) {
-          DataflowOutputsScanner.linkIdentifierTokens(
-              graph.getFeatureNode(identifierTree),
-              graph.getFeatureNode(parameter),
-              EdgeType.FORMAL_ARG_NAME,
-              graph);
+          graph.addEdge(
+              graph.toIdentifierNode(graph.getFeatureNode(identifierTree)),
+              graph.toIdentifierNode(graph.getFeatureNode(parameter)),
+              EdgeType.FORMAL_ARG_NAME);
         }
       }
     }
