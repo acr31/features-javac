@@ -77,6 +77,10 @@ public class FeatureGraph {
     int startPosition = ((JCTree) tree).getStartPosition();
     int endPosition = ((JCTree) tree).getEndPosition(endPosTable);
     FeatureNode result = createFeatureNode(nodeType, contents, startPosition, endPosition);
+    if (nodeMap.containsKey(tree)) {
+      throw new AssertionError(
+          "Tree with contents " + contents + " is already in the nodeMap (second visit?)");
+    }
     nodeMap.put(tree, result);
     return result;
   }
@@ -201,20 +205,23 @@ public class FeatureGraph {
         .collect(toImmutableSet());
   }
 
-  /** Remove all nodes with the specified type that have no successors. */
-  public void pruneLeaves(NodeType nodeType) {
+  /** Remove all ast nodes that have no successors. */
+  public void pruneAstNodes() {
     //noinspection StatementWithEmptyBody
-    while (pruneLeavesOnce(nodeType)) {
+    while (pruneLeavesOnce()) {
       // do nothing
     }
   }
 
-  private boolean pruneLeavesOnce(NodeType nodeType) {
+  private boolean pruneLeavesOnce() {
     ImmutableSet<FeatureNode> toRemove =
         graph
             .nodes()
             .stream()
-            .filter(n -> n.getType().equals(nodeType))
+            .filter(
+                n ->
+                    n.getType().equals(NodeType.AST_ELEMENT)
+                        || n.getType().equals(NodeType.SYNTHETIC_AST_ELEMENT))
             .filter(n -> graph.successors(n).isEmpty())
             .collect(toImmutableSet());
     toRemove.forEach(graph::removeNode);

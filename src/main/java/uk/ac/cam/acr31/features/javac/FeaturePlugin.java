@@ -125,6 +125,9 @@ public class FeaturePlugin implements Plugin {
     AstScanner.addToGraph(compilationUnit, featureGraph);
     Tokens.addToGraph(compilationUnit.getSourceFile(), context, featureGraph);
     linkTokensToAstNodes(featureGraph);
+    // prune all ast nodes with no successors (these are leaves not connected to tokens)
+    featureGraph.pruneAstNodes();
+
     removeIdentifierAstNodes(featureGraph);
 
     JavacProcessingEnvironment processingEnvironment = JavacProcessingEnvironment.instance(context);
@@ -136,9 +139,6 @@ public class FeaturePlugin implements Plugin {
     ReturnsToScanner.addToGraph(compilationUnit, featureGraph);
     FormalArgScanner.addToGraph(compilationUnit, featureGraph);
     GuardedByScanner.addToGraph(compilationUnit, featureGraph);
-
-    // prune all ast nodes with no successors (these are leaves not connected to tokens)
-    featureGraph.pruneLeaves(NodeType.AST_ELEMENT);
 
     linkCommentsToAstNodes(featureGraph);
 

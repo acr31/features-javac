@@ -17,6 +17,7 @@
 package uk.ac.cam.acr31.features.javac;
 
 import com.google.common.base.CaseFormat;
+import com.sun.source.tree.CompilationUnitTree;
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.tree.EndPosTable;
@@ -46,12 +47,7 @@ class AstScanner {
     AstScanner scanner = new AstScanner(featureGraph, compilationUnit.endPositions);
     try {
       scanner.scanOrThrow(
-          compilationUnit,
-          featureGraph.createFeatureNode(
-              NodeType.AST_ROOT,
-              "root",
-              0,
-              0));
+          compilationUnit, featureGraph.createFeatureNode(NodeType.AST_ROOT, "root", 0, 0));
     } catch (InvocationTargetException | IllegalAccessException e) {
       throw new RuntimeException(e);
     }
@@ -61,11 +57,7 @@ class AstScanner {
       throws InvocationTargetException, IllegalAccessException {
 
     GraphProtos.FeatureNode newNode =
-        featureGraph.createFeatureNode(
-            NodeType.AST_ELEMENT,
-            node.getKind().toString(),
-            node
-        );
+        featureGraph.createFeatureNode(NodeType.AST_ELEMENT, node.getKind().toString(), node);
     featureGraph.addEdge(parent, newNode, EdgeType.AST_CHILD);
 
     // TODO(acr31) check this implements Tree
@@ -73,6 +65,12 @@ class AstScanner {
 
     for (Method m : treeInterface.getDeclaredMethods()) {
       if (m.getParameterCount() != 0) {
+        continue;
+      }
+
+      // avoid methods which would involve visiting some part of the tree twice
+      if (CompilationUnitTree.class.isAssignableFrom(treeInterface)
+          && m.getName().equals("getPackageName")) {
         continue;
       }
 
