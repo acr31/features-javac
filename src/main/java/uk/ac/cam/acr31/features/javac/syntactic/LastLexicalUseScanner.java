@@ -23,6 +23,7 @@ import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreeScanner;
+import com.sun.tools.javac.code.Kinds;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.tree.JCTree;
 import java.util.Collection;
@@ -69,7 +70,7 @@ public class LastLexicalUseScanner extends TreeScanner<Void, Void> {
   @Override
   public Void visitIdentifier(IdentifierTree node, Void ignored) {
     var ident = (JCTree.JCIdent) node;
-    if (ident.sym != null) {
+    if (ident.sym != null && ident.sym.kind == Kinds.Kind.VAR) {
       symbolMap.put(ident.sym, node);
     }
     return super.visitIdentifier(node, ignored);

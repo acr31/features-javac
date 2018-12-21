@@ -18,16 +18,22 @@ package uk.ac.cam.acr31.features.javac.syntactic;
 
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.util.TreeScanner;
+import com.sun.tools.javac.code.Kinds;
+import com.sun.tools.javac.tree.JCTree;
 import java.util.ArrayList;
 import java.util.List;
 
+/** Collector for variable and field names. */
 class IdentifierCollector extends TreeScanner<Void, Void> {
 
   List<IdentifierTree> identifiers = new ArrayList<>();
 
   @Override
   public Void visitIdentifier(IdentifierTree node, Void ignored) {
-    identifiers.add(node);
+    JCTree.JCIdent ident = (JCTree.JCIdent) node;
+    if (ident.sym.kind == Kinds.Kind.VAR) {
+      identifiers.add(node);
+    }
     return super.visitIdentifier(node, ignored);
   }
 }

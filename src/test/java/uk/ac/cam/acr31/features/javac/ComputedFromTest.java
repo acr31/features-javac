@@ -18,7 +18,6 @@ package uk.ac.cam.acr31.features.javac;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -86,5 +85,23 @@ public class ComputedFromTest {
         .containsExactly(
             FeatureGraphChecks.edgeBetween(graph, c, a, EdgeType.COMPUTED_FROM),
             FeatureGraphChecks.edgeBetween(graph, c, b, EdgeType.COMPUTED_FROM));
+  }
+
+  @Test
+  public void computedFrom_excludesTypeIdentifiers() {
+    // ARRANGE
+    TestCompilation compilation =
+        TestCompilation.compile(
+            "Test.java", //
+            "public class Test {",
+            "  static String[] s = new String[] {};",
+            "}");
+
+    // ACT
+    FeatureGraph graph =
+        FeaturePlugin.createFeatureGraph(compilation.compilationUnit(), compilation.context());
+
+    // ASSERT
+    assertThat(graph.edges(EdgeType.COMPUTED_FROM)).isEmpty();
   }
 }
