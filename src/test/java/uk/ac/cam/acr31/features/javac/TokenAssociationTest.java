@@ -75,12 +75,8 @@ public class TokenAssociationTest {
     FeatureGraph graph =
         FeaturePlugin.createFeatureGraph(compilation.compilationUnit(), compilation.context());
 
-    Visualizer.show(graph);
-
     // ASSERT
-    //    ImmutableList<String> route = astPathToToken(graph, "args");
     assertThat(FeatureGraphChecks.edgeBetween(graph, variable, args, EdgeType.ASSOCIATED_TOKEN))
         .isNotNull();
-    //    assertThat(route).containsAllIn(ImmutableList.of("CLASS", "METHOD", "VARIABLE"));
   }
 }
