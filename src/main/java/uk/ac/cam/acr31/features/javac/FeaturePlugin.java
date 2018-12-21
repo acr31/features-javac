@@ -36,6 +36,7 @@ import java.util.ArrayDeque;
 import java.util.Comparator;
 import java.util.Deque;
 import java.util.HashSet;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Set;
 import uk.ac.cam.acr31.features.javac.graph.DotOutput;
@@ -91,7 +92,7 @@ public class FeaturePlugin implements Plugin {
         featuresOutputDirectory = options.get(FEATURES_OUTPUT_DIRECTORY);
       }
       writeOutput(featureGraph, featuresOutputDirectory);
-    } catch (AssertionError e) {
+    } catch (AssertionError | NoSuchElementException e) {
       throw new RuntimeException(
           "Failed to extract features from " + taskEvent.getSourceFile().getName(), e);
     }
