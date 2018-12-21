@@ -163,11 +163,13 @@ public class FeaturePlugin implements Plugin {
   private static void removeIdentifierAstNodes(FeatureGraph graph) {
     for (FeatureNode node : graph.astNodes()) {
       if (node.getContents().equals("IDENTIFIER")) {
-        FeatureNode source = Iterables.getOnlyElement(graph.predecessors(node, EdgeType.AST_CHILD));
+        Set<FeatureNode> sources = graph.predecessors(node, EdgeType.AST_CHILD);
         FeatureNode dest =
             Iterables.getOnlyElement(graph.successors(node, EdgeType.ASSOCIATED_TOKEN));
         graph.removeNode(node);
-        graph.addEdge(source, dest, EdgeType.ASSOCIATED_TOKEN);
+        for (FeatureNode source : sources) {
+          graph.addEdge(source, dest, EdgeType.ASSOCIATED_TOKEN);
+        }
         graph.replaceNodeInNodeMap(node, dest);
       }
     }

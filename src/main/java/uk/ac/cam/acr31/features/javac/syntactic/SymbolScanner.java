@@ -91,7 +91,14 @@ public class SymbolScanner extends TreeScanner<Void, Void> {
 
     FeatureNode featureNode = featureGraph.createFeatureNode(NodeType.SYMBOL, name, -1, -1);
     FeatureNode target = featureGraph.getFeatureNode(node);
-    if (target != null) {
+
+    // If your code says: String a = "a", b = "b", then javac synths up some extra ast nodes along
+    // the lines of String a = "a"; String b = "b";  some of the extra nodes will be clones, some
+    // (leaves) will just be the same node reused.  In this case we will visit String twice even
+    // though both times point to the same token so just check that there is no edge before adding
+    // another.
+
+    if (target != null && featureGraph.predecessors(target, EdgeType.ASSOCIATED_SYMBOL).isEmpty()) {
       featureGraph.addEdge(featureNode, target, EdgeType.ASSOCIATED_SYMBOL);
     }
   }

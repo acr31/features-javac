@@ -18,12 +18,12 @@ package uk.ac.cam.acr31.features.javac;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import uk.ac.cam.acr31.features.javac.graph.FeatureGraph;
 import uk.ac.cam.acr31.features.javac.testing.TestCompilation;
+import uk.ac.cam.acr31.features.javac.testing.Visualizer;
 
 @RunWith(JUnit4.class)
 public class FeaturePluginTest {
@@ -55,7 +55,6 @@ public class FeaturePluginTest {
   }
 
   @Test
-  @Ignore
   public void createIsSuccessful_multiVariableDecl() {
     // ARRANGE
     TestCompilation compilation =

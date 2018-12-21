@@ -74,15 +74,19 @@ public class FeatureGraph {
   }
 
   public FeatureNode createFeatureNode(NodeType nodeType, String contents, Tree tree) {
-    int startPosition = ((JCTree) tree).getStartPosition();
-    int endPosition = ((JCTree) tree).getEndPosition(endPosTable);
-    FeatureNode result = createFeatureNode(nodeType, contents, startPosition, endPosition);
+    // If your code says: String a = "a", b = "b", then javac synths up some extra ast nodes along
+    // the lines of String a = "a"; String b = "b";  some of the extra nodes will be clones, some
+    // (leaves) will just be the same node reused.  In this case we will try to create a node twice
+    // when we visit the reused node for the second time.
     if (nodeMap.containsKey(tree)) {
-      throw new AssertionError(
-          "Tree with contents " + contents + " is already in the nodeMap (second visit?)");
+      return nodeMap.get(tree);
+    } else {
+      int startPosition = ((JCTree) tree).getStartPosition();
+      int endPosition = ((JCTree) tree).getEndPosition(endPosTable);
+      FeatureNode result = createFeatureNode(nodeType, contents, startPosition, endPosition);
+      nodeMap.put(tree, result);
+      return result;
     }
-    nodeMap.put(tree, result);
-    return result;
   }
 
   public FeatureNode createFeatureNode(
