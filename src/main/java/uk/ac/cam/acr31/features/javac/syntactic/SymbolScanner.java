@@ -32,7 +32,7 @@ import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureEdge.EdgeType;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureNode;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureNode.NodeType;
 
-/** Attaches symbol nodes to all elements which javac has resolved a symbol for */
+/** Attaches symbol nodes to all elements which javac has resolved a symbol for. */
 public class SymbolScanner extends TreeScanner<Void, Void> {
 
   private final FeatureGraph featureGraph;
@@ -53,9 +53,9 @@ public class SymbolScanner extends TreeScanner<Void, Void> {
   }
 
   @Override
-  public Void visitNewClass(NewClassTree node, Void aVoid) {
+  public Void visitNewClass(NewClassTree node, Void ignored) {
     addNode(node);
-    return super.visitNewClass(node, aVoid);
+    return super.visitNewClass(node, ignored);
   }
 
   @Override
@@ -77,9 +77,9 @@ public class SymbolScanner extends TreeScanner<Void, Void> {
   }
 
   @Override
-  public Void visitMemberSelect(MemberSelectTree node, Void aVoid) {
+  public Void visitMemberSelect(MemberSelectTree node, Void ignored) {
     addNode(node);
-    return super.visitMemberSelect(node, aVoid);
+    return super.visitMemberSelect(node, ignored);
   }
 
   private void addNode(Tree node) {
