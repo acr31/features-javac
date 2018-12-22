@@ -16,6 +16,7 @@
 
 package uk.ac.cam.acr31.features.javac;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
 import com.sun.source.util.JavacTask;
@@ -158,15 +159,28 @@ public class FeaturePlugin implements Plugin {
     for (FeatureNode node : graph.astNodes()) {
       if (node.getContents().equals("IDENTIFIER")) {
         Set<FeatureNode> sources = graph.predecessors(node, EdgeType.AST_CHILD);
-        FeatureNode dest =
-            Iterables.getOnlyElement(graph.successors(node, EdgeType.ASSOCIATED_TOKEN));
-        graph.removeNode(node);
-        for (FeatureNode source : sources) {
-          graph.addEdge(source, dest, EdgeType.ASSOCIATED_TOKEN);
+        for (EdgeType edgeType : ImmutableList.of(EdgeType.ASSOCIATED_TOKEN, EdgeType.AST_CHILD)) {
+          if (removeNode(graph, node, sources, edgeType)) {
+            break;
+          }
         }
-        graph.replaceNodeInNodeMap(node, dest);
       }
     }
+  }
+
+  private static boolean removeNode(
+      FeatureGraph graph, FeatureNode node, Set<FeatureNode> sources, EdgeType edgeType) {
+    Set<FeatureNode> successors = graph.successors(node, edgeType);
+    if (successors.isEmpty()) {
+      return false;
+    }
+    FeatureNode dest = Iterables.getOnlyElement(successors);
+    graph.removeNode(node);
+    for (FeatureNode source : sources) {
+      graph.addEdge(source, dest, edgeType);
+    }
+    graph.replaceNodeInNodeMap(node, dest);
+    return true;
   }
 
   private static final Comparator<FeatureNode> TOKENS_LAST =

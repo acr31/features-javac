@@ -63,10 +63,9 @@ public class FeatureGraph {
 
   public void replaceNodeInNodeMap(FeatureNode original, FeatureNode replacement) {
     Tree tree = nodeMap.inverse().get(original);
-    if (tree == null) {
-      throw new AssertionError("Failed to find a tree in the map for " + original);
+    if (tree != null) {
+      nodeMap.put(tree, replacement);
     }
-    nodeMap.put(tree, replacement);
   }
 
   public FeatureNode createFeatureNode(NodeType nodeType, String contents, Tree tree) {
