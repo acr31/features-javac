@@ -95,7 +95,7 @@ public class DataflowOutputsScanner extends TreeScanner<Void, ScanContext> {
     PossibleTreeSet possibles = r.getValue(node);
     if (possibles != null) {
       for (Tree tree : possibles.nodes()) {
-        graph.addIdentifierEdge(node, tree, edgeType);
+        graph.addIdentifierEdge(tree, node, edgeType);
       }
     }
   }
