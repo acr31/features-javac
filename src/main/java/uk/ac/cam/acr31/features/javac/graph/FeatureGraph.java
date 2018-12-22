@@ -127,7 +127,7 @@ public class FeatureGraph {
   }
 
   public Set<FeatureNode> astNodes() {
-    return nodes(NodeType.AST_ELEMENT);
+    return nodes(NodeType.AST_ELEMENT, NodeType.SYNTHETIC_AST_ELEMENT);
   }
 
   public Set<FeatureNode> comments() {

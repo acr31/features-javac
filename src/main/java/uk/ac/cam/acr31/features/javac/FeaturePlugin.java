@@ -16,10 +16,8 @@
 
 package uk.ac.cam.acr31.features.javac;
 
+import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Range;
-import com.google.common.collect.RangeMap;
-import com.google.common.collect.TreeRangeMap;
 import com.sun.source.util.JavacTask;
 import com.sun.source.util.Plugin;
 import com.sun.source.util.TaskEvent;
@@ -32,11 +30,7 @@ import com.sun.tools.javac.util.Options;
 import java.io.File;
 import java.io.IOError;
 import java.io.IOException;
-import java.util.ArrayDeque;
 import java.util.Comparator;
-import java.util.Deque;
-import java.util.HashSet;
-import java.util.Objects;
 import java.util.Set;
 import uk.ac.cam.acr31.features.javac.graph.DotOutput;
 import uk.ac.cam.acr31.features.javac.graph.FeatureGraph;
@@ -175,35 +169,39 @@ public class FeaturePlugin implements Plugin {
     }
   }
 
+  private static final Comparator<FeatureNode> TOKENS_LAST =
+      Comparator.comparing(
+          n -> {
+            switch (n.getType()) {
+              case TOKEN:
+                return 1;
+              default:
+                return 0;
+            }
+          });
+
+  private static final Comparator<FeatureNode> BY_START_POSITION =
+      Comparator.comparing(FeatureNode::getStartPosition);
+
+  private static final Comparator<FeatureNode> BY_ID = Comparator.comparing(FeatureNode::getId);
+
   private static void linkTokensToAstNodes(FeatureGraph featureGraph) {
 
-    RangeMap<Integer, FeatureNode> astRanges = TreeRangeMap.create();
-    Deque<FeatureNode> work = new ArrayDeque<>();
-    work.add(featureGraph.root());
-    Set<FeatureNode> visited = new HashSet<>();
-    while (!work.isEmpty()) {
-      FeatureNode next = Objects.requireNonNull(work.poll());
-      if (visited.contains(next)) {
-        continue;
-      }
-      visited.add(next);
-      astRanges.put(Range.closedOpen(next.getStartPosition(), next.getEndPosition()), next);
-      work.addAll(featureGraph.successors(next, EdgeType.AST_CHILD));
-    }
+    ImmutableSortedSet<FeatureNode> astNodes =
+        ImmutableSortedSet.orderedBy(
+                BY_START_POSITION.thenComparing(TOKENS_LAST).thenComparing(BY_ID))
+            .addAll(featureGraph.astNodes())
+            .addAll(featureGraph.tokens())
+            .build();
 
     for (FeatureNode token : featureGraph.tokens()) {
-      FeatureNode smallestNode =
-          astRanges
-              .subRangeMap(Range.closedOpen(token.getStartPosition(), token.getEndPosition()))
-              .asMapOfRanges()
-              .entrySet()
-              .stream()
-              .min(
-                  Comparator.comparing(
-                      entry -> entry.getKey().upperEndpoint() - entry.getKey().lowerEndpoint()))
-              .orElseThrow(AssertionError::new)
-              .getValue();
-      featureGraph.addEdge(smallestNode, token, EdgeType.ASSOCIATED_TOKEN);
+      astNodes
+          .headSet(token)
+          .stream()
+          .filter(n -> n.getType().equals(NodeType.AST_ELEMENT))
+          .filter(n -> n.getEndPosition() >= token.getEndPosition())
+          .min(Comparator.comparing(n -> n.getEndPosition() - n.getStartPosition()))
+          .ifPresent(n -> featureGraph.addEdge(n, token, EdgeType.ASSOCIATED_TOKEN));
     }
   }
 
