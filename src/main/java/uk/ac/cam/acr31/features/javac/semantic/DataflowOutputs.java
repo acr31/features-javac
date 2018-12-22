@@ -24,19 +24,12 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 import javax.annotation.processing.ProcessingEnvironment;
-import org.checkerframework.dataflow.analysis.AbstractValue;
 import org.checkerframework.dataflow.analysis.Analysis;
 import org.checkerframework.dataflow.analysis.AnalysisResult;
-import org.checkerframework.dataflow.analysis.Store;
-import org.checkerframework.dataflow.analysis.TransferFunction;
 import org.checkerframework.dataflow.cfg.CFGBuilder;
-import org.checkerframework.dataflow.cfg.CFGVisualizer;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
-import org.checkerframework.dataflow.cfg.DOTCFGVisualizer;
 
 public class DataflowOutputs {
 
@@ -105,26 +98,13 @@ public class DataflowOutputs {
     lastWriteAnalysis.performAnalysis(controlFlowGraph);
     AnalysisResult<PossibleTreeSet, PossibleTreeSetStore> lastWrites =
         lastWriteAnalysis.getResult();
-    //    writeToDot(controlFlowGraph, lastWriteAnalysis);
 
     LastUseTransferFunction lastUseTransferFunction = new LastUseTransferFunction();
     Analysis<PossibleTreeSet, PossibleTreeSetStore, LastUseTransferFunction> lastUseAnalysis =
         new Analysis<>(lastUseTransferFunction, processingEnvironment);
     lastUseAnalysis.performAnalysis(controlFlowGraph);
     AnalysisResult<PossibleTreeSet, PossibleTreeSetStore> lastUses = lastUseAnalysis.getResult();
-    //    writeToDot(controlFlowGraph, lastUseAnalysis);
 
     return Optional.of(new DataflowOutputs(lastWrites, lastUses));
-  }
-
-  private static <A extends AbstractValue<A>, B extends Store<B>, C extends TransferFunction<A, B>>
-      void writeToDot(ControlFlowGraph controlFlowGraph, Analysis<A, B, C> analysis) {
-    Map<String, Object> args = new HashMap<>();
-    args.put("outdir", "/Users/acr31/ggg");
-    args.put("checkerName", analysis.getTransferFunction().getClass().getSimpleName());
-    CFGVisualizer<A, B, C> viz = new DOTCFGVisualizer<>();
-    viz.init(args);
-    viz.visualize(controlFlowGraph, controlFlowGraph.getEntryBlock(), analysis);
-    viz.shutdown();
   }
 }
