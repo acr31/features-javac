@@ -61,6 +61,10 @@ public class FeatureGraph {
     return nodeMap.get(tree);
   }
 
+  public Tree getTree(FeatureNode node) {
+    return nodeMap.inverse().get(node);
+  }
+
   public void replaceNodeInNodeMap(FeatureNode original, FeatureNode replacement) {
     Tree tree = nodeMap.inverse().get(original);
     if (tree != null) {

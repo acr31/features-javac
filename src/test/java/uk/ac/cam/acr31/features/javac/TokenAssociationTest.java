@@ -79,4 +79,75 @@ public class TokenAssociationTest {
     assertThat(FeatureGraphChecks.edgeBetween(graph, variable, args, EdgeType.ASSOCIATED_TOKEN))
         .isNotNull();
   }
+
+  @Test
+  public void tokenAssociated_withNewClassTree() {
+    // ARRANGE
+    TestCompilation compilation =
+        TestCompilation.compile(
+            "Test.java",
+            "public class Test {", //
+            "  static Test t = new Test();",
+            "}");
+    SourceSpan newClass = compilation.sourceSpan("new Test()");
+    SourceSpan identifier = compilation.sourceSpan("Test", "();");
+
+    // ACT
+    FeatureGraph featureGraph =
+        FeaturePlugin.createFeatureGraph(compilation.compilationUnit(), compilation.context());
+
+    // ASSERT
+    assertThat(
+        FeatureGraphChecks.edgeBetween(
+            featureGraph, newClass, identifier, EdgeType.ASSOCIATED_TOKEN));
+  }
+
+  @Test
+  public void tokenAssociated_withDeprecatedEnum() {
+    // This odd case causes javac to create an NewClassTree with Kind ENUM that has a span that
+    // swallows the BAR. If you drop the Deprecated it doesn't happen.
+    // ARRANGE
+    TestCompilation compilation =
+        TestCompilation.compile(
+            "Test.java", //
+            "enum Foo {",
+            "  @Deprecated",
+            "  BAR() {}",
+            "}");
+    SourceSpan variableNode = compilation.sourceSpan("@Deprecated\n  BAR() {}");
+    SourceSpan identifier = compilation.sourceSpan("BAR");
+
+    // ACT
+    FeatureGraph graph =
+        FeaturePlugin.createFeatureGraph(compilation.compilationUnit(), compilation.context());
+
+    // ASSERT
+    assertThat(
+        FeatureGraphChecks.edgeBetween(graph, variableNode, identifier, EdgeType.ASSOCIATED_TOKEN));
+  }
+
+  @Test
+  public void lastUsed_addsEdge_toArrayAfterVariableUsage() {
+    // When the array type is after the identifier then the ArrayTypeTree dominates the identifier
+    // token causing it to be misassociated.
+    // ARRANGE
+    TestCompilation compilation =
+        TestCompilation.compile(
+            "Test.java", //
+            "public class Test {",
+            "  void method() {",
+            "    int a[] = new int[3];",
+            "  }",
+            "}");
+    SourceSpan variableNode = compilation.sourceSpan("int a[] = new int[3];");
+    SourceSpan identifier = compilation.sourceSpan("a", "[]");
+
+    // ACT
+    FeatureGraph graph =
+        FeaturePlugin.createFeatureGraph(compilation.compilationUnit(), compilation.context());
+
+    // ASSERT
+    assertThat(
+        FeatureGraphChecks.edgeBetween(graph, variableNode, identifier, EdgeType.ASSOCIATED_TOKEN));
+  }
 }

@@ -208,19 +208,33 @@ public class FeaturePlugin implements Plugin {
             .addAll(featureGraph.tokens())
             .build();
 
+    // First of all we consider variable trees and associate them with the first token within their
+    // span that has a matching name. This is necessary because there are various ways that javac
+    // creates a smaller node that swallows the variable identifier.
+    JCTree.JCVariableDecl latestVariableTree = null;
+    for (FeatureNode node : astNodes) {
+      if (node.getType().equals(NodeType.AST_ELEMENT) && node.getContents().equals("VARIABLE")) {
+        latestVariableTree = (JCTree.JCVariableDecl) featureGraph.getTree(node);
+      }
+      if (latestVariableTree != null) {
+        if (node.getType().equals(NodeType.IDENTIFIER_TOKEN)
+            && latestVariableTree.getName().contentEquals(node.getContents())) {
+          featureGraph.addEdge(
+              featureGraph.getFeatureNode(latestVariableTree), node, EdgeType.ASSOCIATED_TOKEN);
+          latestVariableTree = null;
+        }
+      }
+    }
+
     for (FeatureNode token : featureGraph.tokens()) {
+      if (!featureGraph.predecessors(token, EdgeType.ASSOCIATED_TOKEN).isEmpty()) {
+        continue;
+      }
       astNodes
           .headSet(token)
           .stream()
           .filter(n -> n.getType().equals(NodeType.AST_ELEMENT))
           .filter(n -> n.getEndPosition() >= token.getEndPosition())
-          // If you write an array type like this int a[] then the array type node surrounds the
-          // identifier and therefore swallows the identifier token. To avoid this we don't
-          // allow attaching to IDENTIFIER_TOKENS to ARRAY_TYPE nodes
-          .filter(
-              n ->
-                  !token.getType().equals(NodeType.IDENTIFIER_TOKEN)
-                      || !n.getContents().equals("ARRAY_TYPE"))
           .min(Comparator.comparing(n -> n.getEndPosition() - n.getStartPosition()))
           .ifPresent(n -> featureGraph.addEdge(n, token, EdgeType.ASSOCIATED_TOKEN));
     }

@@ -22,9 +22,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import uk.ac.cam.acr31.features.javac.graph.FeatureGraph;
-import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureEdge.EdgeType;
-import uk.ac.cam.acr31.features.javac.testing.FeatureGraphChecks;
-import uk.ac.cam.acr31.features.javac.testing.SourceSpan;
 import uk.ac.cam.acr31.features.javac.testing.TestCompilation;
 
 @RunWith(JUnit4.class)
@@ -90,27 +87,5 @@ public class FeaturePluginTest {
 
     // ASSERT
     assertThat(featureGraph.astNodes()).isNotEmpty();
-  }
-
-  @Test
-  public void createIsSuccessful_withNewClassTree() {
-    // ARRANGE
-    TestCompilation compilation =
-        TestCompilation.compile(
-            "Test.java",
-            "public class Test {", //
-            "  static Test t = new Test();",
-            "}");
-    SourceSpan newClass = compilation.sourceSpan("new Test()");
-    SourceSpan identifier = compilation.sourceSpan("Test", "();");
-
-    // ACT
-    FeatureGraph featureGraph =
-        FeaturePlugin.createFeatureGraph(compilation.compilationUnit(), compilation.context());
-
-    // ASSERT
-    assertThat(
-        FeatureGraphChecks.edgeBetween(
-            featureGraph, newClass, identifier, EdgeType.ASSOCIATED_TOKEN));
   }
 }
