@@ -18,6 +18,8 @@ package uk.ac.cam.acr31.features.javac.graph;
 
 import static com.google.common.collect.ImmutableSet.toImmutableSet;
 
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
@@ -27,8 +29,6 @@ import com.sun.source.tree.LineMap;
 import com.sun.source.tree.Tree;
 import com.sun.tools.javac.tree.EndPosTable;
 import com.sun.tools.javac.tree.JCTree;
-import java.util.IdentityHashMap;
-import java.util.Map;
 import java.util.Set;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureEdge;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureEdge.EdgeType;
@@ -40,7 +40,7 @@ public class FeatureGraph {
 
   private final String sourceFileName;
   private final MutableNetwork<FeatureNode, FeatureEdge> graph;
-  private final Map<Tree, FeatureNode> nodeMap;
+  private final BiMap<Tree, FeatureNode> nodeMap;
   private int nodeIdCounter = 0;
   private final EndPosTable endPosTable;
   private final LineMap lineMap;
@@ -48,7 +48,7 @@ public class FeatureGraph {
   public FeatureGraph(String sourceFileName, EndPosTable endPosTable, LineMap lineMap) {
     this.sourceFileName = sourceFileName;
     this.graph = NetworkBuilder.directed().allowsSelfLoops(true).allowsParallelEdges(true).build();
-    this.nodeMap = new IdentityHashMap<>();
+    this.nodeMap = HashBiMap.create();
     this.endPosTable = endPosTable;
     this.lineMap = lineMap;
   }
@@ -62,14 +62,10 @@ public class FeatureGraph {
   }
 
   public void replaceNodeInNodeMap(FeatureNode original, FeatureNode replacement) {
-    Tree tree =
-        nodeMap
-            .entrySet()
-            .stream()
-            .filter(entry -> entry.getValue().equals(original))
-            .map(Map.Entry::getKey)
-            .findFirst()
-            .orElseThrow();
+    Tree tree = nodeMap.inverse().get(original);
+    if (tree == null) {
+      throw new AssertionError("Failed to find a tree in the map for " + original);
+    }
     nodeMap.put(tree, replacement);
   }
 
@@ -233,6 +229,7 @@ public class FeatureGraph {
             .filter(n -> graph.successors(n).isEmpty())
             .collect(toImmutableSet());
     toRemove.forEach(graph::removeNode);
+    toRemove.forEach(n -> nodeMap.inverse().remove(n));
     return !toRemove.isEmpty();
   }
 

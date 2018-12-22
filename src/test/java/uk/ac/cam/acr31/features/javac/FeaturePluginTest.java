@@ -70,4 +70,22 @@ public class FeaturePluginTest {
     // ASSERT
     assertThat(featureGraph.astNodes()).isNotEmpty();
   }
+
+  @Test
+  public void createIsSuccessful_implicitSuperConstructor() {
+    // ARRANGE
+    TestCompilation compilation =
+        TestCompilation.compile(
+            "Test.java",
+            "public class Test {", //
+            "  Test() {}",
+            "}");
+
+    // ACT
+    FeatureGraph featureGraph =
+        FeaturePlugin.createFeatureGraph(compilation.compilationUnit(), compilation.context());
+
+    // ASSERT
+    assertThat(featureGraph.astNodes()).isNotEmpty();
+  }
 }
