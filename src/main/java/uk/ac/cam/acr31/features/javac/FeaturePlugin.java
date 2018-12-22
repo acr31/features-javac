@@ -27,6 +27,7 @@ import com.sun.tools.javac.api.BasicJavacTask;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.util.Context;
+import com.sun.tools.javac.util.Name;
 import com.sun.tools.javac.util.Options;
 import java.io.File;
 import java.io.IOError;
@@ -211,20 +212,24 @@ public class FeaturePlugin implements Plugin {
     // First of all we consider variable trees and associate them with the first token within their
     // span that has a matching name. This is necessary because there are various ways that javac
     // creates a smaller node that swallows the variable identifier.
-    JCTree.JCVariableDecl latestVariableTree = null;
-    for (FeatureNode node : astNodes) {
-      if (node.getType().equals(NodeType.AST_ELEMENT) && node.getContents().equals("VARIABLE")) {
-        latestVariableTree = (JCTree.JCVariableDecl) featureGraph.getTree(node);
-      }
-      if (latestVariableTree != null) {
-        if (node.getType().equals(NodeType.IDENTIFIER_TOKEN)
-            && latestVariableTree.getName().contentEquals(node.getContents())) {
-          featureGraph.addEdge(
-              featureGraph.getFeatureNode(latestVariableTree), node, EdgeType.ASSOCIATED_TOKEN);
-          latestVariableTree = null;
-        }
-      }
-    }
+    astNodes
+        .stream()
+        .filter(node -> node.getType().equals(NodeType.AST_ELEMENT))
+        .filter(node -> node.getContents().equals("VARIABLE"))
+        .forEach(
+            node -> {
+              JCTree.JCVariableDecl variableTree =
+                  (JCTree.JCVariableDecl) featureGraph.getTree(node);
+              Name expectedName = variableTree.getName();
+              astNodes
+                  .tailSet(node)
+                  .stream()
+                  .filter(target -> target.getType().equals(NodeType.IDENTIFIER_TOKEN))
+                  .filter(target -> expectedName.contentEquals(target.getContents()))
+                  .findFirst()
+                  .ifPresent(
+                      target -> featureGraph.addEdge(node, target, EdgeType.ASSOCIATED_TOKEN));
+            });
 
     for (FeatureNode token : featureGraph.tokens()) {
       if (!featureGraph.predecessors(token, EdgeType.ASSOCIATED_TOKEN).isEmpty()) {

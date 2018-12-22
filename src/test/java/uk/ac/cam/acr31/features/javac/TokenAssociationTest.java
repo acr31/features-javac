@@ -28,7 +28,6 @@ import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureNode;
 import uk.ac.cam.acr31.features.javac.testing.FeatureGraphChecks;
 import uk.ac.cam.acr31.features.javac.testing.SourceSpan;
 import uk.ac.cam.acr31.features.javac.testing.TestCompilation;
-import uk.ac.cam.acr31.features.javac.testing.Visualizer;
 
 @RunWith(JUnit4.class)
 public class TokenAssociationTest {
@@ -98,8 +97,9 @@ public class TokenAssociationTest {
 
     // ASSERT
     assertThat(
-        FeatureGraphChecks.edgeBetween(
-            featureGraph, newClass, identifier, EdgeType.ASSOCIATED_TOKEN));
+            FeatureGraphChecks.edgeBetween(
+                featureGraph, newClass, identifier, EdgeType.ASSOCIATED_TOKEN))
+        .isNotNull();
   }
 
   @Test
@@ -123,11 +123,13 @@ public class TokenAssociationTest {
 
     // ASSERT
     assertThat(
-        FeatureGraphChecks.edgeBetween(graph, variableNode, identifier, EdgeType.ASSOCIATED_TOKEN));
+            FeatureGraphChecks.edgeBetween(
+                graph, variableNode, identifier, EdgeType.ASSOCIATED_TOKEN))
+        .isNotNull();
   }
 
   @Test
-  public void lastUsed_addsEdge_toArrayAfterVariableUsage() {
+  public void tokanAssociated_toArrayAfterVariableUsage() {
     // When the array type is after the identifier then the ArrayTypeTree dominates the identifier
     // token causing it to be misassociated.
     // ARRANGE
@@ -148,6 +150,36 @@ public class TokenAssociationTest {
 
     // ASSERT
     assertThat(
-        FeatureGraphChecks.edgeBetween(graph, variableNode, identifier, EdgeType.ASSOCIATED_TOKEN));
+            FeatureGraphChecks.edgeBetween(
+                graph, variableNode, identifier, EdgeType.ASSOCIATED_TOKEN))
+        .isNotNull();
+  }
+
+  @Test
+  public void tokenAssociated_toSimultaneousInitialisationOfArrays() {
+    TestCompilation compilation =
+        TestCompilation.compile(
+            "Test.java", //
+            "public class Test {",
+            "  int arr[] = { 0 }, arr2[] = { 0 };",
+            "}");
+    SourceSpan variableNode1 = compilation.sourceSpan("int arr[] = { 0 },");
+    SourceSpan identifier1 = compilation.sourceSpan("arr", "[]");
+    SourceSpan variableNode2 = compilation.sourceSpan("int arr[] = { 0 }, arr2[] = { 0 };");
+    SourceSpan identifier2 = compilation.sourceSpan("arr2", "[]");
+
+    // ACT
+    FeatureGraph graph =
+        FeaturePlugin.createFeatureGraph(compilation.compilationUnit(), compilation.context());
+
+    // ASSERT
+    assertThat(
+            FeatureGraphChecks.edgeBetween(
+                graph, variableNode1, identifier1, EdgeType.ASSOCIATED_TOKEN))
+        .isNotNull();
+    assertThat(
+            FeatureGraphChecks.edgeBetween(
+                graph, variableNode2, identifier2, EdgeType.ASSOCIATED_TOKEN))
+        .isNotNull();
   }
 }
