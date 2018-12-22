@@ -214,6 +214,13 @@ public class FeaturePlugin implements Plugin {
           .stream()
           .filter(n -> n.getType().equals(NodeType.AST_ELEMENT))
           .filter(n -> n.getEndPosition() >= token.getEndPosition())
+          // If you write an array type like this int a[] then the array type node surrounds the
+          // identifier and therefore swallows the identifier token. To avoid this we don't
+          // allow attaching to IDENTIFIER_TOKENS to ARRAY_TYPE nodes
+          .filter(
+              n ->
+                  !token.getType().equals(NodeType.IDENTIFIER_TOKEN)
+                      || !n.getContents().equals("ARRAY_TYPE"))
           .min(Comparator.comparing(n -> n.getEndPosition() - n.getStartPosition()))
           .ifPresent(n -> featureGraph.addEdge(n, token, EdgeType.ASSOCIATED_TOKEN));
     }
