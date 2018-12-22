@@ -43,12 +43,7 @@ public class Tokens {
       }
       FeatureNode tokenNode =
           featureGraph.createFeatureNode(
-              token.kind().equals(TokenKind.IDENTIFIER)
-                  ? NodeType.IDENTIFIER_TOKEN
-                  : NodeType.TOKEN,
-              tokenToString(token),
-              token.pos(),
-              token.endPos());
+              getNodeType(token), tokenToString(token), token.pos(), token.endPos());
       if (previousTokenNode != null) {
         featureGraph.addEdge(previousTokenNode, tokenNode, EdgeType.NEXT_TOKEN);
       }
@@ -100,6 +95,17 @@ public class Tokens {
         return token.name().toString();
       default:
         return token.kind().name();
+    }
+  }
+
+  private static NodeType getNodeType(ErrorProneToken token) {
+    switch (token.kind()) {
+      case IDENTIFIER:
+      case SUPER:
+      case THIS:
+        return NodeType.IDENTIFIER_TOKEN;
+      default:
+        return NodeType.TOKEN;
     }
   }
 }

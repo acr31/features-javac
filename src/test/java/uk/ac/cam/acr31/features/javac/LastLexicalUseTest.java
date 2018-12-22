@@ -118,4 +118,35 @@ public class LastLexicalUseTest {
         .containsExactly(
             FeatureGraphChecks.edgeBetween(graph, firstA, secondA, EdgeType.LAST_LEXICAL_USE));
   }
+
+  @Test
+  public void lastLexicalUse_createsEdge_ThroughSuperAndThis() {
+    // ARRANGE
+    TestCompilation compilation =
+        TestCompilation.compile(
+            "Test.java", //
+            "class Super {",
+            "   void method(int superParam) {}",
+            "}",
+            "public class Test extends Super {",
+            "  void test() {",
+            "    int a = 0;",
+            "    super.method(a);",
+            "    this.method(a);",
+            "  }",
+            "}");
+    SourceSpan firstA = compilation.sourceSpan("a", " = 0;");
+    SourceSpan secondA = compilation.sourceSpan("super.method(", "a", ");");
+    SourceSpan thirdA = compilation.sourceSpan("this.method(", "a", ");");
+
+    // ACT
+    FeatureGraph graph =
+        FeaturePlugin.createFeatureGraph(compilation.compilationUnit(), compilation.context());
+
+    // ASSERT
+    assertThat(graph.edges(EdgeType.LAST_LEXICAL_USE))
+        .containsExactly(
+            FeatureGraphChecks.edgeBetween(graph, firstA, secondA, EdgeType.LAST_LEXICAL_USE),
+            FeatureGraphChecks.edgeBetween(graph, secondA, thirdA, EdgeType.LAST_LEXICAL_USE));
+  }
 }

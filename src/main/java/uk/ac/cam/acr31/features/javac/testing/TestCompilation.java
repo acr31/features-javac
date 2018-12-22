@@ -76,15 +76,18 @@ public abstract class TestCompilation {
 
   /** Return the source position of the first character of target. */
   public SourceSpan sourceSpan(String target, String followedBy) {
-    int startPosition = source().indexOf(target + followedBy);
-    if (startPosition == -1) {
-      throw new AssertionError("Failed to find '" + target + followedBy + "' in source.");
-    }
-    int endPosition = startPosition + target.length();
-    return SourceSpan.create(startPosition, endPosition);
+    return sourceSpan("", target, followedBy);
   }
 
   public SourceSpan sourceSpan(String target) {
-    return sourceSpan(target, "");
+    return sourceSpan("", target, "");
+  }
+
+  public SourceSpan sourceSpan(String prefix, String target, String followedBy) {
+    int base = source().indexOf(prefix + target + followedBy);
+    if (base == -1) {
+      throw new AssertionError("Failed to find '" + prefix + target + followedBy + "' in source.");
+    }
+    return SourceSpan.create(base + prefix.length(), base + prefix.length() + target.length());
   }
 }
