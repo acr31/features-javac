@@ -23,7 +23,6 @@ import com.sun.source.tree.Tree;
 import com.sun.source.util.TreeScanner;
 import uk.ac.cam.acr31.features.javac.graph.FeatureGraph;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureEdge.EdgeType;
-import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureNode;
 
 /**
  * Add GUARDED_BY and GUARDED_BY_NEGATION edges between variable usages and the expression guarding
@@ -60,10 +59,8 @@ public class GuardedByScanner extends TreeScanner<Void, Void> {
     }
     IdentifierCollector ic = new IdentifierCollector();
     node.accept(ic, null);
-    FeatureNode dest = graph.getFeatureNode(root);
     for (IdentifierTree identifierTree : ic.identifiers) {
-      FeatureNode featureNode = graph.getFeatureNode(identifierTree);
-      graph.addEdge(featureNode, dest, edgeType);
+      graph.addEdge(identifierTree, root, edgeType);
     }
   }
 }

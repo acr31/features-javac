@@ -30,7 +30,6 @@ import java.util.Collection;
 import java.util.Iterator;
 import uk.ac.cam.acr31.features.javac.graph.FeatureGraph;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureEdge.EdgeType;
-import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureNode;
 
 /** Adds edges between each usage of a variable in lexical order in the file. */
 public class LastLexicalUseScanner extends TreeScanner<Void, Void> {
@@ -49,12 +48,7 @@ public class LastLexicalUseScanner extends TreeScanner<Void, Void> {
       Tree prevItem = idIterator.next();
       while (idIterator.hasNext()) {
         Tree next = idIterator.next();
-        FeatureNode prevNode = featureGraph.getFeatureNode(prevItem);
-        FeatureNode nextNode = featureGraph.getFeatureNode(next);
-        featureGraph.addEdge(
-            featureGraph.toIdentifierNode(prevNode),
-            featureGraph.toIdentifierNode(nextNode),
-            EdgeType.LAST_LEXICAL_USE);
+        featureGraph.addIdentifierEdge(prevItem, next, EdgeType.LAST_LEXICAL_USE);
         prevItem = next;
       }
     }

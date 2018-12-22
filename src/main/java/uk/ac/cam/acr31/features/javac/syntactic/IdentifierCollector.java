@@ -17,6 +17,7 @@
 package uk.ac.cam.acr31.features.javac.syntactic;
 
 import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.NewClassTree;
 import com.sun.source.util.TreeScanner;
 import com.sun.tools.javac.code.Kinds;
 import com.sun.tools.javac.tree.JCTree;
@@ -27,6 +28,16 @@ import java.util.List;
 class IdentifierCollector extends TreeScanner<Void, Void> {
 
   List<IdentifierTree> identifiers = new ArrayList<>();
+
+  @Override
+  public Void visitNewClass(NewClassTree node, Void ignored) {
+    // dont visit the body of anonymous inner class constructors
+    scan(node.getEnclosingExpression(), null);
+    scan(node.getIdentifier(), null);
+    scan(node.getTypeArguments(), null);
+    scan(node.getArguments(), null);
+    return null;
+  }
 
   @Override
   public Void visitIdentifier(IdentifierTree node, Void ignored) {

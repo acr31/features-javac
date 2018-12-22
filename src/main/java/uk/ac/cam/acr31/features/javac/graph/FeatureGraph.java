@@ -232,6 +232,25 @@ public class FeatureGraph {
     return !toRemove.isEmpty();
   }
 
+  public void addEdge(Tree source, Tree dest, EdgeType type) {
+    FeatureNode sourceNode = getFeatureNode(source);
+    FeatureNode destNode = getFeatureNode(dest);
+    if (sourceNode == null || destNode == null) {
+      return;
+    }
+    addEdge(sourceNode, destNode, type);
+  }
+
+  public void addIdentifierEdge(Tree source, Tree dest, EdgeType type) {
+    FeatureNode sourceNode = getFeatureNode(source);
+    FeatureNode destNode = getFeatureNode(dest);
+    if (sourceNode == null || destNode == null) {
+      return;
+    }
+
+    addEdge(toIdentifierNode(sourceNode), toIdentifierNode(destNode), type);
+  }
+
   public void addEdge(FeatureNode source, FeatureNode dest, EdgeType type) {
     graph.addEdge(
         source,

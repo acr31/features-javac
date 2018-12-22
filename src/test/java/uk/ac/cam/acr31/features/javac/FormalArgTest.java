@@ -55,4 +55,29 @@ public class FormalArgTest {
         .containsExactly(
             FeatureGraphChecks.edgeBetween(graph, a, formalParameter, EdgeType.FORMAL_ARG_NAME));
   }
+
+  @Test
+  public void formalArg_createsEdge_betweenConstructor() {
+    // ARRANGE
+    TestCompilation compilation =
+        TestCompilation.compile(
+            "Test.java", //
+            "public class Test {",
+            "  Test(int arg0) {}",
+            "  void test() {",
+            "    int a = 0;",
+            "    Test o = new Test(a);",
+            "  }",
+            "}");
+    SourceSpan arg0 = compilation.sourceSpan("arg0");
+    SourceSpan a = compilation.sourceSpan("a", ")");
+
+    // ACT
+    FeatureGraph graph =
+        FeaturePlugin.createFeatureGraph(compilation.compilationUnit(), compilation.context());
+
+    // ASSERT
+    assertThat(graph.edges(EdgeType.FORMAL_ARG_NAME))
+        .containsExactly(FeatureGraphChecks.edgeBetween(graph, a, arg0, EdgeType.FORMAL_ARG_NAME));
+  }
 }

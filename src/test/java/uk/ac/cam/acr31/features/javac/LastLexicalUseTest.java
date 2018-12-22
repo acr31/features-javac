@@ -63,4 +63,59 @@ public class LastLexicalUseTest {
             FeatureGraphChecks.edgeBetween(graph, secondUse, thirdUse, EdgeType.LAST_LEXICAL_USE),
             FeatureGraphChecks.edgeBetween(graph, thirdUse, fourthUse, EdgeType.LAST_LEXICAL_USE));
   }
+
+  @Test
+  public void lastLexicalUse_followsInnerClass() {
+    // ARRANGE
+    TestCompilation compilation =
+        TestCompilation.compile(
+            "Test.java", //
+            "public class Test {",
+            "  void test() {",
+            "    int a = 0;",
+            "    Object o = new Object() {",
+            "       int b = a;",
+            "    };",
+            "  }",
+            "}");
+    SourceSpan firstA = compilation.sourceSpan("a", " = 0;");
+    SourceSpan secondA = compilation.sourceSpan("a", ";");
+
+    // ACT
+    FeatureGraph graph =
+        FeaturePlugin.createFeatureGraph(compilation.compilationUnit(), compilation.context());
+
+    // ASSERT
+    assertThat(graph.edges(EdgeType.LAST_LEXICAL_USE))
+        .containsExactly(
+            FeatureGraphChecks.edgeBetween(graph, firstA, secondA, EdgeType.LAST_LEXICAL_USE));
+  }
+
+  @Test
+  public void lastLexicalUse_doesntCrash_withImplicitArguments() {
+    // ARRANGE
+    TestCompilation compilation =
+        TestCompilation.compile(
+            "Test.java", //
+            "public class Test {",
+            "  Test(int arg0) {}",
+            "  void test() {",
+            "    int a = 0;",
+            "    Test o = new Test(4) {",
+            "       int b = a;",
+            "    };",
+            "  }",
+            "}");
+    SourceSpan firstA = compilation.sourceSpan("a", " = 0;");
+    SourceSpan secondA = compilation.sourceSpan("a", ";");
+
+    // ACT
+    FeatureGraph graph =
+        FeaturePlugin.createFeatureGraph(compilation.compilationUnit(), compilation.context());
+
+    // ASSERT
+    assertThat(graph.edges(EdgeType.LAST_LEXICAL_USE))
+        .containsExactly(
+            FeatureGraphChecks.edgeBetween(graph, firstA, secondA, EdgeType.LAST_LEXICAL_USE));
+  }
 }

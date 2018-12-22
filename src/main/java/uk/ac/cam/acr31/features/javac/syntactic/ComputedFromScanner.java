@@ -24,7 +24,6 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreeScanner;
 import uk.ac.cam.acr31.features.javac.graph.FeatureGraph;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureEdge.EdgeType;
-import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureNode;
 
 /** Add edges connecting v to all variables in expr when we see an assignment v = expr. */
 public class ComputedFromScanner extends TreeScanner<Void, Void> {
@@ -50,12 +49,8 @@ public class ComputedFromScanner extends TreeScanner<Void, Void> {
     node.getVariable().accept(lhsCollector, null);
 
     for (IdentifierTree lhs : lhsCollector.identifiers) {
-      FeatureNode lhsFeatureNode = graph.getFeatureNode(lhs);
       for (IdentifierTree rhs : rhsCollector.identifiers) {
-        graph.addEdge(
-            graph.toIdentifierNode(lhsFeatureNode),
-            graph.toIdentifierNode(graph.getFeatureNode(rhs)),
-            EdgeType.COMPUTED_FROM);
+        graph.addIdentifierEdge(lhs, rhs, EdgeType.COMPUTED_FROM);
       }
     }
     return null;
@@ -64,15 +59,16 @@ public class ComputedFromScanner extends TreeScanner<Void, Void> {
   @Override
   public Void visitVariable(VariableTree node, Void ignored) {
     ExpressionTree initializer = node.getInitializer();
-    if (initializer == null) {
+    // if the initialiser is a NewClassTree then we are creating an anonymous inner class of some
+    // sort. so it doesn't make sense to try and flow variables out of it.
+    if (initializer == null) { // || initializer instanceof NewClassTree) {
       return null;
     }
     IdentifierCollector rhsCollector = new IdentifierCollector();
     initializer.accept(rhsCollector, null);
 
-    FeatureNode lhs = graph.toIdentifierNode(graph.getFeatureNode(node));
     for (IdentifierTree rhs : rhsCollector.identifiers) {
-      graph.addEdge(lhs, graph.toIdentifierNode(graph.getFeatureNode(rhs)), EdgeType.COMPUTED_FROM);
+      graph.addIdentifierEdge(node, rhs, EdgeType.COMPUTED_FROM);
     }
     return null;
   }

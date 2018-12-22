@@ -27,7 +27,6 @@ import com.sun.source.util.TreeScanner;
 import org.checkerframework.dataflow.analysis.AnalysisResult;
 import uk.ac.cam.acr31.features.javac.graph.FeatureGraph;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureEdge.EdgeType;
-import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureNode;
 import uk.ac.cam.acr31.features.javac.semantic.DataflowOutputs;
 import uk.ac.cam.acr31.features.javac.semantic.PossibleTreeSet;
 import uk.ac.cam.acr31.features.javac.semantic.PossibleTreeSetStore;
@@ -94,13 +93,9 @@ public class DataflowOutputsScanner extends TreeScanner<Void, ScanContext> {
   private void applyAnalysisResult(
       Tree node, AnalysisResult<PossibleTreeSet, PossibleTreeSetStore> r, EdgeType edgeType) {
     PossibleTreeSet possibles = r.getValue(node);
-    FeatureNode sourceNode = graph.getFeatureNode(node);
     if (possibles != null) {
       for (Tree tree : possibles.nodes()) {
-        graph.addEdge(
-            graph.toIdentifierNode(sourceNode),
-            graph.toIdentifierNode(graph.getFeatureNode(tree)),
-            edgeType);
+        graph.addIdentifierEdge(node, tree, edgeType);
       }
     }
   }
