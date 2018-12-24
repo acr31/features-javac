@@ -28,7 +28,6 @@ import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureEdge.EdgeType;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureNode;
 import uk.ac.cam.acr31.features.javac.testing.SourceSpan;
 import uk.ac.cam.acr31.features.javac.testing.TestCompilation;
-import uk.ac.cam.acr31.features.javac.testing.Visualizer;
 
 @RunWith(JUnit4.class)
 public class SymbolScannerTest {
@@ -47,7 +46,7 @@ public class SymbolScannerTest {
     // ASSERT
     Set<FeatureNode> classNodes = graph.findNode(clazz.start(), clazz.end());
     FeatureNode symbolNode = findSymbolNode(graph, classNodes);
-    assertThat(symbolNode.getContents()).isEqualTo("TYP:Test");
+    assertThat(symbolNode.getContents()).isEqualTo("Test");
   }
 
   @Test
@@ -70,7 +69,7 @@ public class SymbolScannerTest {
     // ASSERT
     Set<FeatureNode> methodNodes = graph.findNode(method.start(), method.end());
     FeatureNode symbolNode = findSymbolNode(graph, methodNodes);
-    assertThat(symbolNode.getContents()).isEqualTo("MTH:method(double)");
+    assertThat(symbolNode.getContents()).isEqualTo("method(double)");
   }
 
   @Test
@@ -91,7 +90,7 @@ public class SymbolScannerTest {
     // ASSERT
     Set<FeatureNode> invocationNode = graph.findNode(inv.start(), inv.end());
     FeatureNode symbolNode = findSymbolNode(graph, invocationNode);
-    assertThat(symbolNode.getContents()).isEqualTo("MTH:valueOf(int)");
+    assertThat(symbolNode.getContents()).isEqualTo("valueOf(int)");
   }
 
   @Test
@@ -113,7 +112,7 @@ public class SymbolScannerTest {
     // ASSERT
     Set<FeatureNode> invocationNode = graph.findNode(inv.start(), inv.end());
     FeatureNode symbolNode = findSymbolNode(graph, invocationNode);
-    assertThat(symbolNode.getContents()).isEqualTo("VAR:a");
+    assertThat(symbolNode.getContents()).isEqualTo("a");
   }
 
   @Test
@@ -130,11 +129,11 @@ public class SymbolScannerTest {
     // ACT
     FeatureGraph graph =
         FeaturePlugin.createFeatureGraph(compilation.compilationUnit(), compilation.context());
-    
+
     // ASSERT
     Set<FeatureNode> invocationNode = graph.findNode(inv.start(), inv.end());
     FeatureNode symbolNode = findSymbolNode(graph, invocationNode);
-    assertThat(symbolNode.getContents()).isEqualTo("VAR:a");
+    assertThat(symbolNode.getContents()).isEqualTo("a");
   }
 
   private FeatureNode findSymbolNode(FeatureGraph graph, Set<FeatureNode> methodNodes) {
