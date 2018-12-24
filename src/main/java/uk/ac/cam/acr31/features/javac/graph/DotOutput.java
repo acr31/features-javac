@@ -30,16 +30,16 @@ import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureNode;
 
 public class DotOutput {
 
-  public static void writeToDot(File outputFile, FeatureGraph graph) {
+  public static void writeToDot(File outputFile, FeatureGraph graph, boolean verboseDot) {
     try (FileWriter w = new FileWriter(outputFile)) {
-      w.write(createDot(graph));
+      w.write(createDot(graph, verboseDot));
 
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
   }
 
-  public static String createDot(FeatureGraph graph) {
+  public static String createDot(FeatureGraph graph, boolean verboseDot) {
     StringWriter result = new StringWriter();
     try (PrintWriter w = new PrintWriter(result)) {
       w.println("digraph {");
@@ -47,18 +47,18 @@ public class DotOutput {
 
       Set<FeatureNode> nodeSet = ImmutableSet.of(graph.root());
       while (!nodeSet.isEmpty()) {
-        writeSubgraph(w, nodeSet, "same");
+        writeSubgraph(w, nodeSet, "same", verboseDot);
         nodeSet = getAstChildren(nodeSet, graph);
       }
 
       Set<FeatureNode> commentSet = graph.comments();
-      writeSubgraph(w, commentSet, null);
+      writeSubgraph(w, commentSet, null, verboseDot);
 
       Set<FeatureNode> symbolSet = graph.symbols();
-      writeSubgraph(w, symbolSet, null);
+      writeSubgraph(w, symbolSet, null, verboseDot);
 
       Set<FeatureNode> tokenSet = graph.tokens();
-      writeSubgraph(w, tokenSet, "max");
+      writeSubgraph(w, tokenSet, "max", verboseDot);
 
       for (FeatureEdge edge : graph.edges()) {
         w.println(dotEdge(edge));
@@ -69,9 +69,19 @@ public class DotOutput {
     return result.toString();
   }
 
-  private static String dotNode(FeatureNode node) {
-    return String.format(
-        "%d [ label=\"%d:%s\"];\n", node.getId(), node.getId(), escapeContents(node));
+  private static String dotNode(FeatureNode node, boolean verbose) {
+    if (verbose) {
+      return String.format(
+          "%d [ label=\"%d:%s\\n%s\\nPos:%d - %d\"];\n",
+          node.getId(),
+          node.getId(),
+          node.getType(),
+          escapeContents(node),
+          node.getStartPosition(),
+          node.getEndPosition());
+    } else {
+      return String.format("%d [ label=\"%s\"];\n", node.getId(), escapeContents(node));
+    }
   }
 
   private static String escapeContents(FeatureNode node) {
@@ -121,12 +131,13 @@ public class DotOutput {
     return String.format("%d -> %d [ %s];\n", edge.getSourceId(), edge.getDestinationId(), ports);
   }
 
-  private static void writeSubgraph(PrintWriter w, Set<FeatureNode> nodeSet, String rank) {
+  private static void writeSubgraph(
+      PrintWriter w, Set<FeatureNode> nodeSet, String rank, boolean verbose) {
     w.println(" subgraph {");
     if (rank != null) {
       w.println(String.format("  rank=%s;", rank));
     }
-    nodeSet.forEach(n -> w.println(dotNode(n)));
+    nodeSet.forEach(n -> w.println(dotNode(n, verbose)));
     w.println(" }");
   }
 

@@ -54,6 +54,7 @@ public class FeaturePlugin implements Plugin {
 
   private static final String FEATURES_OUTPUT_DIRECTORY = "featuresOutputDirectory";
   private static final String ABORT_ON_ERROR = "abortOnError";
+  private static final String VERBOSE_DOT = "verboseDot";
 
   @Override
   public String getName() {
@@ -83,7 +84,7 @@ public class FeaturePlugin implements Plugin {
     Options options = Options.instance(context);
 
     boolean abortOnError = options.getBoolean(ABORT_ON_ERROR);
-
+    boolean verboseDot = options.getBoolean(VERBOSE_DOT);
     String featuresOutputDirectory = ".";
     if (options.isSet(FEATURES_OUTPUT_DIRECTORY)) {
       featuresOutputDirectory = options.get(FEATURES_OUTPUT_DIRECTORY);
@@ -94,7 +95,7 @@ public class FeaturePlugin implements Plugin {
 
     try {
       FeatureGraph featureGraph = createFeatureGraph(compilationUnit, context);
-      writeOutput(featureGraph, featuresOutputDirectory);
+      writeOutput(featureGraph, featuresOutputDirectory, verboseDot);
     } catch (AssertionError | RuntimeException e) {
       String message = "Feature extraction failed: " + taskEvent.getSourceFile().getName();
       if (abortOnError) {
@@ -115,11 +116,12 @@ public class FeaturePlugin implements Plugin {
     }
   }
 
-  private static void writeOutput(FeatureGraph featureGraph, String featuresOutputDirectory) {
+  private static void writeOutput(
+      FeatureGraph featureGraph, String featuresOutputDirectory, boolean verboseDot) {
 
     File outputFile = new File(featuresOutputDirectory, featureGraph.getSourceFileName() + ".dot");
     mkdirFor(outputFile);
-    DotOutput.writeToDot(outputFile, featureGraph);
+    DotOutput.writeToDot(outputFile, featureGraph, verboseDot);
 
     File protoFile = new File(featuresOutputDirectory, featureGraph.getSourceFileName() + ".proto");
     mkdirFor(protoFile);
@@ -258,7 +260,7 @@ public class FeaturePlugin implements Plugin {
       }
       FeatureNode match = null;
       for (FeatureNode astNode : featureGraph.nodes()) {
-        if (astNode.getType().equals(NodeType.SYNTHETIC_AST_ELEMENT)) {
+        if (astNode.getType().equals(NodeType.FAKE_AST)) {
           continue;
         }
         int distance = astNode.getStartPosition() - comment.getEndPosition();
