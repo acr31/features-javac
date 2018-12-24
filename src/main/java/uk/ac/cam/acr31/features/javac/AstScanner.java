@@ -96,7 +96,7 @@ class AstScanner {
         JCTree lastChild = toProcess.peekLast();
         GraphProtos.FeatureNode holderNode =
             featureGraph.createFeatureNode(
-                NodeType.SYNTHETIC_AST_ELEMENT,
+                NodeType.FAKE_AST,
                 methodNameToNodeType(m.getName()),
                 firstChild.getStartPosition(),
                 lastChild.getEndPosition(endPosTable));

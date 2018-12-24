@@ -31,7 +31,7 @@ message FeatureNode {
         COMMENT_JAVADOC = 5;
         AST_ROOT = 6;
         IDENTIFIER_TOKEN = 7;
-        SYNTHETIC_AST_ELEMENT = 8;
+        FAKE_AST = 8;
         SYMBOL = 9;
     }
 
