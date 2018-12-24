@@ -99,6 +99,10 @@ public class SymbolScanner extends TreeScanner<Void, Void> {
         featureGraph.createFeatureNode(toSymbolType(symbol), symbol.toString(), -1, -1);
     FeatureNode target = featureGraph.getFeatureNode(node);
 
+    if (target == null) {
+      return;
+    }
+
     // If its a variable node push the symbol down on to the identifier for the variable
     if (node instanceof VariableTree) {
       target = featureGraph.toIdentifierNode(target);
@@ -110,7 +114,7 @@ public class SymbolScanner extends TreeScanner<Void, Void> {
     // though both times point to the same token so just check that there is no edge before adding
     // another.
 
-    if (target != null && featureGraph.predecessors(target, EdgeType.ASSOCIATED_SYMBOL).isEmpty()) {
+    if (featureGraph.predecessors(target, EdgeType.ASSOCIATED_SYMBOL).isEmpty()) {
       featureGraph.addEdge(featureNode, target, EdgeType.ASSOCIATED_SYMBOL);
     }
   }
