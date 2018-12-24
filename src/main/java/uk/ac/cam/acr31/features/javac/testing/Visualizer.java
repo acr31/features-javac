@@ -32,7 +32,7 @@ public class Visualizer {
 
   public static void show(FeatureGraph featureGraph) {
 
-    String dot = DotOutput.createDot(featureGraph);
+    String dot = DotOutput.createDot(featureGraph, /* verbose= */ true);
 
     MutableGraph g;
     try {
@@ -47,7 +47,7 @@ public class Visualizer {
     JDialog frame = new JDialog();
     frame.setModal(true);
     frame.setSize(640, 480);
-    frame.add(imageViewer.getComponent(),BorderLayout.CENTER);
+    frame.add(imageViewer.getComponent(), BorderLayout.CENTER);
     frame.setVisible(true);
   }
 }
