@@ -28,6 +28,7 @@ import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureEdge.EdgeType;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureNode;
 import uk.ac.cam.acr31.features.javac.testing.SourceSpan;
 import uk.ac.cam.acr31.features.javac.testing.TestCompilation;
+import uk.ac.cam.acr31.features.javac.testing.Visualizer;
 
 @RunWith(JUnit4.class)
 public class SymbolScannerTest {
@@ -60,8 +61,7 @@ public class SymbolScannerTest {
             "    return 1;",
             "  }",
             "}");
-    SourceSpan method =
-        compilation.sourceSpan("static int method(double d) {\n    return 1;\n  }");
+    SourceSpan method = compilation.sourceSpan("static int method(double d) {\n    return 1;\n  }");
 
     // ACT
     FeatureGraph graph =
@@ -110,6 +110,27 @@ public class SymbolScannerTest {
     FeatureGraph graph =
         FeaturePlugin.createFeatureGraph(compilation.compilationUnit(), compilation.context());
 
+    // ASSERT
+    Set<FeatureNode> invocationNode = graph.findNode(inv.start(), inv.end());
+    FeatureNode symbolNode = findSymbolNode(graph, invocationNode);
+    assertThat(symbolNode.getContents()).isEqualTo("VAR:a");
+  }
+
+  @Test
+  public void symbolScanner_attachesSymbolToVariableName() {
+    // ARRANGE
+    TestCompilation compilation =
+        TestCompilation.compile(
+            "Test.java", //
+            "public class Test {",
+            "  String a = null;",
+            "}");
+    SourceSpan inv = compilation.sourceSpan("a", " = ");
+
+    // ACT
+    FeatureGraph graph =
+        FeaturePlugin.createFeatureGraph(compilation.compilationUnit(), compilation.context());
+    
     // ASSERT
     Set<FeatureNode> invocationNode = graph.findNode(inv.start(), inv.end());
     FeatureNode symbolNode = findSymbolNode(graph, invocationNode);

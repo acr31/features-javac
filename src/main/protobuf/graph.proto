@@ -33,6 +33,9 @@ message FeatureNode {
         IDENTIFIER_TOKEN = 7;
         FAKE_AST = 8;
         SYMBOL = 9;
+        SYMBOL_TYP = 10;
+        SYMBOL_VAR = 11;
+        SYMBOL_MTH = 12;
     }
 
     optional int64 id = 1;

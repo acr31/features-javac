@@ -29,6 +29,7 @@ import com.sun.source.tree.LineMap;
 import com.sun.source.tree.Tree;
 import com.sun.tools.javac.tree.EndPosTable;
 import com.sun.tools.javac.tree.JCTree;
+import java.util.Optional;
 import java.util.Set;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureEdge;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureEdge.EdgeType;
@@ -126,7 +127,7 @@ public class FeatureGraph {
   }
 
   public Set<FeatureNode> astNodes() {
-    return nodes(NodeType.AST_ELEMENT, NodeType.SYNTHETIC_AST_ELEMENT);
+    return nodes(NodeType.AST_ELEMENT, NodeType.FAKE_AST);
   }
 
   public Set<FeatureNode> comments() {
@@ -134,7 +135,7 @@ public class FeatureGraph {
   }
 
   public Set<FeatureNode> symbols() {
-    return nodes(NodeType.SYMBOL);
+    return nodes(NodeType.SYMBOL, NodeType.SYMBOL_MTH, NodeType.SYMBOL_TYP, NodeType.SYMBOL_VAR);
   }
 
   public Set<FeatureEdge> edges() {
@@ -187,11 +188,15 @@ public class FeatureGraph {
       return node;
     }
 
-    return successors(node, EdgeType.ASSOCIATED_TOKEN)
-        .stream()
-        .filter(n -> n.getType().equals(NodeType.IDENTIFIER_TOKEN))
-        .findAny()
-        .orElseThrow();
+    Optional<FeatureNode> any =
+        successors(node, EdgeType.ASSOCIATED_TOKEN)
+            .stream()
+            .filter(n -> n.getType().equals(NodeType.IDENTIFIER_TOKEN))
+            .findAny();
+    if (!any.isPresent()) {
+      throw new AssertionError();
+    }
+    return any.get();
   }
 
   public Set<FeatureNode> predecessors(FeatureNode node) {
@@ -228,7 +233,7 @@ public class FeatureGraph {
             .filter(
                 n ->
                     n.getType().equals(NodeType.AST_ELEMENT)
-                        || n.getType().equals(NodeType.SYNTHETIC_AST_ELEMENT))
+                        || n.getType().equals(NodeType.FAKE_AST))
             .filter(n -> graph.successors(n).isEmpty())
             .collect(toImmutableSet());
     toRemove.forEach(graph::removeNode);

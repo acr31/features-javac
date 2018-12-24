@@ -25,6 +25,7 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreeScanner;
 import com.sun.tools.javac.code.Symbol;
 import uk.ac.cam.acr31.features.javac.graph.FeatureGraph;
@@ -82,15 +83,26 @@ public class SymbolScanner extends TreeScanner<Void, Void> {
     return super.visitMemberSelect(node, ignored);
   }
 
+  @Override
+  public Void visitVariable(VariableTree node, Void ignored) {
+    addNode(node);
+    return super.visitVariable(node, ignored);
+  }
+
   private void addNode(Tree node) {
     Symbol symbol = ASTHelpers.getSymbol(node);
     if (symbol == null) {
       return;
     }
-    String name = symbol.kind + ":" + symbol.toString();
 
-    FeatureNode featureNode = featureGraph.createFeatureNode(NodeType.SYMBOL, name, -1, -1);
+    FeatureNode featureNode =
+        featureGraph.createFeatureNode(toSymbolType(symbol), symbol.toString(), -1, -1);
     FeatureNode target = featureGraph.getFeatureNode(node);
+
+    // If its a variable node push the symbol down on to the identifier for the variable
+    if (node instanceof VariableTree) {
+      target = featureGraph.toIdentifierNode(target);
+    }
 
     // If your code says: String a = "a", b = "b", then javac synths up some extra ast nodes along
     // the lines of String a = "a"; String b = "b";  some of the extra nodes will be clones, some
@@ -100,6 +112,19 @@ public class SymbolScanner extends TreeScanner<Void, Void> {
 
     if (target != null && featureGraph.predecessors(target, EdgeType.ASSOCIATED_SYMBOL).isEmpty()) {
       featureGraph.addEdge(featureNode, target, EdgeType.ASSOCIATED_SYMBOL);
+    }
+  }
+
+  private static NodeType toSymbolType(Symbol symbol) {
+    switch (symbol.kind) {
+      case VAR:
+        return NodeType.SYMBOL_VAR;
+      case MTH:
+        return NodeType.SYMBOL_MTH;
+      case TYP:
+        return NodeType.SYMBOL_TYP;
+      default:
+        return NodeType.SYMBOL;
     }
   }
 }
