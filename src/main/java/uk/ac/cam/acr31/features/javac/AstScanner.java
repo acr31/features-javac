@@ -46,8 +46,7 @@ class AstScanner {
 
     AstScanner scanner = new AstScanner(featureGraph, compilationUnit.endPositions);
     try {
-      scanner.scanOrThrow(
-          compilationUnit, featureGraph.createFeatureNode(NodeType.AST_ROOT, "root", 0, 0));
+      scanner.scanOrThrow(compilationUnit, null);
     } catch (InvocationTargetException | IllegalAccessException e) {
       throw new RuntimeException(e);
     }
@@ -58,8 +57,11 @@ class AstScanner {
 
     GraphProtos.FeatureNode newNode =
         featureGraph.createFeatureNode(NodeType.AST_ELEMENT, node.getKind().toString(), node);
-    featureGraph.addEdge(parent, newNode, EdgeType.AST_CHILD);
-
+    if (parent != null) {
+      featureGraph.addEdge(parent, newNode, EdgeType.AST_CHILD);
+    } else {
+      featureGraph.setAstRoot(newNode);
+    }
     // TODO(acr31) check this implements Tree
     Class<?> treeInterface = node.getClass().getInterfaces()[0];
 

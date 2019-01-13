@@ -29,7 +29,7 @@ message FeatureNode {
         COMMENT_LINE = 3;
         COMMENT_BLOCK = 4;
         COMMENT_JAVADOC = 5;
-        AST_ROOT = 6;
+        // removed - AST_ROOT = 6;
         IDENTIFIER_TOKEN = 7;
         FAKE_AST = 8;
         SYMBOL = 9;
@@ -77,4 +77,6 @@ message Graph {
     repeated FeatureEdge edge = 2;
     optional string sourceFile = 3;
     optional FeatureNode first_token = 4;
+    optional FeatureNode ast_root = 5;
 }
+

@@ -22,7 +22,6 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
 import com.google.common.graph.MutableNetwork;
 import com.google.common.graph.NetworkBuilder;
 import com.sun.source.tree.LineMap;
@@ -47,6 +46,7 @@ public class FeatureGraph {
 
   private int nodeIdCounter = 0;
   private FeatureNode firstToken = null;
+  private FeatureNode astRoot = null;
 
   public FeatureGraph(String sourceFileName, EndPosTable endPosTable, LineMap lineMap) {
     this.sourceFileName = sourceFileName;
@@ -121,7 +121,7 @@ public class FeatureGraph {
   }
 
   public FeatureNode root() {
-    return Iterables.getOnlyElement(nodes(NodeType.AST_ROOT));
+    return getAstRoot();
   }
 
   public Set<FeatureNode> tokens() {
@@ -283,6 +283,7 @@ public class FeatureGraph {
         .addAllNode(nodes())
         .addAllEdge(edges())
         .setFirstToken(firstToken)
+        .setAstRoot(astRoot)
         .build();
   }
 
@@ -300,5 +301,13 @@ public class FeatureGraph {
 
   public FeatureNode getFirstToken() {
     return firstToken;
+  }
+
+  public void setAstRoot(FeatureNode astRoot) {
+    this.astRoot = astRoot;
+  }
+
+  public FeatureNode getAstRoot() {
+    return astRoot;
   }
 }
