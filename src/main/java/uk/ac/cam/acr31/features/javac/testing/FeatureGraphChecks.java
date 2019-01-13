@@ -16,8 +16,11 @@
 
 package uk.ac.cam.acr31.features.javac.testing;
 
+import com.google.common.collect.Sets;
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import uk.ac.cam.acr31.features.javac.graph.FeatureGraph;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureEdge;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureEdge.EdgeType;
@@ -44,5 +47,40 @@ public class FeatureGraphChecks {
     }
     throw new AssertionError(
         "Failed to find an edge from " + source + " to " + destination + " with type " + edgeType);
+  }
+
+  public static boolean isAcyclic(FeatureGraph graph, EdgeType edgeType) {
+
+    HashSet<FeatureNode> nodes =
+        graph
+            .nodes()
+            .stream()
+            .filter(
+                node ->
+                    !graph.successors(node, edgeType).isEmpty()
+                        || !graph.predecessors(node, edgeType).isEmpty())
+            .collect(Collectors.toCollection(HashSet::new));
+
+    while (true) {
+
+      if (nodes.isEmpty()) {
+        // graph is empty
+        return true;
+      }
+
+      Optional<FeatureNode> possibleLeaf =
+          nodes
+              .stream()
+              .filter(node -> Sets.intersection(graph.successors(node, edgeType), nodes).isEmpty())
+              .findAny();
+
+      if (!possibleLeaf.isPresent()) {
+        // no leaves - must be cyclic
+        return false;
+      }
+
+      // remove one leaf and repeat
+      nodes.remove(possibleLeaf.get());
+    }
   }
 }

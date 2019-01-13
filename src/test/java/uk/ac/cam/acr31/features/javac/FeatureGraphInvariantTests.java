@@ -21,12 +21,8 @@ import static com.google.common.truth.Truth.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
-import java.util.ArrayDeque;
-import java.util.Deque;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.junit.Before;
@@ -36,6 +32,7 @@ import org.junit.runners.JUnit4;
 import uk.ac.cam.acr31.features.javac.graph.FeatureGraph;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureEdge.EdgeType;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureNode;
+import uk.ac.cam.acr31.features.javac.testing.FeatureGraphChecks;
 import uk.ac.cam.acr31.features.javac.testing.TestCompilation;
 
 @RunWith(JUnit4.class)
@@ -123,28 +120,22 @@ public class FeatureGraphInvariantTests {
 
   @Test
   public void featureGraph_astChild_isAcyclic() {
-    assertThat(isAcyclic(featureGraph, EdgeType.AST_CHILD)).isTrue();
+    assertThat(FeatureGraphChecks.isAcyclic(featureGraph, EdgeType.AST_CHILD)).isTrue();
   }
 
   @Test
   public void featureGraph_nextToken_isAcyclic() {
-    assertThat(isAcyclic(featureGraph, EdgeType.NEXT_TOKEN)).isTrue();
+    assertThat(FeatureGraphChecks.isAcyclic(featureGraph, EdgeType.NEXT_TOKEN)).isTrue();
   }
 
-  private static boolean isAcyclic(FeatureGraph featureGraph, EdgeType edgeType) {
-    for (FeatureNode node : featureGraph.nodes()) {
-      Set<FeatureNode> visited = new HashSet<>();
-      Deque<FeatureNode> workQueue = new ArrayDeque<>();
-      workQueue.addAll(featureGraph.successors(node, edgeType));
-      while (!workQueue.isEmpty()) {
-        FeatureNode next = workQueue.pop();
-        if (visited.contains(next)) {
-          return false;
-        }
-        visited.add(next);
-        workQueue.addAll(featureGraph.successors(next, edgeType));
-      }
-    }
-    return true;
+  @Test
+  public void featureGraph_astToken_neverHasAstChildEdge() {
+    ImmutableList<FeatureNode> nodes =
+        featureGraph
+            .tokens()
+            .stream()
+            .filter(node -> !featureGraph.predecessors(node, EdgeType.AST_CHILD).isEmpty())
+            .collect(toImmutableList());
+    assertThat(nodes).isEmpty();
   }
 }
