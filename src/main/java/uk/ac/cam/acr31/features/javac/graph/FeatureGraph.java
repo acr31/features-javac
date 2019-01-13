@@ -185,22 +185,6 @@ public class FeatureGraph {
         .collect(toImmutableSet());
   }
 
-  public FeatureNode toIdentifierNode(FeatureNode node) {
-    if (node.getType().equals(NodeType.IDENTIFIER_TOKEN)) {
-      return node;
-    }
-
-    Optional<FeatureNode> any =
-        successors(node, EdgeType.ASSOCIATED_TOKEN)
-            .stream()
-            .filter(n -> n.getType().equals(NodeType.IDENTIFIER_TOKEN))
-            .findAny();
-    if (!any.isPresent()) {
-      throw new AssertionError();
-    }
-    return any.get();
-  }
-
   public Set<FeatureNode> predecessors(FeatureNode node) {
     return graph.predecessors(node);
   }
@@ -227,20 +211,20 @@ public class FeatureGraph {
     }
   }
 
-  private boolean pruneLeavesOnce() {
-    ImmutableSet<FeatureNode> toRemove =
-        graph
-            .nodes()
+  public FeatureNode toIdentifierNode(FeatureNode node) {
+    if (node.getType().equals(NodeType.IDENTIFIER_TOKEN)) {
+      return node;
+    }
+
+    Optional<FeatureNode> any =
+        successors(node, EdgeType.ASSOCIATED_TOKEN)
             .stream()
-            .filter(
-                n ->
-                    n.getType().equals(NodeType.AST_ELEMENT)
-                        || n.getType().equals(NodeType.FAKE_AST))
-            .filter(n -> graph.successors(n).isEmpty())
-            .collect(toImmutableSet());
-    toRemove.forEach(graph::removeNode);
-    toRemove.forEach(n -> nodeMap.inverse().remove(n));
-    return !toRemove.isEmpty();
+            .filter(n -> n.getType().equals(NodeType.IDENTIFIER_TOKEN))
+            .findAny();
+    if (!any.isPresent()) {
+      throw new AssertionError();
+    }
+    return any.get();
   }
 
   public void addEdge(Tree source, Tree dest, EdgeType type) {
@@ -252,16 +236,6 @@ public class FeatureGraph {
     addEdge(sourceNode, destNode, type);
   }
 
-  public void addIdentifierEdge(Tree source, Tree dest, EdgeType type) {
-    FeatureNode sourceNode = getFeatureNode(source);
-    FeatureNode destNode = getFeatureNode(dest);
-    if (sourceNode == null || destNode == null) {
-      return;
-    }
-
-    addEdge(toIdentifierNode(sourceNode), toIdentifierNode(destNode), type);
-  }
-
   public void addEdge(FeatureNode source, FeatureNode dest, EdgeType type) {
     graph.addEdge(
         source,
@@ -271,6 +245,16 @@ public class FeatureGraph {
             .setDestinationId(dest.getId())
             .setType(type)
             .build());
+  }
+
+  public void addIdentifierEdge(Tree source, Tree dest, EdgeType type) {
+    FeatureNode sourceNode = getFeatureNode(source);
+    FeatureNode destNode = getFeatureNode(dest);
+    if (sourceNode == null || destNode == null) {
+      return;
+    }
+
+    addEdge(toIdentifierNode(sourceNode), toIdentifierNode(destNode), type);
   }
 
   public void removeEdge(FeatureEdge edge) {
@@ -309,5 +293,21 @@ public class FeatureGraph {
 
   public FeatureNode getAstRoot() {
     return astRoot;
+  }
+
+  private boolean pruneLeavesOnce() {
+    ImmutableSet<FeatureNode> toRemove =
+        graph
+            .nodes()
+            .stream()
+            .filter(
+                n ->
+                    n.getType().equals(NodeType.AST_ELEMENT)
+                        || n.getType().equals(NodeType.FAKE_AST))
+            .filter(n -> graph.successors(n).isEmpty())
+            .collect(toImmutableSet());
+    toRemove.forEach(graph::removeNode);
+    toRemove.forEach(n -> nodeMap.inverse().remove(n));
+    return !toRemove.isEmpty();
   }
 }
