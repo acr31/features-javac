@@ -76,4 +76,5 @@ message Graph {
     repeated FeatureNode node = 1;
     repeated FeatureEdge edge = 2;
     optional string sourceFile = 3;
+    optional FeatureNode first_token = 4;
 }

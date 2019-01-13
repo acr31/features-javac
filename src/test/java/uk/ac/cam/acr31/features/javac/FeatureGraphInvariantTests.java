@@ -20,6 +20,7 @@ import static com.google.common.collect.ImmutableList.toImmutableList;
 import static com.google.common.truth.Truth.assertThat;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
@@ -66,14 +67,14 @@ public class FeatureGraphInvariantTests {
   }
 
   @Test
-  public void featureGraph_singleStartToken() {
+  public void featureGraph_singleStartTokenIsFirstToken() {
     ImmutableList<FeatureNode> nodes =
         featureGraph
             .tokens()
             .stream()
             .filter(node -> featureGraph.predecessors(node, EdgeType.NEXT_TOKEN).isEmpty())
             .collect(toImmutableList());
-    assertThat(nodes).hasSize(1);
+    assertThat(Iterables.getOnlyElement(nodes)).isEqualTo(featureGraph.getFirstToken());
   }
 
   @Test

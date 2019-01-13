@@ -42,9 +42,11 @@ public class FeatureGraph {
   private final String sourceFileName;
   private final MutableNetwork<FeatureNode, FeatureEdge> graph;
   private final BiMap<Tree, FeatureNode> nodeMap;
-  private int nodeIdCounter = 0;
   private final EndPosTable endPosTable;
   private final LineMap lineMap;
+
+  private int nodeIdCounter = 0;
+  private FeatureNode firstToken = null;
 
   public FeatureGraph(String sourceFileName, EndPosTable endPosTable, LineMap lineMap) {
     this.sourceFileName = sourceFileName;
@@ -280,6 +282,7 @@ public class FeatureGraph {
         .setSourceFile(sourceFileName)
         .addAllNode(nodes())
         .addAllEdge(edges())
+        .setFirstToken(firstToken)
         .build();
   }
 
@@ -289,5 +292,13 @@ public class FeatureGraph {
         .filter(node -> node.getStartPosition() == start)
         .filter(node -> node.getEndPosition() == end)
         .collect(toImmutableSet());
+  }
+
+  public void setFirstToken(FeatureNode firstToken) {
+    this.firstToken = firstToken;
+  }
+
+  public FeatureNode getFirstToken() {
+    return firstToken;
   }
 }

@@ -46,6 +46,8 @@ public class Tokens {
               getNodeType(token), tokenToString(token), token.pos(), token.endPos());
       if (previousTokenNode != null) {
         featureGraph.addEdge(previousTokenNode, tokenNode, EdgeType.NEXT_TOKEN);
+      } else {
+        featureGraph.setFirstToken(tokenNode);
       }
       previousTokenNode = tokenNode;
 
