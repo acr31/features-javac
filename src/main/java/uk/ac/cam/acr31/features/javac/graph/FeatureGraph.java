@@ -22,6 +22,7 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.graph.EndpointPair;
 import com.google.common.graph.MutableNetwork;
 import com.google.common.graph.NetworkBuilder;
 import com.sun.source.tree.LineMap;
@@ -143,6 +144,10 @@ public class FeatureGraph {
   public Set<FeatureEdge> edges() {
     // returns an unmodifiable set
     return graph.edges();
+  }
+
+  public EndpointPair<FeatureNode> incidentNodes(FeatureEdge edge) {
+    return graph.incidentNodes(edge);
   }
 
   public Set<FeatureEdge> edges(EdgeType edgeType) {

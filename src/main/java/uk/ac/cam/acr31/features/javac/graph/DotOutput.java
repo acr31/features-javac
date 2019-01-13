@@ -16,7 +16,10 @@
 
 package uk.ac.cam.acr31.features.javac.graph;
 
+import static uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureNode.NodeType.IDENTIFIER_TOKEN;
+
 import com.google.common.collect.ImmutableSet;
+import com.google.common.graph.EndpointPair;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -61,7 +64,7 @@ public class DotOutput {
       writeSubgraph(w, tokenSet, "max", verboseDot);
 
       for (FeatureEdge edge : graph.edges()) {
-        w.println(dotEdge(edge));
+        w.println(dotEdge(edge, graph.incidentNodes(edge)));
       }
 
       w.println("}");
@@ -70,17 +73,23 @@ public class DotOutput {
   }
 
   private static String dotNode(FeatureNode node, boolean verbose) {
+    String format = "";
+    if (node.getType().equals(IDENTIFIER_TOKEN)) {
+      format = ", color=blue";
+    }
+
     if (verbose) {
       return String.format(
-          "%d [ label=\"%d:%s\\n%s\\nPos:%d - %d\"];\n",
+          "%d [ label=\"%d:%s\\n%s\\nPos:%d - %d\" %s];\n",
           node.getId(),
           node.getId(),
           node.getType(),
           escapeContents(node),
           node.getStartPosition(),
-          node.getEndPosition());
+          node.getEndPosition(),
+          format);
     } else {
-      return String.format("%d [ label=\"%s\"];\n", node.getId(), escapeContents(node));
+      return String.format("%d [ label=\"%s\" %s];\n", node.getId(), escapeContents(node), format);
     }
   }
 
@@ -91,7 +100,7 @@ public class DotOutput {
     return StringEscapeUtils.escapeJava(node.getContents());
   }
 
-  private static String dotEdge(FeatureEdge edge) {
+  private static String dotEdge(FeatureEdge edge, EndpointPair<FeatureNode> incidentNodes) {
     EdgeType edgeType = edge.getType();
     String ports;
     switch (edgeType) {
@@ -124,6 +133,13 @@ public class DotOutput {
         break;
       case GUARDED_BY_NEGATION:
         ports = "headport=e, tailport=w, color=pink, weight=0, style=dashed";
+        break;
+      case ASSOCIATED_TOKEN:
+        if (incidentNodes.target().getType().equals(IDENTIFIER_TOKEN)) {
+          ports = "color=blue";
+        } else {
+          ports = "";
+        }
         break;
       default:
         ports = "";
