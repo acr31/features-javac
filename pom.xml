@@ -165,12 +165,9 @@
                         </project.description>
                         <project.inceptionYear>2018</project.inceptionYear>
                     </properties>
-                    <excludes>
-                        <exclude>LICENSE</exclude>
-                        <exclude>NOTICE</exclude>
-                        <exclude>pom.xml</exclude>
-                        <exclude>checkstyle.xml</exclude>
-                    </excludes>
+                    <includes>
+                        <include>src/**/*</include>
+                    </includes>
                 </configuration>
                 <executions>
                     <execution>
