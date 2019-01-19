@@ -97,7 +97,7 @@ public class SymbolScanner extends TreeScanner<Void, Void> {
 
     FeatureNode featureNode =
         featureGraph.createFeatureNode(toSymbolType(symbol), symbol.toString(), -1, -1);
-    FeatureNode target = featureGraph.getFeatureNode(node);
+    FeatureNode target = featureGraph.lookupNode(node);
 
     if (target == null) {
       return;

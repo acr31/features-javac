@@ -65,9 +65,9 @@ public class ReturnsToScanner extends TreeScanner<Void, Void> {
     node.getBody().accept(returnCollector, null);
 
     if (returnCollector.identifiers != null) {
-      FeatureNode dest = graph.getFeatureNode(node);
+      FeatureNode dest = graph.lookupNode(node);
       for (IdentifierTree identifierTree : returnCollector.identifiers) {
-        FeatureNode featureNode = graph.getFeatureNode(identifierTree);
+        FeatureNode featureNode = graph.lookupNode(identifierTree);
         if (featureNode != null) {
           for (FeatureNode succ : graph.successors(featureNode, EdgeType.ASSOCIATED_TOKEN)) {
             graph.addEdge(succ, dest, EdgeType.RETURNS_TO);

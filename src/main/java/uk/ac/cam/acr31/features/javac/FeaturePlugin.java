@@ -221,7 +221,7 @@ public class FeaturePlugin implements Plugin {
         .forEach(
             node -> {
               JCTree.JCVariableDecl variableTree =
-                  (JCTree.JCVariableDecl) featureGraph.getTree(node);
+                  (JCTree.JCVariableDecl) featureGraph.lookupTree(node);
               Name expectedName = variableTree.getName();
               astNodes
                   .tailSet(node)

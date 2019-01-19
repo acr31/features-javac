@@ -41,7 +41,7 @@ public class FeatureGraph {
 
   private final String sourceFileName;
   private final MutableNetwork<FeatureNode, FeatureEdge> graph;
-  private final BiMap<Tree, FeatureNode> nodeMap;
+  private final BiMap<Tree, FeatureNode> treeToNodeMap;
   private final EndPosTable endPosTable;
   private final LineMap lineMap;
 
@@ -52,7 +52,7 @@ public class FeatureGraph {
   public FeatureGraph(String sourceFileName, EndPosTable endPosTable, LineMap lineMap) {
     this.sourceFileName = sourceFileName;
     this.graph = NetworkBuilder.directed().allowsSelfLoops(true).allowsParallelEdges(true).build();
-    this.nodeMap = HashBiMap.create();
+    this.treeToNodeMap = HashBiMap.create();
     this.endPosTable = endPosTable;
     this.lineMap = lineMap;
   }
@@ -61,18 +61,18 @@ public class FeatureGraph {
     return sourceFileName;
   }
 
-  public FeatureNode getFeatureNode(Tree tree) {
-    return nodeMap.get(tree);
+  public FeatureNode lookupNode(Tree tree) {
+    return treeToNodeMap.get(tree);
   }
 
-  public Tree getTree(FeatureNode node) {
-    return nodeMap.inverse().get(node);
+  public Tree lookupTree(FeatureNode node) {
+    return treeToNodeMap.inverse().get(node);
   }
 
   public void replaceNodeInNodeMap(FeatureNode original, FeatureNode replacement) {
-    Tree tree = nodeMap.inverse().get(original);
+    Tree tree = treeToNodeMap.inverse().get(original);
     if (tree != null) {
-      nodeMap.put(tree, replacement);
+      treeToNodeMap.put(tree, replacement);
     }
   }
 
@@ -81,13 +81,13 @@ public class FeatureGraph {
     // the lines of String a = "a"; String b = "b";  some of the extra nodes will be clones, some
     // (leaves) will just be the same node reused.  In this case we will try to create a node twice
     // when we visit the reused node for the second time.
-    if (nodeMap.containsKey(tree)) {
-      return nodeMap.get(tree);
+    if (treeToNodeMap.containsKey(tree)) {
+      return treeToNodeMap.get(tree);
     } else {
       int startPosition = ((JCTree) tree).getStartPosition();
       int endPosition = ((JCTree) tree).getEndPosition(endPosTable);
       FeatureNode result = createFeatureNode(nodeType, contents, startPosition, endPosition);
-      nodeMap.put(tree, result);
+      treeToNodeMap.put(tree, result);
       return result;
     }
   }
@@ -233,8 +233,8 @@ public class FeatureGraph {
   }
 
   public void addEdge(Tree source, Tree dest, EdgeType type) {
-    FeatureNode sourceNode = getFeatureNode(source);
-    FeatureNode destNode = getFeatureNode(dest);
+    FeatureNode sourceNode = lookupNode(source);
+    FeatureNode destNode = lookupNode(dest);
     if (sourceNode == null || destNode == null) {
       return;
     }
@@ -253,8 +253,8 @@ public class FeatureGraph {
   }
 
   public void addIdentifierEdge(Tree source, Tree dest, EdgeType type) {
-    FeatureNode sourceNode = getFeatureNode(source);
-    FeatureNode destNode = getFeatureNode(dest);
+    FeatureNode sourceNode = lookupNode(source);
+    FeatureNode destNode = lookupNode(dest);
     if (sourceNode == null || destNode == null) {
       return;
     }
@@ -312,7 +312,7 @@ public class FeatureGraph {
             .filter(n -> graph.successors(n).isEmpty())
             .collect(toImmutableSet());
     toRemove.forEach(graph::removeNode);
-    toRemove.forEach(n -> nodeMap.inverse().remove(n));
+    toRemove.forEach(n -> treeToNodeMap.inverse().remove(n));
     return !toRemove.isEmpty();
   }
 }
