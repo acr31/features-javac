@@ -159,10 +159,6 @@ public class FeatureGraph {
     return graph.edges();
   }
 
-  public EndpointPair<FeatureNode> incidentNodes(FeatureEdge edge) {
-    return graph.incidentNodes(edge);
-  }
-
   public Set<FeatureEdge> edges(EdgeType edgeType) {
     return graph
         .edges()
@@ -178,6 +174,10 @@ public class FeatureGraph {
   public Set<FeatureEdge> edges(FeatureNode source, FeatureNode destination) {
     // returns an unmodifiable set
     return graph.edgesConnecting(source, destination);
+  }
+
+  public EndpointPair<FeatureNode> incidentNodes(FeatureEdge edge) {
+    return graph.incidentNodes(edge);
   }
 
   public void removeNode(FeatureNode node) {
