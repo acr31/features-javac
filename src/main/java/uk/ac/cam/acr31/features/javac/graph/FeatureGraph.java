@@ -27,6 +27,7 @@ import com.google.common.graph.MutableNetwork;
 import com.google.common.graph.NetworkBuilder;
 import com.sun.source.tree.LineMap;
 import com.sun.source.tree.Tree;
+import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.tree.EndPosTable;
 import com.sun.tools.javac.tree.JCTree;
 import java.util.Optional;
@@ -44,6 +45,7 @@ public class FeatureGraph {
   private final BiMap<Tree, FeatureNode> treeToNodeMap;
   private final EndPosTable endPosTable;
   private final LineMap lineMap;
+  private final BiMap<Symbol, FeatureNode> symbolToNodeMap;
 
   private int nodeIdCounter = 0;
   private FeatureNode firstToken = null;
@@ -53,6 +55,7 @@ public class FeatureGraph {
     this.sourceFileName = sourceFileName;
     this.graph = NetworkBuilder.directed().allowsSelfLoops(true).allowsParallelEdges(true).build();
     this.treeToNodeMap = HashBiMap.create();
+    this.symbolToNodeMap = HashBiMap.create();
     this.endPosTable = endPosTable;
     this.lineMap = lineMap;
   }
@@ -105,6 +108,16 @@ public class FeatureGraph {
         .setStartLineNumber(startLine)
         .setEndLineNumber(endLine)
         .build();
+  }
+
+  public FeatureNode createFeatureNode(NodeType nodeType, Symbol symbol) {
+    if (symbolToNodeMap.containsKey(symbol)) {
+      return symbolToNodeMap.get(symbol);
+    } else {
+      FeatureNode result = createFeatureNode(nodeType, symbol.toString(), -1, -1);
+      symbolToNodeMap.put(symbol, result);
+      return result;
+    }
   }
 
   public Set<FeatureNode> nodes() {

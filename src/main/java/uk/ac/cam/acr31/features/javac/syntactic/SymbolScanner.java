@@ -95,13 +95,12 @@ public class SymbolScanner extends TreeScanner<Void, Void> {
       return;
     }
 
-    FeatureNode featureNode =
-        featureGraph.createFeatureNode(toSymbolType(symbol), symbol.toString(), -1, -1);
     FeatureNode target = featureGraph.lookupNode(node);
-
     if (target == null) {
       return;
     }
+
+    FeatureNode featureNode = featureGraph.createFeatureNode(toSymbolType(symbol), symbol);
 
     // If its a variable node push the symbol down on to the identifier for the variable
     if (node instanceof VariableTree) {

@@ -18,6 +18,7 @@ package uk.ac.cam.acr31.features.javac;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import com.google.common.base.Joiner;
 import com.google.common.collect.Iterables;
 import java.util.Set;
 import org.junit.Test;
@@ -35,17 +36,16 @@ public class SymbolScannerTest {
   @Test
   public void symbolScanner_attachesSymbolToClassDeclName() {
     // ARRANGE
-    TestCompilation compilation = TestCompilation.compile("Test.java", "public class Test {}");
-
-    SourceSpan clazz = compilation.sourceSpan("public class Test {}");
+    String classLines = "public class Test {}";
+    TestCompilation compilation = TestCompilation.compile("Test.java", classLines);
+    SourceSpan clazz = compilation.sourceSpan(classLines);
 
     // ACT
     FeatureGraph graph =
         FeaturePlugin.createFeatureGraph(compilation.compilationUnit(), compilation.context());
 
     // ASSERT
-    Set<FeatureNode> classNodes = graph.findNode(clazz.start(), clazz.end());
-    FeatureNode symbolNode = findSymbolNode(graph, classNodes);
+    FeatureNode symbolNode = findSymbolNode(graph, clazz);
     assertThat(symbolNode.getContents()).isEqualTo("Test");
   }
 
@@ -67,8 +67,7 @@ public class SymbolScannerTest {
         FeaturePlugin.createFeatureGraph(compilation.compilationUnit(), compilation.context());
 
     // ASSERT
-    Set<FeatureNode> methodNodes = graph.findNode(method.start(), method.end());
-    FeatureNode symbolNode = findSymbolNode(graph, methodNodes);
+    FeatureNode symbolNode = findSymbolNode(graph, method);
     assertThat(symbolNode.getContents()).isEqualTo("method(double)");
   }
 
@@ -88,8 +87,7 @@ public class SymbolScannerTest {
         FeaturePlugin.createFeatureGraph(compilation.compilationUnit(), compilation.context());
 
     // ASSERT
-    Set<FeatureNode> invocationNode = graph.findNode(inv.start(), inv.end());
-    FeatureNode symbolNode = findSymbolNode(graph, invocationNode);
+    FeatureNode symbolNode = findSymbolNode(graph, inv);
     assertThat(symbolNode.getContents()).isEqualTo("valueOf(int)");
   }
 
@@ -110,8 +108,7 @@ public class SymbolScannerTest {
         FeaturePlugin.createFeatureGraph(compilation.compilationUnit(), compilation.context());
 
     // ASSERT
-    Set<FeatureNode> invocationNode = graph.findNode(inv.start(), inv.end());
-    FeatureNode symbolNode = findSymbolNode(graph, invocationNode);
+    FeatureNode symbolNode = findSymbolNode(graph, inv);
     assertThat(symbolNode.getContents()).isEqualTo("a");
   }
 
@@ -131,14 +128,113 @@ public class SymbolScannerTest {
         FeaturePlugin.createFeatureGraph(compilation.compilationUnit(), compilation.context());
 
     // ASSERT
-    Set<FeatureNode> invocationNode = graph.findNode(inv.start(), inv.end());
-    FeatureNode symbolNode = findSymbolNode(graph, invocationNode);
+    FeatureNode symbolNode = findSymbolNode(graph, inv);
     assertThat(symbolNode.getContents()).isEqualTo("a");
   }
 
-  private FeatureNode findSymbolNode(FeatureGraph graph, Set<FeatureNode> methodNodes) {
+  @Test
+  public void symbolScanner_sharesSymbolNode_betwenVarDeclAndUseInBlock() {
+    // ARRANGE
+    TestCompilation compilation =
+        TestCompilation.compile(
+            "Test.java", //
+            "public class Test {",
+            "  void test() {",
+            "    int a = 0;",
+            "    a = 1;",
+            "  }",
+            "}");
+    SourceSpan decl = compilation.sourceSpan("int ", "a", " = ");
+    SourceSpan use = compilation.sourceSpan("a", " = 1");
+
+    // ACT
+    FeatureGraph graph =
+        FeaturePlugin.createFeatureGraph(compilation.compilationUnit(), compilation.context());
+
+    // ASSERT
+    FeatureNode declSymbol = findSymbolNode(graph, decl);
+    FeatureNode useSymbol = findSymbolNode(graph, use);
+    assertThat(declSymbol).isEqualTo(useSymbol);
+  }
+
+  @Test
+  public void symbolScanner_sharesSymbolNode_betwenClassDeclAndUse() {
+    // ARRANGE
+    String[] classLines = {
+      "public class Test {", //
+      "  void test() {",
+      "    Test t;",
+      "  }",
+      "}"
+    };
+    TestCompilation compilation = TestCompilation.compile("Test.java", classLines);
+    SourceSpan decl = compilation.sourceSpan(Joiner.on("\n").join(classLines));
+    SourceSpan use = compilation.sourceSpan("Test", " t;");
+
+    // ACT
+    FeatureGraph graph =
+        FeaturePlugin.createFeatureGraph(compilation.compilationUnit(), compilation.context());
+
+    // ASSERT
+    FeatureNode declSymbol = findSymbolNode(graph, decl);
+    FeatureNode useSymbol = findSymbolNode(graph, use);
+    assertThat(declSymbol).isEqualTo(useSymbol);
+  }
+
+  @Test
+  public void symbolScanner_sharesSymbolNode_betwenMethodDeclAndUse() {
+    // ARRANGE
+    TestCompilation compilation =
+        TestCompilation.compile(
+            "Test.java",
+            "public class Test {", //
+            "  void foo() {}",
+            "  void test() {",
+            "    foo();",
+            "  }",
+            "}");
+    SourceSpan decl = compilation.sourceSpan("void foo() {}");
+    SourceSpan use = compilation.sourceSpan("foo()", ";");
+
+    // ACT
+    FeatureGraph graph =
+        FeaturePlugin.createFeatureGraph(compilation.compilationUnit(), compilation.context());
+
+    // ASSERT
+    FeatureNode declSymbol = findSymbolNode(graph, decl);
+    FeatureNode useSymbol = findSymbolNode(graph, use);
+    assertThat(declSymbol).isEqualTo(useSymbol);
+  }
+
+  @Test
+  public void symbolScanner_differentSymbolNode_whenNameSameOnDifferentVars() {
+    // ARRANGE
+    TestCompilation compilation =
+        TestCompilation.compile(
+            "Test.java",
+            "public class Test {", //
+            "  int x = 1;",
+            "  void test() {",
+            "    int x = 2;",
+            "  }",
+            "}");
+    SourceSpan declField = compilation.sourceSpan("int ", "x", " = 1;");
+    SourceSpan declLocal = compilation.sourceSpan("int ", "x", " = 2;");
+
+    // ACT
+    FeatureGraph graph =
+        FeaturePlugin.createFeatureGraph(compilation.compilationUnit(), compilation.context());
+
+    // ASSERT
+    FeatureNode declSymbol = findSymbolNode(graph, declField);
+    FeatureNode useSymbol = findSymbolNode(graph, declLocal);
+    assertThat(declSymbol).isNotEqualTo(useSymbol);
+  }
+
+  private FeatureNode findSymbolNode(FeatureGraph graph, SourceSpan sourceSpan) {
+    Set<FeatureNode> nodes = graph.findNode(sourceSpan.start(), sourceSpan.end());
     return Iterables.getOnlyElement(
-        methodNodes
+        nodes
             .stream()
             .map(n -> graph.predecessors(n, EdgeType.ASSOCIATED_SYMBOL))
             .filter(p -> !p.isEmpty())
