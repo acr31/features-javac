@@ -111,7 +111,7 @@ public class FeatureGraphInvariantTests {
   public void featureGraph_singleAstNodeWithNoPredecessorsIsAstRoot() {
     ImmutableList<FeatureNode> nodes =
         featureGraph
-            .tokens()
+            .astNodes()
             .stream()
             .filter(node -> featureGraph.predecessors(node, EdgeType.AST_CHILD).isEmpty())
             .collect(toImmutableList());
