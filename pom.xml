@@ -14,7 +14,7 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>26.0-jre</version>
+            <version>27.0.1-jre</version>
         </dependency>
         <dependency>
             <groupId>org.checkerframework</groupId>
@@ -125,6 +125,8 @@
                         <arg>jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED</arg>
                         <arg>--add-exports</arg>
                         <arg>jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED</arg>
+                        <arg>--add-exports</arg>
+                        <arg>jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED</arg>
                     </compilerArgs>
                     <source>1.10</source>
                     <target>1.10</target>
