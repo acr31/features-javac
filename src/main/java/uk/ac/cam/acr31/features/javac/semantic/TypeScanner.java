@@ -62,7 +62,7 @@ public class TypeScanner extends TreeScanner<Void, Void> {
 
   @Override
   public Void visitVariable(VariableTree tree, Void ignored) {
-    addTypeEdge(tree.getNameExpression());
+    addTypeEdge(tree.getType());
     addTypeEdge(tree.getInitializer());
     return super.visitVariable(tree, ignored);
   }
