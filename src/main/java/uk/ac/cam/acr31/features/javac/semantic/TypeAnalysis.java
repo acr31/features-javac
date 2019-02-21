@@ -21,6 +21,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 
@@ -41,17 +42,19 @@ public class TypeAnalysis {
         return trees.getTypeMirror(path);
     }
 
+    private boolean canCheckAssignability(TypeMirror type) {
+        return type.getKind() != TypeKind.EXECUTABLE && type.getKind() != TypeKind.PACKAGE;
+    }
+
     /**
      * Returns true if typeA is assignable to typeB.
      */
-    public boolean isAssignable(Tree typeA, Tree typeB) {
-        TypeMirror typeAMirror = getTypeMirror(typeA);
-        TypeMirror typeBMirror = getTypeMirror(typeB);
-
-        if (typeAMirror == null || typeBMirror == null) {
+    public boolean isAssignable(TypeMirror typeA, TypeMirror typeB) {
+        if (!canCheckAssignability(typeA) || !canCheckAssignability(typeB)) {
             return false;
         }
-        return processingEnvironment.getTypeUtils().isAssignable(typeAMirror, typeBMirror);
+
+        return processingEnvironment.getTypeUtils().isAssignable(typeA, typeB);
     }
 
     public String getApproxTypeName(Tree tree) {

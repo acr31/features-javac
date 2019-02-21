@@ -30,6 +30,9 @@ import com.sun.source.tree.Tree;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.tree.EndPosTable;
 import com.sun.tools.javac.tree.JCTree;
+
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import javax.lang.model.type.TypeMirror;
@@ -45,10 +48,15 @@ public class FeatureGraph {
   private final String sourceFileName;
   private final MutableNetwork<FeatureNode, FeatureEdge> graph;
   private final BiMap<Tree, FeatureNode> treeToNodeMap;
-  private final BiMap<TypeMirror, FeatureNode> typeToNodeMap;
   private final EndPosTable endPosTable;
   private final LineMap lineMap;
   private final BiMap<Symbol, FeatureNode> symbolToNodeMap;
+  private final Map<TypeMirror, FeatureNode> typeToNodeMap;
+  /**
+   * Many TypeMirrors may map to the same feature node.
+   * This maps nodes to an arbitrary one of these TypeMirrors.
+   */
+  private final Map<FeatureNode, TypeMirror> nodeToSomeTypeMap;
 
   private int nodeIdCounter = 0;
   private FeatureNode firstToken = null;
@@ -58,8 +66,9 @@ public class FeatureGraph {
     this.sourceFileName = sourceFileName;
     this.graph = NetworkBuilder.directed().allowsSelfLoops(true).allowsParallelEdges(true).build();
     this.treeToNodeMap = HashBiMap.create();
-    this.typeToNodeMap = HashBiMap.create();
     this.symbolToNodeMap = HashBiMap.create();
+    this.typeToNodeMap = new HashMap<>();
+    this.nodeToSomeTypeMap = new HashMap<>();
     this.endPosTable = endPosTable;
     this.lineMap = lineMap;
   }
@@ -124,8 +133,11 @@ public class FeatureGraph {
     }
   }
 
+  /**
+   * Returns an arbitrary member of the equivalence class of type mirrors associated with the node.
+   */
   public TypeMirror lookupTypeMirror(FeatureNode node) {
-    return typeToNodeMap.inverse().get(node);
+    return nodeToSomeTypeMap.get(node);
   }
 
   public FeatureNode createFeatureNodeForType(Types types, NodeType nodeType, TypeMirror type) {
@@ -143,6 +155,7 @@ public class FeatureGraph {
     // If we don't, then create a new feature node.
     FeatureNode result = createFeatureNode(nodeType, type.toString(), -1, -1);
     typeToNodeMap.put(type, result);
+    nodeToSomeTypeMap.put(result, type);
     return result;
   }
 

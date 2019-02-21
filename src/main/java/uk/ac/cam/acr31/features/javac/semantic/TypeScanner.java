@@ -16,10 +16,15 @@
 
 package uk.ac.cam.acr31.features.javac.semantic;
 
+import com.sun.source.tree.AssignmentTree;
+import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreeScanner;
+import javax.lang.model.type.TypeMirror;
 import uk.ac.cam.acr31.features.javac.graph.FeatureGraph;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos;
 
@@ -38,21 +43,48 @@ public class TypeScanner extends TreeScanner<Void, Void> {
     compilationUnitTree.accept(typeScanner, null);
   }
 
-  @Override
-  public Void visitMethodInvocation(MethodInvocationTree tree, Void ignored) {
-    for (ExpressionTree argTree : tree.getArguments()) {
-      GraphProtos.FeatureNode argNode = graph.lookupNode(argTree);
-      if (argNode != null) {
-        // Do we need TypeAnalysis?
+  private void addTypeEdge(Tree tree) {
+    GraphProtos.FeatureNode featureNode = graph.lookupNode(tree);
+    if (featureNode != null) {
+      TypeMirror mirror = typeAnalysis.getTypeMirror(tree);
+      if (mirror != null) {
         GraphProtos.FeatureNode typeNode = graph.createFeatureNodeForType(
             typeAnalysis.getTypes(),
             GraphProtos.FeatureNode.NodeType.TYPE,
-            typeAnalysis.getTypeMirror(argTree)
+            mirror
         );
         if (typeNode != null) {
-          graph.addEdge(argNode, typeNode, GraphProtos.FeatureEdge.EdgeType.HAS_TYPE);
+          graph.addEdge(featureNode, typeNode, GraphProtos.FeatureEdge.EdgeType.HAS_TYPE);
         }
       }
+    }
+  }
+
+  @Override
+  public Void visitVariable(VariableTree tree, Void ignored) {
+    addTypeEdge(tree.getNameExpression());
+    addTypeEdge(tree.getInitializer());
+    return super.visitVariable(tree, ignored);
+  }
+
+  @Override
+  public Void visitAssignment(AssignmentTree tree, Void ignored) {
+    addTypeEdge(tree.getExpression());
+    addTypeEdge(tree.getVariable());
+    return super.visitAssignment(tree, ignored);
+  }
+
+  @Override
+  public Void visitBinary(BinaryTree tree, Void ignored) {
+    addTypeEdge(tree.getLeftOperand());
+    addTypeEdge(tree.getRightOperand());
+    return super.visitBinary(tree, ignored);
+  }
+
+  @Override
+  public Void visitMethodInvocation(MethodInvocationTree tree, Void ignored) {
+    for (ExpressionTree argTree : tree.getArguments()) {
+      addTypeEdge(argTree);
     }
     return super.visitMethodInvocation(tree, ignored);
   }

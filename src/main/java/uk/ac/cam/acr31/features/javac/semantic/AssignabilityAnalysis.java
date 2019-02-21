@@ -46,7 +46,7 @@ public class AssignabilityAnalysis {
           continue;
         }
 
-        if (analysis.getTypes().isAssignable(type, assignToType)) {
+        if (analysis.isAssignable(type, assignToType)) {
           graph.addEdge(typeNode, assignToTypeNode, GraphProtos.FeatureEdge.EdgeType.ASSIGNABLE_TO);
         }
       }
