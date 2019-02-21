@@ -58,6 +58,7 @@ public class FeaturePlugin implements Plugin {
   private static final String FEATURES_OUTPUT_DIRECTORY = "featuresOutputDirectory";
   private static final String ABORT_ON_ERROR = "abortOnError";
   private static final String VERBOSE_DOT = "verboseDot";
+  private static final String DOT_OUTPUT = "dotOutput";
 
   @Override
   public String getName() {
@@ -88,6 +89,7 @@ public class FeaturePlugin implements Plugin {
 
     boolean abortOnError = options.getBoolean(ABORT_ON_ERROR);
     boolean verboseDot = options.getBoolean(VERBOSE_DOT);
+    boolean dotOutput = options.getBoolean(DOT_OUTPUT, true);
     String featuresOutputDirectory = ".";
     if (options.isSet(FEATURES_OUTPUT_DIRECTORY)) {
       featuresOutputDirectory = options.get(FEATURES_OUTPUT_DIRECTORY);
@@ -98,7 +100,7 @@ public class FeaturePlugin implements Plugin {
 
     try {
       FeatureGraph featureGraph = createFeatureGraph(compilationUnit, context);
-      writeOutput(featureGraph, featuresOutputDirectory, verboseDot);
+      writeOutput(featureGraph, featuresOutputDirectory, verboseDot, dotOutput);
     } catch (AssertionError | RuntimeException e) {
       String message = "Feature extraction failed: " + taskEvent.getSourceFile().getName();
       if (abortOnError) {
@@ -120,11 +122,17 @@ public class FeaturePlugin implements Plugin {
   }
 
   private static void writeOutput(
-      FeatureGraph featureGraph, String featuresOutputDirectory, boolean verboseDot) {
+      FeatureGraph featureGraph,
+      String featuresOutputDirectory,
+      boolean verboseDot,
+      boolean dotOutput) {
 
-    File outputFile = new File(featuresOutputDirectory, featureGraph.getSourceFileName() + ".dot");
-    mkdirFor(outputFile);
-    DotOutput.writeToDot(outputFile, featureGraph, verboseDot);
+    if (dotOutput) {
+      File outputFile =
+          new File(featuresOutputDirectory, featureGraph.getSourceFileName() + ".dot");
+      mkdirFor(outputFile);
+      DotOutput.writeToDot(outputFile, featureGraph, verboseDot);
+    }
 
     File protoFile = new File(featuresOutputDirectory, featureGraph.getSourceFileName() + ".proto");
     mkdirFor(protoFile);
@@ -221,8 +229,7 @@ public class FeaturePlugin implements Plugin {
     // First of all we consider variable trees and associate them with the first token within their
     // span that has a matching name. This is necessary because there are various ways that javac
     // creates a smaller node that swallows the variable identifier.
-    astNodes
-        .stream()
+    astNodes.stream()
         .filter(node -> node.getType().equals(NodeType.AST_ELEMENT))
         .filter(node -> node.getContents().equals("VARIABLE"))
         .forEach(
@@ -230,9 +237,7 @@ public class FeaturePlugin implements Plugin {
               JCTree.JCVariableDecl variableTree =
                   (JCTree.JCVariableDecl) featureGraph.lookupTree(node);
               Name expectedName = variableTree.getName();
-              astNodes
-                  .tailSet(node)
-                  .stream()
+              astNodes.tailSet(node).stream()
                   .filter(target -> target.getType().equals(NodeType.IDENTIFIER_TOKEN))
                   .filter(target -> expectedName.contentEquals(target.getContents()))
                   .findFirst()
@@ -244,9 +249,7 @@ public class FeaturePlugin implements Plugin {
       if (!featureGraph.predecessors(token, EdgeType.ASSOCIATED_TOKEN).isEmpty()) {
         continue;
       }
-      astNodes
-          .headSet(token)
-          .stream()
+      astNodes.headSet(token).stream()
           .filter(n -> n.getType().equals(NodeType.AST_ELEMENT))
           .filter(n -> n.getEndPosition() >= token.getEndPosition())
           .min(Comparator.comparing(n -> n.getEndPosition() - n.getStartPosition()))
