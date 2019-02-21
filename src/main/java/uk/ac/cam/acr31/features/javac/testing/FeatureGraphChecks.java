@@ -28,10 +28,14 @@ import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureNode;
 
 public class FeatureGraphChecks {
 
+  public static Set<FeatureNode> findNodes(FeatureGraph graph, SourceSpan span) {
+    return graph.findNode(span.start(), span.end());
+  }
+
   public static FeatureEdge edgeBetween(
       FeatureGraph graph, SourceSpan source, SourceSpan destination, EdgeType edgeType) {
-    Set<FeatureNode> sourceNodes = graph.findNode(source.start(), source.end());
-    Set<FeatureNode> destinationNodes = graph.findNode(destination.start(), destination.end());
+    Set<FeatureNode> sourceNodes = findNodes(graph, source);
+    Set<FeatureNode> destinationNodes = findNodes(graph, destination);
     for (FeatureNode sourceNode : sourceNodes) {
       for (FeatureNode destinationNode : destinationNodes) {
         Optional<FeatureEdge> edge =
