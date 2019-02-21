@@ -52,8 +52,8 @@ public class TypeScannerTest {
         FeaturePlugin.createFeatureGraph(compilation.compilationUnit(), compilation.context());
 
     // ASSERT
-    GraphProtos.FeatureNode typeNode = findTypeNode(graph, type);
-    GraphProtos.FeatureNode initializerNode = findTypeNode(graph, initializer);
+    GraphProtos.FeatureNode typeNode = FeatureGraphChecks.findAssociatedTypeNode(graph, type);
+    GraphProtos.FeatureNode initializerNode = FeatureGraphChecks.findAssociatedTypeNode(graph, initializer);
     assertSame("typeNode and initializerNode should be associated with the same type node in the graph",
         typeNode,
         initializerNode);
@@ -81,8 +81,8 @@ public class TypeScannerTest {
         FeaturePlugin.createFeatureGraph(compilation.compilationUnit(), compilation.context());
 
     // ASSERT
-    GraphProtos.FeatureNode variableNode = findTypeNode(graph, variable);
-    GraphProtos.FeatureNode newExpressionNode = findTypeNode(graph, newExpression);
+    GraphProtos.FeatureNode variableNode = FeatureGraphChecks.findAssociatedTypeNode(graph, variable);
+    GraphProtos.FeatureNode newExpressionNode = FeatureGraphChecks.findAssociatedTypeNode(graph, newExpression);
     assertSame("variableNode and newExpressionNode should be associated with the same type node in the graph",
         variableNode,
         newExpressionNode);
@@ -111,8 +111,8 @@ public class TypeScannerTest {
         FeaturePlugin.createFeatureGraph(compilation.compilationUnit(), compilation.context());
 
     // ASSERT
-    GraphProtos.FeatureNode arg1TypeNode = findTypeNode(graph, arg1);
-    GraphProtos.FeatureNode arg2TypeNode = findTypeNode(graph, arg2);
+    GraphProtos.FeatureNode arg1TypeNode = FeatureGraphChecks.findAssociatedTypeNode(graph, arg1);
+    GraphProtos.FeatureNode arg2TypeNode = FeatureGraphChecks.findAssociatedTypeNode(graph, arg2);
     assertSame("arg1Node and arg2Node should be associated with the same type node in the graph",
         arg1TypeNode,
         arg2TypeNode);
@@ -143,26 +143,11 @@ public class TypeScannerTest {
         FeaturePlugin.createFeatureGraph(compilation.compilationUnit(), compilation.context());
 
     // ASSERT
-    GraphProtos.FeatureNode arg1TypeNode = findTypeNode(graph, arg1);
-    GraphProtos.FeatureNode arg2TypeNode = findTypeNode(graph, arg2);
+    GraphProtos.FeatureNode arg1TypeNode = FeatureGraphChecks.findAssociatedTypeNode(graph, arg1);
+    GraphProtos.FeatureNode arg2TypeNode = FeatureGraphChecks.findAssociatedTypeNode(graph, arg2);
     assertNotNull(arg1TypeNode);
     assertNotNull(arg2TypeNode);
     assertEquals("Test.A", arg1TypeNode.getContents());
     assertEquals("Test.B", arg2TypeNode.getContents());
-  }
-
-  private GraphProtos.FeatureNode findTypeNode(FeatureGraph graph, SourceSpan span) {
-    for (GraphProtos.FeatureNode node : FeatureGraphChecks.findNodes(graph, span)) {
-      List<GraphProtos.FeatureNode> typeNodes = graph.successors(node, EdgeType.HAS_TYPE)
-          .stream()
-          .limit(2)
-          .collect(Collectors.toList());
-
-      if (typeNodes.size() > 0) {
-        return typeNodes.get(0);
-      }
-    }
-    fail("Could not find type node");
-    return null;
   }
 }
