@@ -42,6 +42,7 @@ import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureEdge;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureEdge.EdgeType;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureNode;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureNode.NodeType;
+import uk.ac.cam.acr31.features.javac.semantic.AssignabilityAnalysis;
 import uk.ac.cam.acr31.features.javac.semantic.DataflowOutputs;
 import uk.ac.cam.acr31.features.javac.semantic.TypeAnalysis;
 import uk.ac.cam.acr31.features.javac.semantic.TypeScanner;
@@ -151,6 +152,7 @@ public class FeaturePlugin implements Plugin {
 
     var typeAnalysis = new TypeAnalysis(compilationUnit, processingEnvironment);
     TypeScanner.addToGraph(compilationUnit, featureGraph, typeAnalysis);
+    AssignabilityAnalysis.addToGraph(featureGraph, typeAnalysis);
 
     ComputedFromScanner.addToGraph(compilationUnit, featureGraph);
     LastLexicalUseScanner.addToGraph(compilationUnit, featureGraph);

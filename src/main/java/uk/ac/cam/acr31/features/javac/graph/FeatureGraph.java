@@ -124,6 +124,10 @@ public class FeatureGraph {
     }
   }
 
+  public TypeMirror lookupTypeMirror(FeatureNode node) {
+    return typeToNodeMap.inverse().get(node);
+  }
+
   public FeatureNode createFeatureNodeForType(Types types, NodeType nodeType, TypeMirror type) {
     if (typeToNodeMap.containsKey(type)) {
       return typeToNodeMap.get(type);

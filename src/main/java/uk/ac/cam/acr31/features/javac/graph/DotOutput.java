@@ -147,6 +147,9 @@ public class DotOutput {
       case HAS_TYPE:
         ports = "headport=e, tailport=w, color=grey, weight=0";
         break;
+      case ASSIGNABLE_TO:
+        ports = "headport=e, tailport=w, color=brown, weight=0";
+        break;
       default:
         ports = "";
     }

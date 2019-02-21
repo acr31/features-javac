@@ -169,6 +169,7 @@
                         <include>src/**/*</include>
                     </includes>
                     <excludes>
+                        <exclude>src/main/java/uk/ac/cam/acr31/features/javac/semantic/AssignabilityAnalysis.java</exclude>
                         <exclude>src/main/java/uk/ac/cam/acr31/features/javac/semantic/TypeAnalysis.java</exclude>
                         <exclude>src/main/java/uk/ac/cam/acr31/features/javac/semantic/TypeScanner.java</exclude>
                     </excludes>
