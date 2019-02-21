@@ -63,6 +63,9 @@ public class DotOutput {
       Set<FeatureNode> tokenSet = graph.tokens();
       writeSubgraph(w, tokenSet, "max", verboseDot);
 
+      Set<FeatureNode> typeSet = graph.types();
+      writeSubgraph(w, typeSet, "min", verboseDot);
+
       for (FeatureEdge edge : graph.edges()) {
         w.println(dotEdge(edge, graph.incidentNodes(edge)));
       }
@@ -140,6 +143,9 @@ public class DotOutput {
         } else {
           ports = "";
         }
+        break;
+      case HAS_TYPE:
+        ports = "headport=e, tailport=w, color=grey, weight=0";
         break;
       default:
         ports = "";

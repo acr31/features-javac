@@ -32,6 +32,8 @@ import com.sun.tools.javac.tree.EndPosTable;
 import com.sun.tools.javac.tree.JCTree;
 import java.util.Optional;
 import java.util.Set;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Types;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureEdge;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureEdge.EdgeType;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureNode;
@@ -43,6 +45,7 @@ public class FeatureGraph {
   private final String sourceFileName;
   private final MutableNetwork<FeatureNode, FeatureEdge> graph;
   private final BiMap<Tree, FeatureNode> treeToNodeMap;
+  private final BiMap<TypeMirror, FeatureNode> typeToNodeMap;
   private final EndPosTable endPosTable;
   private final LineMap lineMap;
   private final BiMap<Symbol, FeatureNode> symbolToNodeMap;
@@ -55,6 +58,7 @@ public class FeatureGraph {
     this.sourceFileName = sourceFileName;
     this.graph = NetworkBuilder.directed().allowsSelfLoops(true).allowsParallelEdges(true).build();
     this.treeToNodeMap = HashBiMap.create();
+    this.typeToNodeMap = HashBiMap.create();
     this.symbolToNodeMap = HashBiMap.create();
     this.endPosTable = endPosTable;
     this.lineMap = lineMap;
@@ -120,6 +124,24 @@ public class FeatureGraph {
     }
   }
 
+  public FeatureNode createFeatureNodeForType(Types types, NodeType nodeType, TypeMirror type) {
+    if (typeToNodeMap.containsKey(type)) {
+      return typeToNodeMap.get(type);
+    }
+    // First check we haven't already got a feature node for an equal type.
+    for (TypeMirror existingType : typeToNodeMap.keySet()) {
+      if (types.isSameType(type, existingType)) {
+        FeatureNode result = typeToNodeMap.get(existingType);
+        typeToNodeMap.put(type, result);
+        return result;
+      }
+    }
+    // If we don't, then create a new feature node.
+    FeatureNode result = createFeatureNode(nodeType, type.toString(), -1, -1);
+    typeToNodeMap.put(type, result);
+    return result;
+  }
+
   public Set<FeatureNode> nodes() {
     // returns an unmodifiable set
     return graph.nodes();
@@ -152,6 +174,10 @@ public class FeatureGraph {
 
   public Set<FeatureNode> symbols() {
     return nodes(NodeType.SYMBOL, NodeType.SYMBOL_MTH, NodeType.SYMBOL_TYP, NodeType.SYMBOL_VAR);
+  }
+
+  public Set<FeatureNode> types() {
+    return nodes(NodeType.TYPE);
   }
 
   public Set<FeatureEdge> edges() {
