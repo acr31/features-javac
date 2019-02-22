@@ -30,8 +30,13 @@ import com.sun.source.tree.Tree;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.tree.EndPosTable;
 import com.sun.tools.javac.tree.JCTree;
+
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Types;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureEdge;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureEdge.EdgeType;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureNode;
@@ -46,6 +51,12 @@ public class FeatureGraph {
   private final EndPosTable endPosTable;
   private final LineMap lineMap;
   private final BiMap<Symbol, FeatureNode> symbolToNodeMap;
+  private final Map<TypeMirror, FeatureNode> typeToNodeMap;
+  /**
+   * Many TypeMirrors may map to the same feature node.
+   * This maps nodes to an arbitrary one of these TypeMirrors.
+   */
+  private final Map<FeatureNode, TypeMirror> nodeToSomeTypeMap;
 
   private int nodeIdCounter = 0;
   private FeatureNode firstToken = null;
@@ -56,6 +67,8 @@ public class FeatureGraph {
     this.graph = NetworkBuilder.directed().allowsSelfLoops(true).allowsParallelEdges(true).build();
     this.treeToNodeMap = HashBiMap.create();
     this.symbolToNodeMap = HashBiMap.create();
+    this.typeToNodeMap = new HashMap<>();
+    this.nodeToSomeTypeMap = new HashMap<>();
     this.endPosTable = endPosTable;
     this.lineMap = lineMap;
   }
@@ -120,6 +133,32 @@ public class FeatureGraph {
     }
   }
 
+  /**
+   * Returns an arbitrary member of the equivalence class of type mirrors associated with the node.
+   */
+  public TypeMirror lookupTypeMirror(FeatureNode node) {
+    return nodeToSomeTypeMap.get(node);
+  }
+
+  public FeatureNode createFeatureNodeForType(Types types, NodeType nodeType, TypeMirror type) {
+    if (typeToNodeMap.containsKey(type)) {
+      return typeToNodeMap.get(type);
+    }
+    // First check we haven't already got a feature node for an equal type.
+    for (TypeMirror existingType : typeToNodeMap.keySet()) {
+      if (types.isSameType(type, existingType)) {
+        FeatureNode result = typeToNodeMap.get(existingType);
+        typeToNodeMap.put(type, result);
+        return result;
+      }
+    }
+    // If we don't, then create a new feature node.
+    FeatureNode result = createFeatureNode(nodeType, type.toString(), -1, -1);
+    typeToNodeMap.put(type, result);
+    nodeToSomeTypeMap.put(result, type);
+    return result;
+  }
+
   public Set<FeatureNode> nodes() {
     // returns an unmodifiable set
     return graph.nodes();
@@ -152,6 +191,10 @@ public class FeatureGraph {
 
   public Set<FeatureNode> symbols() {
     return nodes(NodeType.SYMBOL, NodeType.SYMBOL_MTH, NodeType.SYMBOL_TYP, NodeType.SYMBOL_VAR);
+  }
+
+  public Set<FeatureNode> types() {
+    return nodes(NodeType.TYPE);
   }
 
   public Set<FeatureEdge> edges() {
