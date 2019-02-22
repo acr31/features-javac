@@ -16,20 +16,17 @@
 
 package uk.ac.cam.acr31.features.javac;
 
-import static junit.framework.TestCase.*;
+import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.extensions.proto.ProtoTruth.assertThat;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import uk.ac.cam.acr31.features.javac.graph.FeatureGraph;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos;
-import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureEdge.EdgeType;
 import uk.ac.cam.acr31.features.javac.testing.FeatureGraphChecks;
 import uk.ac.cam.acr31.features.javac.testing.SourceSpan;
 import uk.ac.cam.acr31.features.javac.testing.TestCompilation;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @RunWith(JUnit4.class)
 public class TypeScannerTest {
@@ -53,12 +50,10 @@ public class TypeScannerTest {
 
     // ASSERT
     GraphProtos.FeatureNode typeNode = FeatureGraphChecks.findAssociatedTypeNode(graph, type);
-    GraphProtos.FeatureNode initializerNode = FeatureGraphChecks.findAssociatedTypeNode(graph, initializer);
-    assertSame("typeNode and initializerNode should be associated with the same type node in the graph",
-        typeNode,
-        initializerNode);
-    assertNotNull(typeNode);
-    assertEquals("int", typeNode.getContents());
+    GraphProtos.FeatureNode initializerNode =
+        FeatureGraphChecks.findAssociatedTypeNode(graph, initializer);
+    assertThat(typeNode).isEqualTo(initializerNode);
+    assertThat(typeNode.getContents()).isEqualTo("int");
   }
 
   @Test
@@ -81,13 +76,12 @@ public class TypeScannerTest {
         FeaturePlugin.createFeatureGraph(compilation.compilationUnit(), compilation.context());
 
     // ASSERT
-    GraphProtos.FeatureNode variableNode = FeatureGraphChecks.findAssociatedTypeNode(graph, variable);
-    GraphProtos.FeatureNode newExpressionNode = FeatureGraphChecks.findAssociatedTypeNode(graph, newExpression);
-    assertSame("variableNode and newExpressionNode should be associated with the same type node in the graph",
-        variableNode,
-        newExpressionNode);
-    assertNotNull(variableNode);
-    assertEquals("int", variableNode.getContents());
+    GraphProtos.FeatureNode variableNode =
+        FeatureGraphChecks.findAssociatedTypeNode(graph, variable);
+    GraphProtos.FeatureNode newExpressionNode =
+        FeatureGraphChecks.findAssociatedTypeNode(graph, newExpression);
+    assertThat(variableNode).isEqualTo(newExpressionNode);
+    assertThat(variableNode.getContents()).isEqualTo("int");
   }
 
   @Test
@@ -113,11 +107,8 @@ public class TypeScannerTest {
     // ASSERT
     GraphProtos.FeatureNode arg1TypeNode = FeatureGraphChecks.findAssociatedTypeNode(graph, arg1);
     GraphProtos.FeatureNode arg2TypeNode = FeatureGraphChecks.findAssociatedTypeNode(graph, arg2);
-    assertSame("arg1Node and arg2Node should be associated with the same type node in the graph",
-        arg1TypeNode,
-        arg2TypeNode);
-    assertNotNull(arg1TypeNode);
-    assertEquals("int", arg1TypeNode.getContents());
+    assertThat(arg1TypeNode).isEqualTo(arg2TypeNode);
+    assertThat(arg1TypeNode.getContents()).isEqualTo("int");
   }
 
   @Test
@@ -145,9 +136,7 @@ public class TypeScannerTest {
     // ASSERT
     GraphProtos.FeatureNode arg1TypeNode = FeatureGraphChecks.findAssociatedTypeNode(graph, arg1);
     GraphProtos.FeatureNode arg2TypeNode = FeatureGraphChecks.findAssociatedTypeNode(graph, arg2);
-    assertNotNull(arg1TypeNode);
-    assertNotNull(arg2TypeNode);
-    assertEquals("Test.A", arg1TypeNode.getContents());
-    assertEquals("Test.B", arg2TypeNode.getContents());
+    assertThat(arg1TypeNode.getContents()).isEqualTo("Test.A");
+    assertThat(arg2TypeNode.getContents()).isEqualTo("Test.B");
   }
 }

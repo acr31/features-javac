@@ -16,7 +16,7 @@
 
 package uk.ac.cam.acr31.features.javac;
 
-import static junit.framework.TestCase.*;
+import static com.google.common.truth.Truth.assertThat;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -27,10 +27,6 @@ import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureEdge.EdgeType;
 import uk.ac.cam.acr31.features.javac.testing.FeatureGraphChecks;
 import uk.ac.cam.acr31.features.javac.testing.SourceSpan;
 import uk.ac.cam.acr31.features.javac.testing.TestCompilation;
-
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @RunWith(JUnit4.class)
 public class AssignabilityAnalysisTest {
@@ -59,14 +55,15 @@ public class AssignabilityAnalysisTest {
     // ASSERT
     GraphProtos.FeatureNode arg1TypeNode = FeatureGraphChecks.findAssociatedTypeNode(graph, arg1);
     GraphProtos.FeatureNode arg2TypeNode = FeatureGraphChecks.findAssociatedTypeNode(graph, arg2);
-    assertNotNull(arg1TypeNode);
-    assertNotNull(arg2TypeNode);
-    assertFalse(
-        "A shouldn't be assignable to B",
-        FeatureGraphChecks.isEdgeBetween(graph, arg1TypeNode, arg2TypeNode, EdgeType.ASSIGNABLE_TO));
-    assertFalse(
-        "B shouldn't be assignable to A",
-        FeatureGraphChecks.isEdgeBetween(graph, arg2TypeNode, arg1TypeNode, EdgeType.ASSIGNABLE_TO));
+
+    assertThat(
+            FeatureGraphChecks.isEdgeBetween(
+                graph, arg1TypeNode, arg2TypeNode, EdgeType.ASSIGNABLE_TO))
+        .isFalse();
+    assertThat(
+            FeatureGraphChecks.isEdgeBetween(
+                graph, arg2TypeNode, arg1TypeNode, EdgeType.ASSIGNABLE_TO))
+        .isFalse();
   }
 
   @Test
@@ -94,13 +91,13 @@ public class AssignabilityAnalysisTest {
     // ASSERT
     GraphProtos.FeatureNode arg1TypeNode = FeatureGraphChecks.findAssociatedTypeNode(graph, arg1);
     GraphProtos.FeatureNode arg2TypeNode = FeatureGraphChecks.findAssociatedTypeNode(graph, arg2);
-    assertNotNull(arg1TypeNode);
-    assertNotNull(arg2TypeNode);
-    assertFalse(
-        "A shouldn't be assignable to B",
-        FeatureGraphChecks.isEdgeBetween(graph, arg1TypeNode, arg2TypeNode, EdgeType.ASSIGNABLE_TO));
-    assertTrue(
-        "B should be assignable to A",
-        FeatureGraphChecks.isEdgeBetween(graph, arg2TypeNode, arg1TypeNode, EdgeType.ASSIGNABLE_TO));
+    assertThat(
+            FeatureGraphChecks.isEdgeBetween(
+                graph, arg1TypeNode, arg2TypeNode, EdgeType.ASSIGNABLE_TO))
+        .isFalse();
+    assertThat(
+            FeatureGraphChecks.isEdgeBetween(
+                graph, arg2TypeNode, arg1TypeNode, EdgeType.ASSIGNABLE_TO))
+        .isTrue();
   }
 }

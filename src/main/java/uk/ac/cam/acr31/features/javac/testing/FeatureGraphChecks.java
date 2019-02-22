@@ -18,7 +18,6 @@ package uk.ac.cam.acr31.features.javac.testing;
 
 import com.google.common.collect.Sets;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -96,14 +95,9 @@ public class FeatureGraphChecks {
 
   public static GraphProtos.FeatureNode findAssociatedTypeNode(
       FeatureGraph graph, SourceSpan span) {
-    for (GraphProtos.FeatureNode node : FeatureGraphChecks.findNodes(graph, span)) {
-      List<FeatureNode> typeNodes =
-          graph.successors(node, EdgeType.HAS_TYPE).stream().limit(2).collect(Collectors.toList());
-
-      if (typeNodes.size() > 0) {
-        return typeNodes.get(0);
-      }
-    }
-    throw new AssertionError("Could not find type node");
+    return FeatureGraphChecks.findNodes(graph, span).stream()
+        .flatMap(node -> graph.successors(node, EdgeType.HAS_TYPE).stream())
+        .findFirst()
+        .orElseThrow(() -> new AssertionError("Could not find type node"));
   }
 }
