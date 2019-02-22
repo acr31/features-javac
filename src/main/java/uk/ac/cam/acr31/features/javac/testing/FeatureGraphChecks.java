@@ -36,9 +36,7 @@ public class FeatureGraphChecks {
 
   private static Optional<FeatureEdge> anyEdgeBetween(
       FeatureGraph graph, FeatureNode source, FeatureNode destination, EdgeType edgeType) {
-    return graph
-        .edges(source, destination)
-        .stream()
+    return graph.edges(source, destination).stream()
         .filter(e -> e.getType().equals(edgeType))
         .findAny();
   }
@@ -67,9 +65,7 @@ public class FeatureGraphChecks {
   public static boolean isAcyclic(FeatureGraph graph, EdgeType edgeType) {
 
     HashSet<FeatureNode> nodes =
-        graph
-            .nodes()
-            .stream()
+        graph.nodes().stream()
             .filter(
                 node ->
                     !graph.successors(node, edgeType).isEmpty()
@@ -84,8 +80,7 @@ public class FeatureGraphChecks {
       }
 
       Optional<FeatureNode> possibleLeaf =
-          nodes
-              .stream()
+          nodes.stream()
               .filter(node -> Sets.intersection(graph.successors(node, edgeType), nodes).isEmpty())
               .findAny();
 
@@ -99,12 +94,11 @@ public class FeatureGraphChecks {
     }
   }
 
-  public static GraphProtos.FeatureNode findAssociatedTypeNode(FeatureGraph graph, SourceSpan span) {
+  public static GraphProtos.FeatureNode findAssociatedTypeNode(
+      FeatureGraph graph, SourceSpan span) {
     for (GraphProtos.FeatureNode node : FeatureGraphChecks.findNodes(graph, span)) {
-      List<FeatureNode> typeNodes = graph.successors(node, EdgeType.HAS_TYPE)
-          .stream()
-          .limit(2)
-          .collect(Collectors.toList());
+      List<FeatureNode> typeNodes =
+          graph.successors(node, EdgeType.HAS_TYPE).stream().limit(2).collect(Collectors.toList());
 
       if (typeNodes.size() > 0) {
         return typeNodes.get(0);
