@@ -234,8 +234,7 @@ public class SymbolScannerTest {
   private FeatureNode findSymbolNode(FeatureGraph graph, SourceSpan sourceSpan) {
     Set<FeatureNode> nodes = graph.findNode(sourceSpan.start(), sourceSpan.end());
     return Iterables.getOnlyElement(
-        nodes
-            .stream()
+        nodes.stream()
             .map(n -> graph.predecessors(n, EdgeType.ASSOCIATED_SYMBOL))
             .filter(p -> !p.isEmpty())
             .findAny()

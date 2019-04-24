@@ -27,41 +27,39 @@ import javax.lang.model.util.Types;
 
 public class TypeAnalysis {
 
-    private final CompilationUnitTree compilationUnitTree;
-    private final ProcessingEnvironment processingEnvironment;
+  private final CompilationUnitTree compilationUnitTree;
+  private final ProcessingEnvironment processingEnvironment;
 
-    public TypeAnalysis(
-        CompilationUnitTree compilationUnitTree, ProcessingEnvironment processingEnvironment) {
-        this.compilationUnitTree = compilationUnitTree;
-        this.processingEnvironment = processingEnvironment;
+  public TypeAnalysis(
+      CompilationUnitTree compilationUnitTree, ProcessingEnvironment processingEnvironment) {
+    this.compilationUnitTree = compilationUnitTree;
+    this.processingEnvironment = processingEnvironment;
+  }
+
+  public TypeMirror getTypeMirror(Tree typeDecl) {
+    Trees trees = Trees.instance(processingEnvironment);
+    TreePath path = TreePath.getPath(compilationUnitTree, typeDecl);
+    return trees.getTypeMirror(path);
+  }
+
+  private boolean canCheckAssignability(TypeMirror type) {
+    return type.getKind() != TypeKind.EXECUTABLE && type.getKind() != TypeKind.PACKAGE;
+  }
+
+  /** Returns true if typeA is assignable to typeB. */
+  public boolean isAssignable(TypeMirror typeA, TypeMirror typeB) {
+    if (!canCheckAssignability(typeA) || !canCheckAssignability(typeB)) {
+      return false;
     }
 
-    public TypeMirror getTypeMirror(Tree typeDecl) {
-        Trees trees = Trees.instance(processingEnvironment);
-        TreePath path = TreePath.getPath(compilationUnitTree, typeDecl);
-        return trees.getTypeMirror(path);
-    }
+    return processingEnvironment.getTypeUtils().isAssignable(typeA, typeB);
+  }
 
-    private boolean canCheckAssignability(TypeMirror type) {
-        return type.getKind() != TypeKind.EXECUTABLE && type.getKind() != TypeKind.PACKAGE;
-    }
+  public String getApproxTypeName(Tree tree) {
+    return getTypeMirror(tree).toString();
+  }
 
-    /**
-     * Returns true if typeA is assignable to typeB.
-     */
-    public boolean isAssignable(TypeMirror typeA, TypeMirror typeB) {
-        if (!canCheckAssignability(typeA) || !canCheckAssignability(typeB)) {
-            return false;
-        }
-
-        return processingEnvironment.getTypeUtils().isAssignable(typeA, typeB);
-    }
-
-    public String getApproxTypeName(Tree tree) {
-        return getTypeMirror(tree).toString();
-    }
-
-    public Types getTypes() {
-        return processingEnvironment.getTypeUtils();
-    }
+  public Types getTypes() {
+    return processingEnvironment.getTypeUtils();
+  }
 }

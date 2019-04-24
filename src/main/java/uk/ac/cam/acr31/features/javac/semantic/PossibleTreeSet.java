@@ -73,8 +73,7 @@ public class PossibleTreeSet implements AbstractValue<PossibleTreeSet> {
 
   @Override
   public String toString() {
-    return nodes
-        .stream()
+    return nodes.stream()
         .map(n -> n.toString() + ":" + (((JCTree) n).pos))
         .collect(Collectors.joining(","));
   }

@@ -30,7 +30,6 @@ import com.sun.source.tree.Tree;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.tree.EndPosTable;
 import com.sun.tools.javac.tree.JCTree;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -53,8 +52,8 @@ public class FeatureGraph {
   private final BiMap<Symbol, FeatureNode> symbolToNodeMap;
   private final Map<TypeMirror, FeatureNode> typeToNodeMap;
   /**
-   * Many TypeMirrors may map to the same feature node.
-   * This maps nodes to an arbitrary one of these TypeMirrors.
+   * Many TypeMirrors may map to the same feature node. This maps nodes to an arbitrary one of these
+   * TypeMirrors.
    */
   private final Map<FeatureNode, TypeMirror> nodeToSomeTypeMap;
 
@@ -166,9 +165,7 @@ public class FeatureGraph {
 
   private Set<FeatureNode> nodes(NodeType... nodeTypes) {
     ImmutableList<NodeType> nodes = ImmutableList.copyOf(nodeTypes);
-    return graph
-        .nodes()
-        .stream()
+    return graph.nodes().stream()
         .filter(n -> nodes.contains(n.getType()))
         .collect(toImmutableSet());
   }
@@ -203,9 +200,7 @@ public class FeatureGraph {
   }
 
   public Set<FeatureEdge> edges(EdgeType edgeType) {
-    return graph
-        .edges()
-        .stream()
+    return graph.edges().stream()
         .filter(e -> e.getType().equals(edgeType))
         .collect(toImmutableSet());
   }
@@ -234,14 +229,10 @@ public class FeatureGraph {
 
   public Set<FeatureNode> successors(FeatureNode node, EdgeType... edgeTypes) {
     ImmutableList<EdgeType> edgeTypeList = ImmutableList.copyOf(edgeTypes);
-    return graph
-        .successors(node)
-        .stream()
+    return graph.successors(node).stream()
         .filter(
             n ->
-                graph
-                    .edgesConnecting(node, n)
-                    .stream()
+                graph.edgesConnecting(node, n).stream()
                     .anyMatch(e -> edgeTypeList.contains(e.getType())))
         .collect(toImmutableSet());
   }
@@ -252,14 +243,10 @@ public class FeatureGraph {
 
   public Set<FeatureNode> predecessors(FeatureNode node, EdgeType... edgeTypes) {
     ImmutableList<EdgeType> edgeTypeList = ImmutableList.copyOf(edgeTypes);
-    return graph
-        .predecessors(node)
-        .stream()
+    return graph.predecessors(node).stream()
         .filter(
             n ->
-                graph
-                    .edgesConnecting(n, node)
-                    .stream()
+                graph.edgesConnecting(n, node).stream()
                     .anyMatch(e -> edgeTypeList.contains(e.getType())))
         .collect(toImmutableSet());
   }
@@ -278,8 +265,7 @@ public class FeatureGraph {
     }
 
     Optional<FeatureNode> any =
-        successors(node, EdgeType.ASSOCIATED_TOKEN)
-            .stream()
+        successors(node, EdgeType.ASSOCIATED_TOKEN).stream()
             .filter(n -> n.getType().equals(NodeType.IDENTIFIER_TOKEN))
             .findAny();
     if (!any.isPresent()) {
@@ -333,8 +319,7 @@ public class FeatureGraph {
   }
 
   public Set<FeatureNode> findNode(int start, int end) {
-    return nodes()
-        .stream()
+    return nodes().stream()
         .filter(node -> node.getStartPosition() == start)
         .filter(node -> node.getEndPosition() == end)
         .collect(toImmutableSet());
@@ -358,9 +343,7 @@ public class FeatureGraph {
 
   private boolean pruneLeavesOnce() {
     ImmutableSet<FeatureNode> toRemove =
-        graph
-            .nodes()
-            .stream()
+        graph.nodes().stream()
             .filter(
                 n ->
                     n.getType().equals(NodeType.AST_ELEMENT)

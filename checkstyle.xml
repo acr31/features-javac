@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <!DOCTYPE module PUBLIC
-        "-//Puppy Crawl//DTD Check Configuration 1.3//EN"
-        "http://checkstyle.sourceforge.net/dtds/configuration_1_3.dtd">
+        "-//Checkstyle//DTD Checkstyle Configuration 1.3//EN"
+        "https://checkstyle.org/dtds/configuration_1_3.dtd">
 
 <!--
     Checkstyle configuration that checks the Google coding conventions from Google Java Style
@@ -18,9 +18,15 @@
 <module name="Checker">
     <property name="charset" value="UTF-8"/>
 
+    <property name="cacheFile" value="target/cachefile"/>
     <property name="severity" value="warning"/>
 
     <property name="fileExtensions" value="java, properties, xml"/>
+    <!-- Excludes all 'module-info.java' files              -->
+    <!-- See https://checkstyle.org/config_filefilters.html -->
+    <module name="BeforeExecutionExclusionFileFilter">
+        <property name="fileNamePattern" value="module\-info\.java$"/>
+    </module>
     <!-- Checks for whitespace                               -->
     <!-- See http://checkstyle.sf.net/config_whitespace.html -->
     <module name="FileTabCharacter">
@@ -50,23 +56,27 @@
         <module name="NoLineWrap"/>
         <module name="EmptyBlock">
             <property name="option" value="TEXT"/>
-            <property name="tokens" value="LITERAL_TRY, LITERAL_FINALLY, LITERAL_IF, LITERAL_ELSE, LITERAL_SWITCH"/>
+            <property name="tokens"
+                      value="LITERAL_TRY, LITERAL_FINALLY, LITERAL_IF, LITERAL_ELSE, LITERAL_SWITCH"/>
         </module>
         <module name="NeedBraces"/>
         <module name="LeftCurly"/>
         <module name="RightCurly">
             <property name="id" value="RightCurlySame"/>
             <property name="tokens"
-                      value="LITERAL_TRY, LITERAL_CATCH, LITERAL_FINALLY, LITERAL_IF, LITERAL_ELSE, LITERAL_DO"/>
+                      value="LITERAL_TRY, LITERAL_CATCH, LITERAL_FINALLY, LITERAL_IF, LITERAL_ELSE,
+                    LITERAL_DO"/>
         </module>
         <module name="RightCurly">
             <property name="id" value="RightCurlyAlone"/>
             <property name="option" value="alone"/>
             <property name="tokens"
-                      value="CLASS_DEF, METHOD_DEF, CTOR_DEF, LITERAL_FOR, LITERAL_WHILE, STATIC_INIT, INSTANCE_INIT"/>
+                      value="CLASS_DEF, METHOD_DEF, CTOR_DEF, LITERAL_FOR, LITERAL_WHILE, STATIC_INIT,
+                    INSTANCE_INIT"/>
         </module>
         <module name="WhitespaceAround">
             <property name="allowEmptyConstructors" value="true"/>
+            <property name="allowEmptyLambdas" value="true"/>
             <property name="allowEmptyMethods" value="true"/>
             <property name="allowEmptyTypes" value="true"/>
             <property name="allowEmptyLoops" value="true"/>
@@ -78,6 +88,7 @@
         <module name="OneStatementPerLine"/>
         <module name="MultipleVariableDeclarations"/>
         <module name="ArrayTypeStyle"/>
+        <module name="MissingSwitchDefault"/>
         <module name="FallThrough"/>
         <module name="UpperEll"/>
         <module name="ModifierOrder"/>
@@ -130,6 +141,11 @@
             <message key="name.invalidPattern"
                      value="Parameter name ''{0}'' must match pattern ''{1}''."/>
         </module>
+        <module name="LambdaParameterName">
+            <property name="format" value="^[a-z]([a-z0-9][a-zA-Z0-9]*)?$"/>
+            <message key="name.invalidPattern"
+                     value="Lambda parameter name ''{0}'' must match pattern ''{1}''."/>
+        </module>
         <module name="CatchParameterName">
             <property name="format" value="^[a-z]([a-z0-9][a-zA-Z0-9]*)?$"/>
             <message key="name.invalidPattern"
@@ -167,7 +183,6 @@
             <message key="ws.notPreceded"
                      value="GenericWhitespace ''{0}'' is not preceded with whitespace."/>
         </module>
-        <!--
         <module name="Indentation">
             <property name="basicOffset" value="2"/>
             <property name="braceAdjustment" value="0"/>
@@ -176,7 +191,6 @@
             <property name="lineWrappingIndentation" value="4"/>
             <property name="arrayInitIndent" value="2"/>
         </module>
-        -->
         <module name="AbbreviationAsWordInName">
             <property name="ignoreFinal" value="false"/>
             <property name="allowedAbbreviationLength" value="1"/>
@@ -189,15 +203,22 @@
             <property name="customImportOrderRules" value="STATIC###THIRD_PARTY_PACKAGE"/>
         </module>
         <module name="MethodParamPad"/>
+        <module name="NoWhitespaceBefore">
+            <property name="tokens"
+                      value="COMMA, SEMI, POST_INC, POST_DEC, DOT, ELLIPSIS, METHOD_REF"/>
+            <property name="allowLineBreaks" value="true"/>
+        </module>
         <module name="ParenPad"/>
         <module name="OperatorWrap">
             <property name="option" value="NL"/>
             <property name="tokens"
-                      value="BAND, BOR, BSR, BXOR, DIV, EQUAL, GE, GT, LAND, LE, LITERAL_INSTANCEOF, LOR, LT, MINUS, MOD, NOT_EQUAL, PLUS, QUESTION, SL, SR, STAR, METHOD_REF "/>
+                      value="BAND, BOR, BSR, BXOR, DIV, EQUAL, GE, GT, LAND, LE, LITERAL_INSTANCEOF, LOR,
+                    LT, MINUS, MOD, NOT_EQUAL, PLUS, QUESTION, SL, SR, STAR, METHOD_REF "/>
         </module>
         <module name="AnnotationLocation">
             <property name="id" value="AnnotationLocationMostCases"/>
-            <property name="tokens" value="CLASS_DEF, INTERFACE_DEF, ENUM_DEF, METHOD_DEF, CTOR_DEF"/>
+            <property name="tokens"
+                      value="CLASS_DEF, INTERFACE_DEF, ENUM_DEF, METHOD_DEF, CTOR_DEF"/>
         </module>
         <module name="AnnotationLocation">
             <property name="id" value="AnnotationLocationVariables"/>
@@ -213,7 +234,8 @@
         <module name="JavadocParagraph"/>
         <module name="AtclauseOrder">
             <property name="tagOrder" value="@param, @return, @throws, @deprecated"/>
-            <property name="target" value="CLASS_DEF, INTERFACE_DEF, ENUM_DEF, METHOD_DEF, CTOR_DEF, VARIABLE_DEF"/>
+            <property name="target"
+                      value="CLASS_DEF, INTERFACE_DEF, ENUM_DEF, METHOD_DEF, CTOR_DEF, VARIABLE_DEF"/>
         </module>
         <!--
         <module name="JavadocMethod">

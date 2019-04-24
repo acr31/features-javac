@@ -62,17 +62,14 @@ public class DataflowOutputs {
   }
 
   private static ImmutableList<ClassTree> getClasses(CompilationUnitTree t) {
-    return t.getTypeDecls()
-        .stream()
+    return t.getTypeDecls().stream()
         .filter(typeDecl -> typeDecl.getKind().equals(Tree.Kind.CLASS))
         .map(typeDecl -> (ClassTree) typeDecl)
         .collect(toImmutableList());
   }
 
   private static ImmutableList<MethodTree> getMethods(ClassTree classTree) {
-    return classTree
-        .getMembers()
-        .stream()
+    return classTree.getMembers().stream()
         .filter(member -> member.getKind().equals(Tree.Kind.METHOD))
         .map(member -> (MethodTree) member)
         .collect(toImmutableList());

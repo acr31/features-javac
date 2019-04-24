@@ -84,8 +84,9 @@ public class Tokens {
         return NodeType.COMMENT_BLOCK;
       case JAVADOC:
         return NodeType.COMMENT_JAVADOC;
+      default:
+        throw new IllegalArgumentException("Unrecognised comment type");
     }
-    throw new IllegalArgumentException("Unrecognised comment type");
   }
 
   private static String tokenToString(ErrorProneToken token) {

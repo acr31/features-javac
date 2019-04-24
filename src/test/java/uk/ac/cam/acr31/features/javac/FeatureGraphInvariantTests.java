@@ -57,9 +57,7 @@ public class FeatureGraphInvariantTests {
   @Test
   public void featureGraph_tokensHaveSingleRelatedAstNode() {
     assertThat(
-            featureGraph
-                .tokens()
-                .stream()
+            featureGraph.tokens().stream()
                 .map(
                     node ->
                         featureGraph.predecessors(node, EdgeType.ASSOCIATED_TOKEN).stream().count())
@@ -70,9 +68,7 @@ public class FeatureGraphInvariantTests {
   @Test
   public void featureGraph_singleStartTokenIsFirstToken() {
     ImmutableList<FeatureNode> nodes =
-        featureGraph
-            .tokens()
-            .stream()
+        featureGraph.tokens().stream()
             .filter(node -> featureGraph.predecessors(node, EdgeType.NEXT_TOKEN).isEmpty())
             .collect(toImmutableList());
     assertThat(Iterables.getOnlyElement(nodes)).isEqualTo(featureGraph.getFirstToken());
@@ -81,9 +77,7 @@ public class FeatureGraphInvariantTests {
   @Test
   public void featureGraph_tokensHaveZeroOrOneNextToken() {
     Map<Integer, Long> counts =
-        featureGraph
-            .tokens()
-            .stream()
+        featureGraph.tokens().stream()
             .map(node -> featureGraph.successors(node, EdgeType.NEXT_TOKEN).size())
             .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
     assertThat(counts.keySet()).containsExactly(0, 1);
@@ -92,9 +86,7 @@ public class FeatureGraphInvariantTests {
   @Test
   public void featureGraph_nextTokenFormsASequence() {
     Optional<FeatureNode> token =
-        featureGraph
-            .tokens()
-            .stream()
+        featureGraph.tokens().stream()
             .filter(node -> featureGraph.predecessors(node, EdgeType.NEXT_TOKEN).isEmpty())
             .findAny();
     ImmutableList.Builder<FeatureNode> tokensBuilder = ImmutableList.builder();
@@ -110,9 +102,7 @@ public class FeatureGraphInvariantTests {
   @Test
   public void featureGraph_singleAstNodeWithNoPredecessorsIsAstRoot() {
     ImmutableList<FeatureNode> nodes =
-        featureGraph
-            .astNodes()
-            .stream()
+        featureGraph.astNodes().stream()
             .filter(node -> featureGraph.predecessors(node, EdgeType.AST_CHILD).isEmpty())
             .collect(toImmutableList());
     assertThat(Iterables.getOnlyElement(nodes)).isEqualTo(featureGraph.getAstRoot());
@@ -131,9 +121,7 @@ public class FeatureGraphInvariantTests {
   @Test
   public void featureGraph_astToken_neverHasAstChildEdge() {
     ImmutableList<FeatureNode> nodes =
-        featureGraph
-            .tokens()
-            .stream()
+        featureGraph.tokens().stream()
             .filter(node -> !featureGraph.predecessors(node, EdgeType.AST_CHILD).isEmpty())
             .collect(toImmutableList());
     assertThat(nodes).isEmpty();

@@ -48,11 +48,9 @@ public class TypeScanner extends TreeScanner<Void, Void> {
     if (featureNode != null) {
       TypeMirror mirror = typeAnalysis.getTypeMirror(tree);
       if (mirror != null) {
-        GraphProtos.FeatureNode typeNode = graph.createFeatureNodeForType(
-            typeAnalysis.getTypes(),
-            GraphProtos.FeatureNode.NodeType.TYPE,
-            mirror
-        );
+        GraphProtos.FeatureNode typeNode =
+            graph.createFeatureNodeForType(
+                typeAnalysis.getTypes(), GraphProtos.FeatureNode.NodeType.TYPE, mirror);
         if (typeNode != null) {
           graph.addEdge(featureNode, typeNode, GraphProtos.FeatureEdge.EdgeType.HAS_TYPE);
         }
