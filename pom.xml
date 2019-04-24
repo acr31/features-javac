@@ -171,7 +171,8 @@
                         <include>src/**/*</include>
                     </includes>
                     <excludes>
-                        <exclude>src/main/java/uk/ac/cam/acr31/features/javac/semantic/AssignabilityAnalysis.java</exclude>
+                        <exclude>src/main/java/uk/ac/cam/acr31/features/javac/semantic/AssignabilityAnalysis.java
+                        </exclude>
                         <exclude>src/main/java/uk/ac/cam/acr31/features/javac/semantic/TypeAnalysis.java</exclude>
                         <exclude>src/main/java/uk/ac/cam/acr31/features/javac/semantic/TypeScanner.java</exclude>
                         <exclude>src/test/java/uk/ac/cam/acr31/features/javac/AssignabilityAnalysisTest.java</exclude>
@@ -206,7 +207,9 @@
                             <configLocation>checkstyle.xml</configLocation>
                             <encoding>UTF-8</encoding>
                             <consoleOutput>true</consoleOutput>
-                            <failsOnError>true</failsOnError>
+                            <failsOnError>false</failsOnError>
+                            <failOnViolation>true</failOnViolation>
+                            <violationSeverity>warning</violationSeverity>
                             <sourceDirectory>${project.build.sourceDirectory}</sourceDirectory>
                         </configuration>
                         <goals>
