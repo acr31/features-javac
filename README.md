@@ -2,12 +2,16 @@
 
 A javac plugin for extracting a feature graph for plugging into machine learning models
 
-## Prerequisite
+## Prerequisites
 
 JDK 1.10+
 
+## Download
 
-## How to extrace the graph features
+Latest version built from HEAD: https://storage.googleapis.com/features-javac/features-javac-latest.jar
+
+
+## How to extract the graph features
 
 #### Step1: compile
 ```
