@@ -1,4 +1,8 @@
 steps:
   - name: maven:3.6.0-jdk-11-slim
     entrypoint: 'mvn'
-    args: ['-q','--batch-mode','-Djar.finalName=features-javac-latest','package','test']
+    args: ['-q','--batch-mode','package','test']
+artifacts:
+  objects:
+    location: 'gs://features-javac'
+    paths: ['target/features-javac-latest.jar']
