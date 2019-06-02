@@ -28,27 +28,15 @@
                         <proto>DOUBLESLASH_STYLE</proto>
                     </mapping>
                     <properties>
-                        <owner>Andrew Rice</owner>
-                        <email>acr31@cam.ac.uk</email>
+                        <owner>The Authors</owner>
+                        <email>see NOTICE file</email>
                         <project.description>Compiler plugin for extracting features from Java programs
                         </project.description>
                         <project.inceptionYear>2018</project.inceptionYear>
                     </properties>
                     <includes>
-                        <include>extractor/src/**/*</include>
+                        <include>src/**/*</include>
                     </includes>
-                    <excludes>
-                        <exclude>
-                            extractor/src/main/java/uk/ac/cam/acr31/features/javac/semantic/AssignabilityAnalysis.java
-                        </exclude>
-                        <exclude>extractor/src/main/java/uk/ac/cam/acr31/features/javac/semantic/TypeAnalysis.java
-                        </exclude>
-                        <exclude>extractor/src/main/java/uk/ac/cam/acr31/features/javac/semantic/TypeScanner.java
-                        </exclude>
-                        <exclude>extractor/src/test/java/uk/ac/cam/acr31/features/javac/AssignabilityAnalysisTest.java
-                        </exclude>
-                        <exclude>extractor/src/test/java/uk/ac/cam/acr31/features/javac/TypeScannerTest.java</exclude>
-                    </excludes>
                 </configuration>
                 <executions>
                     <execution>

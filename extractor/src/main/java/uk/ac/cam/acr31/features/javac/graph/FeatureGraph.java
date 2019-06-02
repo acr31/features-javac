@@ -1,5 +1,5 @@
 /*
- * Copyright © 2018 Andrew Rice (acr31@cam.ac.uk)
+ * Copyright © 2018 The Authors (see NOTICE file)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package uk.ac.cam.acr31.features.javac.graph;
 
 import static com.google.common.collect.ImmutableSet.toImmutableSet;
