@@ -4,12 +4,17 @@
     <artifactId>features-javac-extractor</artifactId>
     <packaging>jar</packaging>
     <parent>
-      <groupId>uk.ac.cam.acr31</groupId>
-      <artifactId>features-javac-parent</artifactId>
-      <version>1.0.0-SNAPSHOT</version>
+        <groupId>uk.ac.cam.acr31</groupId>
+        <artifactId>features-javac-parent</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
     </parent>
 
     <dependencies>
+        <dependency>
+            <groupId>uk.ac.cam.acr31</groupId>
+            <artifactId>features-javac-proto</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
@@ -95,22 +100,7 @@
 
     <build>
         <plugins>
-            <plugin>
-                <groupId>com.github.os72</groupId>
-                <artifactId>protoc-jar-maven-plugin</artifactId>
-                <version>3.7.1</version>
-                <configuration>
-                    <outputDirectory>${project.build.directory}/generated-sources/proto</outputDirectory>
-                </configuration>
-                <executions>
-                    <execution>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>

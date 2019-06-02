@@ -83,6 +83,7 @@
     </build>
 
     <modules>
+        <module>proto</module>
         <module>extractor</module>
     </modules>
 </project>
