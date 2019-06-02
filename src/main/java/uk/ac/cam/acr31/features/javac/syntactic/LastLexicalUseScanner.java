@@ -17,6 +17,7 @@
 package uk.ac.cam.acr31.features.javac.syntactic;
 
 import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.IdentifierTree;
@@ -25,7 +26,8 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreeScanner;
 import com.sun.tools.javac.code.Kinds;
 import com.sun.tools.javac.code.Symbol;
-import com.sun.tools.javac.tree.JCTree;
+import com.sun.tools.javac.tree.JCTree.JCIdent;
+import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import java.util.Collection;
 import java.util.Iterator;
 import uk.ac.cam.acr31.features.javac.graph.FeatureGraph;
@@ -39,9 +41,10 @@ public class LastLexicalUseScanner extends TreeScanner<Void, Void> {
   public static void addToGraph(
       CompilationUnitTree compilationUnitTree, FeatureGraph featureGraph) {
 
-    var lastLexicalUseScanner = new LastLexicalUseScanner();
+    LastLexicalUseScanner lastLexicalUseScanner = new LastLexicalUseScanner();
     compilationUnitTree.accept(lastLexicalUseScanner, null);
-    var symbolMap = lastLexicalUseScanner.symbolMap.build().asMap();
+    ImmutableMap<Symbol, Collection<Tree>> symbolMap =
+        lastLexicalUseScanner.symbolMap.build().asMap();
 
     for (Collection<Tree> commonIds : symbolMap.values()) {
       Iterator<Tree> idIterator = commonIds.iterator();
@@ -56,14 +59,14 @@ public class LastLexicalUseScanner extends TreeScanner<Void, Void> {
 
   @Override
   public Void visitVariable(VariableTree node, Void ignored) {
-    var variableDecl = (JCTree.JCVariableDecl) node;
+    JCVariableDecl variableDecl = (JCVariableDecl) node;
     symbolMap.put(variableDecl.sym, node);
     return super.visitVariable(node, ignored);
   }
 
   @Override
   public Void visitIdentifier(IdentifierTree node, Void ignored) {
-    var ident = (JCTree.JCIdent) node;
+    JCIdent ident = (JCIdent) node;
     if (ident.sym != null && ident.sym.kind == Kinds.Kind.VAR) {
       symbolMap.put(ident.sym, node);
     }

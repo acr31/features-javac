@@ -37,7 +37,7 @@ public class GuardedByScanner extends TreeScanner<Void, Void> {
 
   public static void addToGraph(
       CompilationUnitTree compilationUnitTree, FeatureGraph featureGraph) {
-    var guardedByVisitor = new GuardedByScanner(featureGraph);
+    GuardedByScanner guardedByVisitor = new GuardedByScanner(featureGraph);
     compilationUnitTree.accept(guardedByVisitor, null);
   }
 

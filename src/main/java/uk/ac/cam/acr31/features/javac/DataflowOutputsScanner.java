@@ -41,7 +41,8 @@ public class DataflowOutputsScanner extends TreeScanner<Void, ScanContext> {
       CompilationUnitTree tree,
       ImmutableMap<ClassTree, ImmutableMap<MethodTree, DataflowOutputs>> analysisResults,
       FeatureGraph graph) {
-    var analysisOutputVariableScanner = new DataflowOutputsScanner(analysisResults, graph);
+    DataflowOutputsScanner analysisOutputVariableScanner =
+        new DataflowOutputsScanner(analysisResults, graph);
     tree.accept(analysisOutputVariableScanner, new ScanContext(null, null));
   }
 

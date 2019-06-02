@@ -128,7 +128,7 @@
                         <arg>--add-exports</arg>
                         <arg>jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED</arg>
                     </compilerArgs>
-                    <source>1.10</source>
+                    <source>1.8</source>
                     <target>1.10</target>
                 </configuration>
             </plugin>

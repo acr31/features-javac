@@ -32,7 +32,7 @@ public class ReturnsToScanner extends TreeScanner<Void, Void> {
 
   public static void addToGraph(
       CompilationUnitTree compilationUnitTree, FeatureGraph featureGraph) {
-    var returnsToScanner = new ReturnsToScanner(featureGraph);
+    ReturnsToScanner returnsToScanner = new ReturnsToScanner(featureGraph);
     compilationUnitTree.accept(returnsToScanner, null);
   }
 

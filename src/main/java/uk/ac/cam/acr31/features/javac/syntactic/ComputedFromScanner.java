@@ -31,7 +31,7 @@ public class ComputedFromScanner extends TreeScanner<Void, Void> {
   private final FeatureGraph graph;
 
   public static void addToGraph(CompilationUnitTree tree, FeatureGraph graph) {
-    var computedFromScanner = new ComputedFromScanner(graph);
+    ComputedFromScanner computedFromScanner = new ComputedFromScanner(graph);
     tree.accept(computedFromScanner, null);
   }
 

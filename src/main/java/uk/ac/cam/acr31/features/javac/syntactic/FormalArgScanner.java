@@ -27,7 +27,8 @@ import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreeScanner;
 import com.sun.tools.javac.code.Symbol;
-import com.sun.tools.javac.tree.JCTree;
+import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import uk.ac.cam.acr31.features.javac.graph.FeatureGraph;
@@ -49,14 +50,14 @@ public class FormalArgScanner extends TreeScanner<Void, Void> {
 
     @Override
     public Void visitMethod(MethodTree node, Void ignored) {
-      var methodDecl = (JCTree.JCMethodDecl) node;
+      JCMethodDecl methodDecl = (JCMethodDecl) node;
       methodSymbols.put(methodDecl.sym, node);
       return super.visitMethod(node, ignored);
     }
 
     private static ImmutableMap<Symbol.MethodSymbol, MethodTree> collect(
         CompilationUnitTree compilationUnitTree) {
-      var methodSymbolCollector = new MethodSymbolCollector();
+      MethodSymbolCollector methodSymbolCollector = new MethodSymbolCollector();
       compilationUnitTree.accept(methodSymbolCollector, null);
       return methodSymbolCollector.methodSymbols.build();
     }
@@ -96,8 +97,8 @@ public class FormalArgScanner extends TreeScanner<Void, Void> {
 
   private void process(
       List<? extends ExpressionTree> arguments, List<? extends VariableTree> parameters) {
-    var argumentIterator = arguments.iterator();
-    var parameterIterator = parameters.iterator();
+    Iterator<? extends ExpressionTree> argumentIterator = arguments.iterator();
+    Iterator<? extends VariableTree> parameterIterator = parameters.iterator();
     while (argumentIterator.hasNext() && parameterIterator.hasNext()) {
       ExpressionTree argument = argumentIterator.next();
       VariableTree parameter = parameterIterator.next();

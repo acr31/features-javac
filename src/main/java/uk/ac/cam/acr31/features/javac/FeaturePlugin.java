@@ -17,8 +17,11 @@
 package uk.ac.cam.acr31.features.javac;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.MethodTree;
 import com.sun.source.util.JavacTask;
 import com.sun.source.util.Plugin;
 import com.sun.source.util.TaskEvent;
@@ -155,10 +158,11 @@ public class FeaturePlugin implements Plugin {
     removeIdentifierAstNodes(featureGraph);
 
     JavacProcessingEnvironment processingEnvironment = JavacProcessingEnvironment.instance(context);
-    var analysisResults = DataflowOutputs.create(compilationUnit, processingEnvironment);
+    ImmutableMap<ClassTree, ImmutableMap<MethodTree, DataflowOutputs>> analysisResults =
+        DataflowOutputs.create(compilationUnit, processingEnvironment);
     DataflowOutputsScanner.addToGraph(compilationUnit, analysisResults, featureGraph);
 
-    var typeAnalysis = new TypeAnalysis(compilationUnit, processingEnvironment);
+    TypeAnalysis typeAnalysis = new TypeAnalysis(compilationUnit, processingEnvironment);
     TypeScanner.addToGraph(compilationUnit, featureGraph, typeAnalysis);
     AssignabilityAnalysis.addToGraph(featureGraph, typeAnalysis);
 
