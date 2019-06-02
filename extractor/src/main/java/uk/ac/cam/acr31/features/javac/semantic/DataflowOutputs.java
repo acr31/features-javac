@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package uk.ac.cam.acr31.features.javac.semantic;
 
 import static com.google.common.collect.ImmutableList.toImmutableList;
