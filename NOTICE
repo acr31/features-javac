@@ -1,2 +1,9 @@
 features-javac
 Copyright 2018 Andrew Rice
+
+This product includes software developed by Henry Mercer in the following files:
+extractor/src/main/java/uk/ac/cam/acr31/features/javac/semantic/AssignabilityAnalysis.java
+extractor/src/main/java/uk/ac/cam/acr31/features/javac/semantic/TypeAnalysis.java
+extractor/src/main/java/uk/ac/cam/acr31/features/javac/semantic/TypeScanner.java
+extractor/src/test/java/uk/ac/cam/acr31/features/javac/AssignabilityAnalysisTest.java
+extractor/src/test/java/uk/ac/cam/acr31/features/javac/TypeScannerTest.java

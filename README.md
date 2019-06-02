@@ -8,7 +8,7 @@ JDK 1.10+
 
 ## Download
 
-Latest version built from HEAD: https://storage.googleapis.com/features-javac/features-javac-latest.jar
+Latest extrator version built from HEAD: https://storage.googleapis.com/features-javac/features-javac-extractor-latest.jar
 
 
 ## How to extract the graph features
@@ -20,7 +20,7 @@ Latest version built from HEAD: https://storage.googleapis.com/features-javac/fe
 
 #### Step2: to generate .dot and .proto files
 ``` 
- javac -cp target/features-javac-1.0.0-SNAPSHOT-jar-with-dependencies.jar -Xplugin:FeaturePlugin Source_code 
+ javac -cp extractor/target/features-javac-extractor-1.0.0-SNAPSHOT-jar-with-dependencies.jar -Xplugin:FeaturePlugin Source_code 
 
 ```
 

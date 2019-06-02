@@ -5,4 +5,4 @@ steps:
 artifacts:
   objects:
     location: 'gs://features-javac'
-    paths: ['target/features-javac-latest.jar']
+    paths: ['extractor/target/features-javac-extractor-latest.jar']
