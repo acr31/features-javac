@@ -98,7 +98,10 @@
             <plugin>
                 <groupId>com.github.os72</groupId>
                 <artifactId>protoc-jar-maven-plugin</artifactId>
-                <version>3.6.0.2</version>
+                <version>3.7.1</version>
+                <configuration>
+                    <outputDirectory>${project.build.directory}/generated-sources/proto</outputDirectory>
+                </configuration>
                 <executions>
                     <execution>
                         <phase>generate-sources</phase>
@@ -129,6 +132,9 @@
                     </compilerArgs>
                     <source>1.8</source>
                     <target>1.10</target>
+                    <annotationProcessors>
+                        <annotationProcessor>com.google.auto.value.processor.AutoValueProcessor</annotationProcessor>
+                    </annotationProcessors>
                 </configuration>
             </plugin>
             <plugin>
