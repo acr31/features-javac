@@ -37,7 +37,6 @@ import java.io.IOError;
 import java.io.IOException;
 import java.util.Comparator;
 import java.util.Set;
-import uk.ac.cam.acr31.features.javac.graph.DotOutput;
 import uk.ac.cam.acr31.features.javac.graph.FeatureGraph;
 import uk.ac.cam.acr31.features.javac.graph.ProtoOutput;
 import uk.ac.cam.acr31.features.javac.lexical.Tokens;
@@ -60,8 +59,6 @@ public class FeaturePlugin implements Plugin {
 
   private static final String FEATURES_OUTPUT_DIRECTORY = "featuresOutputDirectory";
   private static final String ABORT_ON_ERROR = "abortOnError";
-  private static final String VERBOSE_DOT = "verboseDot";
-  private static final String DOT_OUTPUT = "dotOutput";
 
   @Override
   public String getName() {
@@ -91,8 +88,6 @@ public class FeaturePlugin implements Plugin {
     Options options = Options.instance(context);
 
     boolean abortOnError = options.getBoolean(ABORT_ON_ERROR);
-    boolean verboseDot = options.getBoolean(VERBOSE_DOT);
-    boolean dotOutput = options.getBoolean(DOT_OUTPUT, true);
     String featuresOutputDirectory = ".";
     if (options.isSet(FEATURES_OUTPUT_DIRECTORY)) {
       featuresOutputDirectory = options.get(FEATURES_OUTPUT_DIRECTORY);
@@ -103,7 +98,7 @@ public class FeaturePlugin implements Plugin {
 
     try {
       FeatureGraph featureGraph = createFeatureGraph(compilationUnit, context);
-      writeOutput(featureGraph, featuresOutputDirectory, verboseDot, dotOutput);
+      writeOutput(featureGraph, featuresOutputDirectory);
     } catch (AssertionError | RuntimeException e) {
       String message = "Feature extraction failed: " + taskEvent.getSourceFile().getName();
       if (abortOnError) {
@@ -124,19 +119,7 @@ public class FeaturePlugin implements Plugin {
     }
   }
 
-  private static void writeOutput(
-      FeatureGraph featureGraph,
-      String featuresOutputDirectory,
-      boolean verboseDot,
-      boolean dotOutput) {
-
-    if (dotOutput) {
-      File outputFile =
-          new File(featuresOutputDirectory, featureGraph.getSourceFileName() + ".dot");
-      mkdirFor(outputFile);
-      DotOutput.writeToDot(outputFile, featureGraph, verboseDot);
-    }
-
+  private static void writeOutput(FeatureGraph featureGraph, String featuresOutputDirectory) {
     File protoFile = new File(featuresOutputDirectory, featureGraph.getSourceFileName() + ".proto");
     mkdirFor(protoFile);
     ProtoOutput.write(protoFile, featureGraph);

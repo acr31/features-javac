@@ -1,7 +1,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>features-javac-extractor</artifactId>
+    <artifactId>features-javac-dot</artifactId>
     <packaging>jar</packaging>
     <parent>
         <groupId>uk.ac.cam.acr31</groupId>
@@ -16,45 +16,19 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-text</artifactId>
+            <version>1.6</version>
+        </dependency>
+        <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
             <version>${guava.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.checkerframework</groupId>
-            <artifactId>dataflow</artifactId>
-            <version>2.5.4</version>
-        </dependency>
-        <dependency>
-            <groupId>org.checkerframework</groupId>
-            <artifactId>checker</artifactId>
-            <version>2.5.4</version>
-        </dependency>
-        <dependency>
-            <groupId>org.checkerframework</groupId>
-            <artifactId>javacutil</artifactId>
-            <version>2.5.4</version>
-        </dependency>
-        <dependency>
-            <groupId>com.google.auto.value</groupId>
-            <artifactId>auto-value-annotations</artifactId>
-            <version>${autovalue.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.google.auto.value</groupId>
-            <artifactId>auto-value</artifactId>
-            <version>${autovalue.version}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
             <groupId>com.google.protobuf</groupId>
             <artifactId>protobuf-java</artifactId>
             <version>${protobuf.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-text</artifactId>
-            <version>1.6</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
@@ -81,9 +55,9 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.google.errorprone</groupId>
-            <artifactId>error_prone_check_api</artifactId>
-            <version>2.3.2</version>
+            <groupId>commons-cli</groupId>
+            <artifactId>commons-cli</artifactId>
+            <version>1.4</version>
         </dependency>
     </dependencies>
 
@@ -95,25 +69,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.8.0</version>
                 <configuration>
-                    <compilerArgs>
-                        <arg>--add-exports</arg>
-                        <arg>jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED</arg>
-                        <arg>--add-exports</arg>
-                        <arg>jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED</arg>
-                        <arg>--add-exports</arg>
-                        <arg>jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED</arg>
-                        <arg>--add-exports</arg>
-                        <arg>jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED</arg>
-                        <arg>--add-exports</arg>
-                        <arg>jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED</arg>
-                        <arg>--add-exports</arg>
-                        <arg>jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED</arg>
-                    </compilerArgs>
                     <source>1.8</source>
                     <target>1.10</target>
-                    <annotationProcessors>
-                        <annotationProcessor>com.google.auto.value.processor.AutoValueProcessor</annotationProcessor>
-                    </annotationProcessors>
                 </configuration>
             </plugin>
             <plugin>
@@ -130,6 +87,11 @@
                             <descriptorRefs>
                                 <descriptorRef>jar-with-dependencies</descriptorRef>
                             </descriptorRefs>
+                            <archive>
+                                <manifest>
+                                    <mainClass>uk.ac.cam.acr31.features.javac.dot.GraphToDot</mainClass>
+                                </manifest>
+                            </archive>
                         </configuration>
                     </execution>
                 </executions>
@@ -153,7 +115,7 @@
                                     <version>${project.version}</version>
                                     <classifier>jar-with-dependencies</classifier>
                                     <overWrite>true</overWrite>
-                                    <destFileName>features-javac-extractor-latest.jar</destFileName>
+                                    <destFileName>features-javac-dot-latest.jar</destFileName>
                                 </artifactItem>
                             </artifactItems>
                             <outputDirectory>${project.build.directory}</outputDirectory>
