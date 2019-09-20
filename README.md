@@ -13,20 +13,29 @@ Latest extrator version built from HEAD: https://storage.googleapis.com/features
 
 ## How to extract the graph features
 
-#### Step1: compile
+#### Step 1: compile
 ```
  mvn clean compile package
 ```
 
-#### Step2: to generate .dot and .proto files
+#### Step 2: create example source file
+```
+ echo "public class T {}" > T.java
+```
+
+#### Step 3: to generate .proto files
 ``` 
- javac -cp extractor/target/features-javac-extractor-1.0.0-SNAPSHOT-jar-with-dependencies.jar -Xplugin:FeaturePlugin Source_code 
-
+ javac -cp extractor/target/features-javac-extractor-1.0.0-SNAPSHOT-jar-with-dependencies.jar -Xplugin:FeaturePlugin Test.java 
 ```
 
-#### Step3: to generate a graph image based on .dot file
+#### Step 4: to generate .dot files
 ```
- dot -Tpng Souce.java.dot > Souce.java.png
+java -jar dot/target/features-javac-dot-1.0.0-SNAPSHOT-jar-with-dependencies.jar -i T.java.proto -o T.java.dot
+```
+
+#### Step 5: to generate a graph image based on .dot file
+```
+ dot -Tpng T.java.dot > T.java.png
 ```
 
 ### Example Output
