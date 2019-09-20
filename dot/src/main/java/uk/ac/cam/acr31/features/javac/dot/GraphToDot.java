@@ -28,6 +28,7 @@ import uk.ac.cam.acr31.features.javac.proto.GraphProtos;
 
 public class GraphToDot {
 
+  /** Entry point for converting protos to dot files from the command line. */
   public static void main(String[] args) throws IOException, ParseException {
     Options option = new Options();
     option.addOption("i", "input-file", true, "Input filename");

@@ -55,6 +55,7 @@ public class DotOutput {
     return ImmutableNetwork.copyOf(result);
   }
 
+  /** Write this graph to a dot file. */
   public static void writeToDot(File outputFile, Graph graph, boolean verboseDot)
       throws IOException {
     try (FileWriter w = new FileWriter(outputFile)) {
@@ -62,6 +63,7 @@ public class DotOutput {
     }
   }
 
+  /** Write this graph to a dot file. */
   public static String createDot(
       Graph graph, ImmutableNetwork<FeatureNode, FeatureEdge> index, boolean verboseDot) {
     StringWriter result = new StringWriter();

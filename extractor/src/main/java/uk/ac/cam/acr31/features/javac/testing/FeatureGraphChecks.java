@@ -27,6 +27,7 @@ import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureEdge;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureEdge.EdgeType;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureNode;
 
+/** Helper methods for writing assertions about feature graphs. */
 public class FeatureGraphChecks {
 
   public static Set<FeatureNode> findNodes(FeatureGraph graph, SourceSpan span) {
@@ -40,6 +41,10 @@ public class FeatureGraphChecks {
         .findAny();
   }
 
+  /**
+   * Return the edge with the given type between these two source spans or throw an AssertionError
+   * if it doesn't exist.
+   */
   public static FeatureEdge edgeBetween(
       FeatureGraph graph, SourceSpan source, SourceSpan destination, EdgeType edgeType) {
     Set<FeatureNode> sourceNodes = findNodes(graph, source);
@@ -61,6 +66,7 @@ public class FeatureGraphChecks {
     return anyEdgeBetween(graph, source, destination, edgeType).isPresent();
   }
 
+  /** Returns true if this graph is acylcic when following this edge type. */
   public static boolean isAcyclic(FeatureGraph graph, EdgeType edgeType) {
 
     HashSet<FeatureNode> nodes =
@@ -93,6 +99,10 @@ public class FeatureGraphChecks {
     }
   }
 
+  /**
+   * Return the type node associated with this source span or throw an AssertionError if it can't be
+   * found.
+   */
   public static GraphProtos.FeatureNode findAssociatedTypeNode(
       FeatureGraph graph, SourceSpan span) {
     return FeatureGraphChecks.findNodes(graph, span).stream()

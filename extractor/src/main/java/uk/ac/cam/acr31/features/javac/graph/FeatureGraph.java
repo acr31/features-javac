@@ -42,6 +42,7 @@ import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureNode;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureNode.NodeType;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.Graph;
 
+/** Class for holding extracted features and edges between them. */
 public class FeatureGraph {
 
   private final String sourceFileName;
@@ -61,6 +62,7 @@ public class FeatureGraph {
   private FeatureNode firstToken = null;
   private FeatureNode astRoot = null;
 
+  /** Create a new graph for the given source file. */
   public FeatureGraph(String sourceFileName, EndPosTable endPosTable, LineMap lineMap) {
     this.sourceFileName = sourceFileName;
     this.graph = NetworkBuilder.directed().allowsSelfLoops(true).allowsParallelEdges(true).build();
@@ -84,6 +86,10 @@ public class FeatureGraph {
     return treeToNodeMap.inverse().get(node);
   }
 
+  /**
+   * Replace the mapping of this origina feature node to a compiler tree object with this
+   * replacement.
+   */
   public void replaceNodeInNodeMap(FeatureNode original, FeatureNode replacement) {
     Tree tree = treeToNodeMap.inverse().get(original);
     if (tree != null) {
@@ -91,6 +97,7 @@ public class FeatureGraph {
     }
   }
 
+  /** Factory method to create a feature node for this compiler tree node. */
   public FeatureNode createFeatureNode(NodeType nodeType, String contents, Tree tree) {
     // If your code says: String a = "a", b = "b", then javac synths up some extra ast nodes along
     // the lines of String a = "a"; String b = "b";  some of the extra nodes will be clones, some
@@ -107,6 +114,7 @@ public class FeatureGraph {
     }
   }
 
+  /** Factory method to create a feature node for this span of the source file. */
   public FeatureNode createFeatureNode(
       NodeType nodeType, String contents, int startPosition, int endPosition) {
     int startLine = (int) lineMap.getLineNumber(startPosition);
@@ -122,6 +130,7 @@ public class FeatureGraph {
         .build();
   }
 
+  /** Factory method to create a feature node for a symbol. */
   public FeatureNode createFeatureNode(NodeType nodeType, Symbol symbol) {
     if (symbolToNodeMap.containsKey(symbol)) {
       return symbolToNodeMap.get(symbol);
@@ -139,6 +148,7 @@ public class FeatureGraph {
     return nodeToSomeTypeMap.get(node);
   }
 
+  /** Factory method to create a feature node for this typrmirror. */
   public FeatureNode createFeatureNodeForType(Types types, NodeType nodeType, TypeMirror type) {
     if (typeToNodeMap.containsKey(type)) {
       return typeToNodeMap.get(type);
@@ -199,6 +209,7 @@ public class FeatureGraph {
     return graph.edges();
   }
 
+  /** Returns an immutable set of edges with this edge type. */
   public Set<FeatureEdge> edges(EdgeType edgeType) {
     return graph.edges().stream()
         .filter(e -> e.getType().equals(edgeType))
@@ -227,6 +238,10 @@ public class FeatureGraph {
     return graph.successors(node);
   }
 
+  /**
+   * Returns an immutable set of nodes which are reachable from the input node with any of the given
+   * edge types.
+   */
   public Set<FeatureNode> successors(FeatureNode node, EdgeType... edgeTypes) {
     ImmutableList<EdgeType> edgeTypeList = ImmutableList.copyOf(edgeTypes);
     return graph.successors(node).stream()
@@ -241,6 +256,10 @@ public class FeatureGraph {
     return graph.predecessors(node);
   }
 
+  /**
+   * Return an immutable set of nodes from which one can reach the input node by any of the given
+   * edge types.
+   */
   public Set<FeatureNode> predecessors(FeatureNode node, EdgeType... edgeTypes) {
     ImmutableList<EdgeType> edgeTypeList = ImmutableList.copyOf(edgeTypes);
     return graph.predecessors(node).stream()
@@ -259,6 +278,7 @@ public class FeatureGraph {
     }
   }
 
+  /** Find an appropriate identifier node descending from this node. */
   public FeatureNode toIdentifierNode(FeatureNode node) {
     if (node.getType().equals(NodeType.IDENTIFIER_TOKEN)) {
       return node;
@@ -274,6 +294,7 @@ public class FeatureGraph {
     return any.get();
   }
 
+  /** Add an edge between feature nodes for these two compiler trees. */
   public void addEdge(Tree source, Tree dest, EdgeType type) {
     FeatureNode sourceNode = lookupNode(source);
     FeatureNode destNode = lookupNode(dest);
@@ -283,6 +304,7 @@ public class FeatureGraph {
     addEdge(sourceNode, destNode, type);
   }
 
+  /** Add an edge between these two feature nodes. */
   public void addEdge(FeatureNode source, FeatureNode dest, EdgeType type) {
     graph.addEdge(
         source,
@@ -294,6 +316,7 @@ public class FeatureGraph {
             .build());
   }
 
+  /** Add an edge between the best identifier nodes for these two compiler trees. */
   public void addIdentifierEdge(Tree source, Tree dest, EdgeType type) {
     FeatureNode sourceNode = lookupNode(source);
     FeatureNode destNode = lookupNode(dest);
@@ -318,6 +341,7 @@ public class FeatureGraph {
         .build();
   }
 
+  /** Find the node matching the given source span. */
   public Set<FeatureNode> findNode(int start, int end) {
     return nodes().stream()
         .filter(node -> node.getStartPosition() == start)

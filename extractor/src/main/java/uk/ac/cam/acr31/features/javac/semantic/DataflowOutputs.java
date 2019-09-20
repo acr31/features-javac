@@ -43,6 +43,7 @@ public class DataflowOutputs {
     this.lastUses = lastUses;
   }
 
+  /** Run the dataflow analysis on this compilation unit. */
   public static ImmutableMap<ClassTree, ImmutableMap<MethodTree, DataflowOutputs>> create(
       CompilationUnitTree compilationUnitTree, ProcessingEnvironment processingEnvironment) {
 

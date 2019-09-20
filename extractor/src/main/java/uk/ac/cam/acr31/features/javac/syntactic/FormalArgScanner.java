@@ -63,6 +63,7 @@ public class FormalArgScanner extends TreeScanner<Void, Void> {
     }
   }
 
+  /** Scan this compilation tree and add all features to the graph. */
   public static void addToGraph(CompilationUnitTree compilationUnitTree, FeatureGraph graph) {
     ImmutableMap<Symbol.MethodSymbol, MethodTree> methodSymbols =
         MethodSymbolCollector.collect(compilationUnitTree);

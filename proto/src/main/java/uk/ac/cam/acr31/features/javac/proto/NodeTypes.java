@@ -18,8 +18,10 @@ package uk.ac.cam.acr31.features.javac.proto;
 
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureNode.NodeType;
 
+/** Methods for interpreting a NodeType object. */
 public class NodeTypes {
 
+  /** Return true if a NodeType is a comment. */
   public static boolean isComment(NodeType nodeType) {
     switch (nodeType) {
       case COMMENT_BLOCK:
@@ -31,6 +33,7 @@ public class NodeTypes {
     }
   }
 
+  /** Return true if a nodeType is a symbol. */
   public static boolean isSymbol(NodeType nodeType) {
     switch (nodeType) {
       case SYMBOL:
@@ -43,6 +46,7 @@ public class NodeTypes {
     }
   }
 
+  /** Return true if a nodeType is a token. */
   public static boolean isToken(NodeType nodeType) {
     switch (nodeType) {
       case TOKEN:

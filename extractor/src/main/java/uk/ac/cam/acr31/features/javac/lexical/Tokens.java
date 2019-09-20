@@ -29,8 +29,10 @@ import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureEdge.EdgeType;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureNode;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureNode.NodeType;
 
+/** Static method for extracting tokens from a source file. */
 public class Tokens {
 
+  /** Add all the tokens in the source file to the given featureGraph. */
   public static void addToGraph(
       JavaFileObject sourceFile, Context context, FeatureGraph featureGraph) {
 

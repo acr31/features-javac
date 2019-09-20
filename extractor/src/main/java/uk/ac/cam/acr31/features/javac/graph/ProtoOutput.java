@@ -20,8 +20,10 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+/** Static methods for writing proto files. */
 public class ProtoOutput {
 
+  /** Write this feature graph to the given output file. */
   public static void write(File outputFile, FeatureGraph featureGraph) {
     try (FileOutputStream fos = new FileOutputStream(outputFile)) {
       featureGraph.toProtobuf().writeTo(fos);

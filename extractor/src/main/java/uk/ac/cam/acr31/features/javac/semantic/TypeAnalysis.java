@@ -36,6 +36,7 @@ public class TypeAnalysis {
     this.processingEnvironment = processingEnvironment;
   }
 
+  /** Get the type mirror for this tree. */
   public TypeMirror getTypeMirror(Tree typeDecl) {
     Trees trees = Trees.instance(processingEnvironment);
     TreePath path = TreePath.getPath(compilationUnitTree, typeDecl);

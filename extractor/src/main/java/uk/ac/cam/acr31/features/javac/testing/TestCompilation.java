@@ -31,6 +31,7 @@ import javax.tools.DiagnosticListener;
 import javax.tools.JavaFileObject;
 import javax.tools.SimpleJavaFileObject;
 
+/** Helper object for holding the results of a compilation in testing. */
 @AutoValue
 public abstract class TestCompilation {
 
@@ -45,6 +46,7 @@ public abstract class TestCompilation {
     return new AutoValue_TestCompilation(compilationUnit, context, source);
   }
 
+  /** Compile the given source code. */
   public static TestCompilation compile(String fileName, String... lines) {
     JavacTool javacTool = JavacTool.create();
     Context context = new Context();
@@ -83,6 +85,14 @@ public abstract class TestCompilation {
     return sourceSpan("", target, "");
   }
 
+  /**
+   * Find a source span matching this pattern or throw an AssertionError.
+   *
+   * @param prefix the text immediately preceeding the source span of interest
+   * @param target the source span of interest
+   * @param followedBy the text immediately following the source span of interest
+   * @throws AssertionError if the source span cannot be matched
+   */
   public SourceSpan sourceSpan(String prefix, String target, String followedBy) {
     int base = source().indexOf(prefix + target + followedBy);
     if (base == -1) {

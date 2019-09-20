@@ -38,6 +38,7 @@ public class LastLexicalUseScanner extends TreeScanner<Void, Void> {
 
   private ImmutableMultimap.Builder<Symbol, Tree> symbolMap = ImmutableListMultimap.builder();
 
+  /** Scan this tree and add all the features to the graph. */
   public static void addToGraph(
       CompilationUnitTree compilationUnitTree, FeatureGraph featureGraph) {
 
