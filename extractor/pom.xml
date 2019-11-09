@@ -109,8 +109,8 @@
                         <arg>--add-exports</arg>
                         <arg>jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED</arg>
                     </compilerArgs>
-                    <source>1.8</source>
-                    <target>1.10</target>
+                    <source>10</source>
+                    <target>10</target>
                     <annotationProcessors>
                         <annotationProcessor>com.google.auto.value.processor.AutoValueProcessor</annotationProcessor>
                     </annotationProcessors>
