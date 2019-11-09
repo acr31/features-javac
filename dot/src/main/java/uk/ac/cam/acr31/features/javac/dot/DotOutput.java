@@ -89,6 +89,12 @@ public class DotOutput {
               .collect(toImmutableSet());
       writeSubgraph(w, symbolSet, null, verboseDot);
 
+      Set<FeatureNode> signatureSet =
+          graph.getNodeList().stream()
+              .filter(n -> n.getType().equals(NodeType.METHOD_SIGNATURE))
+              .collect(toImmutableSet());
+      writeSubgraph(w, signatureSet, null, verboseDot);
+
       Set<FeatureNode> tokenSet =
           graph.getNodeList().stream()
               .filter(n -> NodeTypes.isToken(n.getType()))

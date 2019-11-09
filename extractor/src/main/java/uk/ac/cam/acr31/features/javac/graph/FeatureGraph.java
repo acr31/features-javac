@@ -137,7 +137,13 @@ public class FeatureGraph {
       return symbolToNodeMap.get(symbol);
     } else {
       FeatureNode result = createFeatureNode(nodeType, getName(symbol), -1, -1);
+      if (symbol.kind == Kinds.Kind.MTH) {
+        FeatureNode signature =
+            createFeatureNode(NodeType.METHOD_SIGNATURE, symbol.toString(), -1, -1);
+        addEdge(result, signature, EdgeType.METHOD_SIGNATURE);
+      }
       symbolToNodeMap.put(symbol, result);
+
       return result;
     }
   }
