@@ -214,10 +214,8 @@ public class DotOutput {
       index.successors(node).stream()
           .filter(
               n ->
-                  index
-                      .edgeConnecting(node, n)
-                      .map(e -> e.getType().equals(EdgeType.AST_CHILD))
-                      .orElse(false))
+                  index.edgesConnecting(node, n).stream()
+                      .anyMatch(e -> e.getType().equals(EdgeType.AST_CHILD)))
           .forEach(result::add);
     }
     return result.build();
