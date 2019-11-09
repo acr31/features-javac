@@ -27,6 +27,7 @@ import com.google.common.graph.MutableNetwork;
 import com.google.common.graph.NetworkBuilder;
 import com.sun.source.tree.LineMap;
 import com.sun.source.tree.Tree;
+import com.sun.tools.javac.code.Kinds;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.tree.EndPosTable;
 import com.sun.tools.javac.tree.JCTree;
@@ -135,9 +136,54 @@ public class FeatureGraph {
     if (symbolToNodeMap.containsKey(symbol)) {
       return symbolToNodeMap.get(symbol);
     } else {
-      FeatureNode result = createFeatureNode(nodeType, symbol.toString(), -1, -1);
+      FeatureNode result = createFeatureNode(nodeType, getName(symbol), -1, -1);
       symbolToNodeMap.put(symbol, result);
       return result;
+    }
+  }
+
+  /**
+   * The name of a symbol has to be globally unique. It also has to be derivable from different
+   * compilation units that reference the symbol.
+   *
+   * <p>The idea here is that most of the time you can get a unique name for a symbol by appending
+   * the symbol name to the unique name for its owner. This doesn't work in situations of nested
+   * block scope. e.g {@code void f() { { int x; } { int x;} } } will compile but the two x's have
+   * the same owner (f()) and so won't get unique names.
+   *
+   * <p>This doesn't just apply to variables since java now has method-local classes e.g.
+   *
+   * <pre>
+   *   void f() {
+   *     {
+   *       class A {}
+   *     }
+   *     {
+   *       class A {}
+   *     }
+   *   }
+   * </pre>
+   *
+   * <p>For classes (or new types in general a new name is generated anyway by the compiler e.g.
+   * Test$1A and Test$2A so we are good here.
+   *
+   * <p>This can also happen within a static initialiser (but that's also a method). On the plus
+   * side I think it is the case that its not possible to reference a symbol with an ambiguous owner
+   * from outside the compilation unit (this follows from the classfile format and definition of
+   * binary name in the JLS).
+   */
+  private static String getName(Symbol symbol) {
+    if (symbol.owner.kind == Kinds.Kind.MTH) {
+      if (symbol.kind == Kinds.Kind.VAR) {
+        Symbol.VarSymbol varSymbol = (Symbol.VarSymbol) symbol;
+        return getName(varSymbol.owner) + "." + varSymbol.name + "@" + varSymbol.pos;
+      }
+    }
+    switch (symbol.kind) {
+      case TYP:
+        return symbol.flatName().toString();
+      default:
+        return getName(symbol.owner) + "." + symbol.toString();
     }
   }
 
