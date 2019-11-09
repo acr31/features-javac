@@ -36,6 +36,7 @@ import java.io.File;
 import java.io.IOError;
 import java.io.IOException;
 import java.util.Comparator;
+import java.util.Optional;
 import java.util.Set;
 import uk.ac.cam.acr31.features.javac.graph.FeatureGraph;
 import uk.ac.cam.acr31.features.javac.graph.ProtoOutput;
@@ -138,7 +139,7 @@ public class FeaturePlugin implements Plugin {
     // prune all ast nodes with no successors (these are leaves not connected to tokens)
     featureGraph.pruneAstNodes();
 
-    removeIdentifierAstNodes(featureGraph);
+    //    removeIdentifierAstNodes(featureGraph);
 
     JavacProcessingEnvironment processingEnvironment = JavacProcessingEnvironment.instance(context);
     ImmutableMap<ClassTree, ImmutableMap<MethodTree, DataflowOutputs>> analysisResults =
@@ -224,24 +225,56 @@ public class FeaturePlugin implements Plugin {
               JCTree.JCVariableDecl variableTree =
                   (JCTree.JCVariableDecl) featureGraph.lookupTree(node);
               Name expectedName = variableTree.getName();
-              astNodes.tailSet(node).stream()
-                  .filter(target -> target.getType().equals(NodeType.IDENTIFIER_TOKEN))
-                  .filter(target -> expectedName.contentEquals(target.getContents()))
-                  .findFirst()
-                  .ifPresent(
-                      target -> featureGraph.addEdge(node, target, EdgeType.ASSOCIATED_TOKEN));
+              Optional<FeatureNode> matchingToken =
+                  astNodes.tailSet(node).stream()
+                      .filter(target -> target.getType().equals(NodeType.IDENTIFIER_TOKEN))
+                      .filter(target -> expectedName.contentEquals(target.getContents()))
+                      .findFirst();
+              matchingToken.ifPresent(
+                  token ->
+                      findMatchingLeaf(node, token, featureGraph)
+                          .ifPresent(
+                              leaf ->
+                                  featureGraph.addEdge(leaf, token, EdgeType.ASSOCIATED_TOKEN)));
             });
 
     for (FeatureNode token : featureGraph.tokens()) {
       if (!featureGraph.predecessors(token, EdgeType.ASSOCIATED_TOKEN).isEmpty()) {
         continue;
       }
-      astNodes.headSet(token).stream()
-          .filter(n -> n.getType().equals(NodeType.AST_ELEMENT))
-          .filter(n -> n.getEndPosition() >= token.getEndPosition())
-          .min(Comparator.comparing(n -> n.getEndPosition() - n.getStartPosition()))
-          .ifPresent(n -> featureGraph.addEdge(n, token, EdgeType.ASSOCIATED_TOKEN));
+      Comparator<FeatureNode> nodeSpan =
+          Comparator.comparing(n -> n.getEndPosition() - n.getStartPosition());
+      Comparator<FeatureNode> nodeId = Comparator.comparingLong(FeatureNode::getId).reversed();
+      Optional<FeatureNode> smallestEncompassingNode =
+          astNodes.headSet(token).stream()
+              .filter(n -> n.getType().equals(NodeType.AST_ELEMENT))
+              .filter(n -> n.getEndPosition() >= token.getEndPosition())
+              .min(nodeSpan.thenComparing(nodeId));
+      if (smallestEncompassingNode.isPresent()) {
+        Optional<FeatureNode> matchingLeaf =
+            findMatchingLeaf(smallestEncompassingNode.get(), token, featureGraph);
+        if (matchingLeaf.isPresent()) {
+          featureGraph.addEdge(matchingLeaf.get(), token, EdgeType.ASSOCIATED_TOKEN);
+        } else {
+          featureGraph.addEdge(smallestEncompassingNode.get(), token, EdgeType.ASSOCIATED_TOKEN);
+        }
+      }
     }
+  }
+
+  private static Optional<FeatureNode> findMatchingLeaf(
+      FeatureNode current, FeatureNode token, FeatureGraph graph) {
+    for (FeatureNode child : graph.successors(current, EdgeType.AST_CHILD)) {
+      if (child.getType() == NodeType.FAKE_AST) {
+        for (FeatureNode possibleLeaf : graph.successors(child, EdgeType.AST_CHILD)) {
+          if (possibleLeaf.getType() == NodeType.AST_LEAF
+              && possibleLeaf.getContents().equalsIgnoreCase(token.getContents())) {
+            return Optional.of(possibleLeaf);
+          }
+        }
+      }
+    }
+    return Optional.empty();
   }
 
   /**

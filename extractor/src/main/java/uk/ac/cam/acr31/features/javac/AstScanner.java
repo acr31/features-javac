@@ -18,6 +18,7 @@ package uk.ac.cam.acr31.features.javac;
 
 import com.google.common.base.CaseFormat;
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.Tree;
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.tree.EndPosTable;
@@ -27,6 +28,8 @@ import java.lang.reflect.Method;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import uk.ac.cam.acr31.features.javac.graph.FeatureGraph;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureEdge.EdgeType;
@@ -71,26 +74,74 @@ class AstScanner {
       }
 
       // avoid methods which would involve visiting some part of the tree twice
-      if (CompilationUnitTree.class.isAssignableFrom(treeInterface)
-          && m.getName().equals("getPackageName")) {
-        continue;
+      if (CompilationUnitTree.class.isAssignableFrom(treeInterface)) {
+        if (m.getName().equals("getPackageName")
+            || m.getName().equals("getSourceFile")
+            || m.getName().equals("getLineMap")) {
+          continue;
+        }
       }
 
       Object result = m.invoke(node);
 
       Deque<JCTree> toProcess = new ArrayDeque<>();
-      if (result instanceof JCTree) {
-        if (inSource((JCTree) result)) {
+      if (Tree.class.isAssignableFrom(m.getReturnType())) {
+        if (result != null && inSource((JCTree) result)) {
           toProcess.add((JCTree) result);
         }
-      }
-
-      if (result instanceof List) {
-        for (Object o : (List<?>) result) {
-          if (o instanceof JCTree && inSource((JCTree) o)) {
-            toProcess.add((JCTree) o);
+      } else if (List.class.isAssignableFrom(m.getReturnType())) {
+        if (result != null) {
+          for (Object o : (List<?>) result) {
+            if (o instanceof JCTree) {
+              if (inSource((JCTree) o)) {
+                toProcess.add((JCTree) o);
+              }
+            } else if (o instanceof List) {
+              if (!((List<?>) o).isEmpty()) {
+                throw new AssertionError(
+                    "Unimplemented traversal of lists of lists " + o.getClass());
+              }
+            } else if (o != null) {
+              throw new AssertionError(
+                  "Expected list element to be castable to JCTree or List but it was "
+                      + o.getClass());
+            }
           }
         }
+      } else if (Set.class.isAssignableFrom(m.getReturnType())) {
+        GraphProtos.FeatureNode holderNode =
+            featureGraph.createFeatureNode(
+                NodeType.FAKE_AST, methodNameToNodeType(m.getName()), -1, -1);
+        featureGraph.addEdge(newNode, holderNode, EdgeType.AST_CHILD);
+        for (Object o : (Set<?>) result) {
+          if (o instanceof JCTree) {
+            throw new AssertionError(
+                "Did not expect to find trees in a set but found " + o.getClass());
+          }
+          GraphProtos.FeatureNode valueNode =
+              featureGraph.createFeatureNode(NodeType.AST_LEAF, Objects.toString(o), -1, -1);
+          featureGraph.addEdge(holderNode, valueNode, EdgeType.AST_CHILD);
+        }
+      } else {
+        String value = Objects.toString(result);
+        if (m.getName().equals("isStatic")) {
+          if (value.equals("false")) {
+            continue;
+          }
+          value = "static";
+        }
+        if (node.getKind() == Tree.Kind.METHOD
+            && m.getName().equals("getName")
+            && value.equals("<init>")) {
+          value = ((JCTree.JCMethodDecl) node).sym.owner.toString();
+        }
+        GraphProtos.FeatureNode holderNode =
+            featureGraph.createFeatureNode(
+                NodeType.FAKE_AST, methodNameToNodeType(m.getName()), -1, -1);
+        featureGraph.addEdge(newNode, holderNode, EdgeType.AST_CHILD);
+        GraphProtos.FeatureNode valueNode =
+            featureGraph.createFeatureNode(NodeType.AST_LEAF, value, -1, -1);
+        featureGraph.addEdge(holderNode, valueNode, EdgeType.AST_CHILD);
       }
 
       if (!toProcess.isEmpty()) {

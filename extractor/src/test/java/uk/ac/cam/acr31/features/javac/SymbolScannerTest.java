@@ -17,13 +17,14 @@ package uk.ac.cam.acr31.features.javac;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import com.google.common.base.Joiner;
 import com.google.common.collect.Iterables;
+import java.io.File;
 import java.util.Set;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import uk.ac.cam.acr31.features.javac.graph.FeatureGraph;
+import uk.ac.cam.acr31.features.javac.graph.ProtoOutput;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureEdge.EdgeType;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureNode;
 import uk.ac.cam.acr31.features.javac.testing.SourceSpan;
@@ -37,7 +38,7 @@ public class SymbolScannerTest {
     // ARRANGE
     String classLines = "public class Test {}";
     TestCompilation compilation = TestCompilation.compile("Test.java", classLines);
-    SourceSpan clazz = compilation.sourceSpan(classLines);
+    SourceSpan clazz = compilation.sourceSpan("Test");
 
     // ACT
     FeatureGraph graph =
@@ -60,7 +61,7 @@ public class SymbolScannerTest {
             "    return 1;",
             "  }",
             "}");
-    SourceSpan method = compilation.sourceSpan("static int method(double d) {\n    return 1;\n  }");
+    SourceSpan method = compilation.sourceSpan("method");
 
     // ACT
     FeatureGraph graph =
@@ -82,7 +83,7 @@ public class SymbolScannerTest {
             "    return 1;",
             "  }",
             "}");
-    SourceSpan method = compilation.sourceSpan("static int method(double d) {\n    return 1;\n  }");
+    SourceSpan method = compilation.sourceSpan("method");
 
     // ACT
     FeatureGraph graph =
@@ -102,11 +103,12 @@ public class SymbolScannerTest {
             "public class Test {",
             "  String a = String.valueOf(1);",
             "}");
-    SourceSpan inv = compilation.sourceSpan("String.valueOf(1)");
+    SourceSpan inv = compilation.sourceSpan("valueOf");
 
     // ACT
     FeatureGraph graph =
         FeaturePlugin.createFeatureGraph(compilation.compilationUnit(), compilation.context());
+    ProtoOutput.write(new File("/Users/acr31/foo.proto"), graph);
 
     // ASSERT
     FeatureNode symbolNode = findSymbolNode(graph, inv);
@@ -143,7 +145,7 @@ public class SymbolScannerTest {
             "public class Test {",
             "  String a = null;",
             "}");
-    SourceSpan inv = compilation.sourceSpan("a", " = ");
+    SourceSpan inv = compilation.sourceSpan("String ", "a", " = null;");
 
     // ACT
     FeatureGraph graph =
@@ -165,7 +167,7 @@ public class SymbolScannerTest {
             "    String a = null;",
             "  }",
             "}");
-    SourceSpan inv = compilation.sourceSpan("a", " = ");
+    SourceSpan inv = compilation.sourceSpan("String ", "a", " = null;");
 
     // ACT
     FeatureGraph graph =
@@ -192,8 +194,8 @@ public class SymbolScannerTest {
             "    }",
             "  }",
             "}");
-    SourceSpan inv = compilation.sourceSpan("a", " = null");
-    SourceSpan inv2 = compilation.sourceSpan("a", " = \"\"");
+    SourceSpan inv = compilation.sourceSpan("String ", "a", " = null;");
+    SourceSpan inv2 = compilation.sourceSpan("String ", "a", " = \"\";");
 
     // ACT
     FeatureGraph graph =
@@ -221,8 +223,8 @@ public class SymbolScannerTest {
             "    }",
             "  }",
             "}");
-    SourceSpan inv = compilation.sourceSpan("a", " = null");
-    SourceSpan inv2 = compilation.sourceSpan("a", " = \"\"");
+    SourceSpan inv = compilation.sourceSpan("String ", "a", " = null;");
+    SourceSpan inv2 = compilation.sourceSpan("String ", "a", " = \"\";");
 
     // ACT
     FeatureGraph graph =
@@ -250,8 +252,8 @@ public class SymbolScannerTest {
             "    }",
             "  }",
             "}");
-    SourceSpan inv = compilation.sourceSpan("class A {}", " // 1");
-    SourceSpan inv2 = compilation.sourceSpan("class A {}", " // 2");
+    SourceSpan inv = compilation.sourceSpan("class ", "A", " {} // 1");
+    SourceSpan inv2 = compilation.sourceSpan("class ", "A", " {} // 2");
 
     // ACT
     FeatureGraph graph =
@@ -277,8 +279,8 @@ public class SymbolScannerTest {
             "    }",
             "  }",
             "}");
-    SourceSpan decl = compilation.sourceSpan("x", " = 0");
-    SourceSpan use = compilation.sourceSpan("x", " = 4");
+    SourceSpan decl = compilation.sourceSpan("int ", "x", " = 0;");
+    SourceSpan use = compilation.sourceSpan("x", " = 4;");
 
     // ACT
     FeatureGraph graph =
@@ -302,7 +304,7 @@ public class SymbolScannerTest {
             "    a = 1;",
             "  }",
             "}");
-    SourceSpan decl = compilation.sourceSpan("int ", "a", " = ");
+    SourceSpan decl = compilation.sourceSpan("int ", "a", " = 0;");
     SourceSpan use = compilation.sourceSpan("a", " = 1");
 
     // ACT
@@ -326,7 +328,7 @@ public class SymbolScannerTest {
       "}"
     };
     TestCompilation compilation = TestCompilation.compile("Test.java", classLines);
-    SourceSpan decl = compilation.sourceSpan(Joiner.on("\n").join(classLines));
+    SourceSpan decl = compilation.sourceSpan("public class ", "Test", " {");
     SourceSpan use = compilation.sourceSpan("Test", " t;");
 
     // ACT
@@ -351,8 +353,8 @@ public class SymbolScannerTest {
             "    foo();",
             "  }",
             "}");
-    SourceSpan decl = compilation.sourceSpan("void foo() {}");
-    SourceSpan use = compilation.sourceSpan("foo()", ";");
+    SourceSpan decl = compilation.sourceSpan("void ", "foo", "() {}");
+    SourceSpan use = compilation.sourceSpan("foo", "();");
 
     // ACT
     FeatureGraph graph =

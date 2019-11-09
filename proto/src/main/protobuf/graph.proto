@@ -38,6 +38,7 @@ message FeatureNode {
         SYMBOL_MTH = 12;
         TYPE = 13;
         METHOD_SIGNATURE = 14;
+        AST_LEAF = 15;
     }
 
     optional int64 id = 1;

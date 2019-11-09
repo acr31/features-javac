@@ -99,13 +99,9 @@ public class SymbolScanner extends TreeScanner<Void, Void> {
     if (target == null) {
       return;
     }
+    target = featureGraph.toIdentifierNode(target);
 
     FeatureNode featureNode = featureGraph.createFeatureNode(toSymbolType(symbol), symbol);
-
-    // If its a variable node push the symbol down on to the identifier for the variable
-    if (node instanceof VariableTree) {
-      target = featureGraph.toIdentifierNode(target);
-    }
 
     // If your code says: String a = "a", b = "b", then javac synths up some extra ast nodes along
     // the lines of String a = "a"; String b = "b";  some of the extra nodes will be clones, some

@@ -17,12 +17,14 @@ package uk.ac.cam.acr31.features.javac;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import com.google.common.collect.Iterables;
 import com.google.common.truth.Correspondence;
+import java.io.File;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import uk.ac.cam.acr31.features.javac.graph.FeatureGraph;
-import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureEdge.EdgeType;
+import uk.ac.cam.acr31.features.javac.graph.ProtoOutput;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureNode;
 import uk.ac.cam.acr31.features.javac.testing.FeatureGraphChecks;
 import uk.ac.cam.acr31.features.javac.testing.SourceSpan;
@@ -66,16 +68,21 @@ public class TokenAssociationTest {
             "public class Test {",
             "  public static void main(String[] args) {}",
             "}");
-    SourceSpan args = compilation.sourceSpan("args");
-    SourceSpan variable = compilation.sourceSpan("String[] args");
+    SourceSpan identifierSpan = compilation.sourceSpan("args");
+    SourceSpan variableNodeSpan = compilation.sourceSpan("String[] args");
 
     // ACT
     FeatureGraph graph =
         FeaturePlugin.createFeatureGraph(compilation.compilationUnit(), compilation.context());
 
     // ASSERT
-    assertThat(FeatureGraphChecks.edgeBetween(graph, variable, args, EdgeType.ASSOCIATED_TOKEN))
-        .isNotNull();
+    FeatureNode variableNode =
+        FeatureGraphChecks.findNode(graph, variableNodeSpan, "VARIABLE", "NAME");
+    FeatureNode identifierToken =
+        Iterables.getOnlyElement(
+            FeatureGraphChecks.findNodes(
+                graph, identifierSpan, FeatureNode.NodeType.IDENTIFIER_TOKEN));
+    assertThat(graph.edges(variableNode, identifierToken)).isNotEmpty();
   }
 
   @Test
@@ -95,10 +102,13 @@ public class TokenAssociationTest {
         FeaturePlugin.createFeatureGraph(compilation.compilationUnit(), compilation.context());
 
     // ASSERT
-    assertThat(
-            FeatureGraphChecks.edgeBetween(
-                featureGraph, newClass, identifier, EdgeType.ASSOCIATED_TOKEN))
-        .isNotNull();
+    FeatureNode newClassNode =
+        FeatureGraphChecks.findNode(featureGraph, newClass, "NEW_CLASS", "IDENTIFIER", "NAME");
+    FeatureNode identifierToken =
+        Iterables.getOnlyElement(
+            FeatureGraphChecks.findNodes(
+                featureGraph, identifier, FeatureNode.NodeType.IDENTIFIER_TOKEN));
+    assertThat(featureGraph.edges(newClassNode, identifierToken)).isNotEmpty();
   }
 
   @Test
@@ -113,18 +123,22 @@ public class TokenAssociationTest {
             "  @Deprecated",
             "  BAR() {}",
             "}");
-    SourceSpan variableNode = compilation.sourceSpan("@Deprecated\n  BAR() {}");
-    SourceSpan identifier = compilation.sourceSpan("BAR");
+    SourceSpan variableNodeSpan = compilation.sourceSpan("@Deprecated\n  BAR() {}");
+    SourceSpan identifierSpan = compilation.sourceSpan("BAR");
 
     // ACT
     FeatureGraph graph =
         FeaturePlugin.createFeatureGraph(compilation.compilationUnit(), compilation.context());
+    ProtoOutput.write(new File("/Users/acr31/foo.proto"), graph);
 
     // ASSERT
-    assertThat(
-            FeatureGraphChecks.edgeBetween(
-                graph, variableNode, identifier, EdgeType.ASSOCIATED_TOKEN))
-        .isNotNull();
+    FeatureNode variableNode =
+        FeatureGraphChecks.findNode(graph, variableNodeSpan, "VARIABLE", "NAME");
+    FeatureNode identifierToken =
+        Iterables.getOnlyElement(
+            FeatureGraphChecks.findNodes(
+                graph, identifierSpan, FeatureNode.NodeType.IDENTIFIER_TOKEN));
+    assertThat(graph.edges(variableNode, identifierToken)).isNotEmpty();
   }
 
   @Test
@@ -140,18 +154,21 @@ public class TokenAssociationTest {
             "    int a[] = new int[3];",
             "  }",
             "}");
-    SourceSpan variableNode = compilation.sourceSpan("int a[] = new int[3];");
-    SourceSpan identifier = compilation.sourceSpan("a", "[]");
+    SourceSpan variableNodeSpan = compilation.sourceSpan("int a[] = new int[3];");
+    SourceSpan identifierSpan = compilation.sourceSpan("a", "[]");
 
     // ACT
     FeatureGraph graph =
         FeaturePlugin.createFeatureGraph(compilation.compilationUnit(), compilation.context());
 
     // ASSERT
-    assertThat(
-            FeatureGraphChecks.edgeBetween(
-                graph, variableNode, identifier, EdgeType.ASSOCIATED_TOKEN))
-        .isNotNull();
+    FeatureNode variableNode =
+        FeatureGraphChecks.findNode(graph, variableNodeSpan, "VARIABLE", "NAME");
+    FeatureNode identifierToken =
+        Iterables.getOnlyElement(
+            FeatureGraphChecks.findNodes(
+                graph, identifierSpan, FeatureNode.NodeType.IDENTIFIER_TOKEN));
+    assertThat(graph.edges(variableNode, identifierToken)).isNotEmpty();
   }
 
   @Test
@@ -162,23 +179,30 @@ public class TokenAssociationTest {
             "public class Test {",
             "  int arr[] = { 0 }, arr2[] = { 0 };",
             "}");
-    SourceSpan variableNode1 = compilation.sourceSpan("int arr[] = { 0 },");
-    SourceSpan identifier1 = compilation.sourceSpan("arr", "[]");
-    SourceSpan variableNode2 = compilation.sourceSpan("int arr[] = { 0 }, arr2[] = { 0 };");
-    SourceSpan identifier2 = compilation.sourceSpan("arr2", "[]");
+    SourceSpan variableNode1Span = compilation.sourceSpan("int arr[] = { 0 },");
+    SourceSpan identifier1Span = compilation.sourceSpan("arr", "[]");
+    SourceSpan variableNode2Span = compilation.sourceSpan("int arr[] = { 0 }, arr2[] = { 0 };");
+    SourceSpan identifier2Span = compilation.sourceSpan("arr2", "[]");
 
     // ACT
     FeatureGraph graph =
         FeaturePlugin.createFeatureGraph(compilation.compilationUnit(), compilation.context());
 
     // ASSERT
-    assertThat(
-            FeatureGraphChecks.edgeBetween(
-                graph, variableNode1, identifier1, EdgeType.ASSOCIATED_TOKEN))
-        .isNotNull();
-    assertThat(
-            FeatureGraphChecks.edgeBetween(
-                graph, variableNode2, identifier2, EdgeType.ASSOCIATED_TOKEN))
-        .isNotNull();
+    FeatureNode variableNode1 =
+        FeatureGraphChecks.findNode(graph, variableNode1Span, "VARIABLE", "NAME");
+    FeatureNode identifier1 =
+        Iterables.getOnlyElement(
+            FeatureGraphChecks.findNodes(
+                graph, identifier1Span, FeatureNode.NodeType.IDENTIFIER_TOKEN));
+    FeatureNode variableNode2 =
+        FeatureGraphChecks.findNode(graph, variableNode2Span, "VARIABLE", "NAME");
+    FeatureNode identifier2 =
+        Iterables.getOnlyElement(
+            FeatureGraphChecks.findNodes(
+                graph, identifier2Span, FeatureNode.NodeType.IDENTIFIER_TOKEN));
+
+    assertThat(graph.edges(variableNode1, identifier1)).isNotEmpty();
+    assertThat(graph.edges(variableNode2, identifier2)).isNotEmpty();
   }
 }

@@ -22,6 +22,7 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 import com.google.common.graph.EndpointPair;
 import com.google.common.graph.MutableNetwork;
 import com.google.common.graph.NetworkBuilder;
@@ -31,7 +32,9 @@ import com.sun.tools.javac.code.Kinds;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.tree.EndPosTable;
 import com.sun.tools.javac.tree.JCTree;
+import java.util.Deque;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -241,7 +244,7 @@ public class FeatureGraph {
   }
 
   public Set<FeatureNode> astNodes() {
-    return nodes(NodeType.AST_ELEMENT, NodeType.FAKE_AST);
+    return nodes(NodeType.AST_ELEMENT, NodeType.FAKE_AST, NodeType.AST_LEAF);
   }
 
   public Set<FeatureNode> comments() {
@@ -324,6 +327,39 @@ public class FeatureGraph {
 
   /** Remove all ast nodes that have no successors. */
   public void pruneAstNodes() {
+    // Prune all leaf nodes that are associated with tokens
+    nodes(NodeType.AST_LEAF)
+        .forEach(
+            n -> {
+              Set<FeatureNode> successors = successors(n, EdgeType.ASSOCIATED_TOKEN);
+              FeatureNode predecessor =
+                  Iterables.getOnlyElement(predecessors(n, EdgeType.AST_CHILD));
+              for (FeatureNode successor : successors) {
+                addEdge(predecessor, successor, EdgeType.ASSOCIATED_TOKEN);
+              }
+              graph.removeNode(n);
+              treeToNodeMap.inverse().remove(n);
+            });
+
+    // Prune all fake nodes that are the same as their child
+    nodes(NodeType.FAKE_AST)
+        .forEach(
+            n -> {
+              Set<FeatureNode> successors = successors(n, EdgeType.AST_CHILD);
+              if (successors.size() == 1) {
+                FeatureNode successor = Iterables.getOnlyElement(successors);
+                if (successor.getContents().equals(n.getContents())) {
+                  for (FeatureNode predecessor : predecessors(n)) {
+                    for (FeatureEdge edge : ImmutableSet.copyOf(edges(predecessor, n))) {
+                      addEdge(predecessor, successor, edge.getType());
+                    }
+                  }
+                  graph.removeNode(n);
+                  treeToNodeMap.inverse().remove(n);
+                }
+              }
+            });
+
     //noinspection StatementWithEmptyBody
     while (pruneLeavesOnce()) {
       // do nothing
@@ -335,15 +371,30 @@ public class FeatureGraph {
     if (node.getType().equals(NodeType.IDENTIFIER_TOKEN)) {
       return node;
     }
-
-    Optional<FeatureNode> any =
-        successors(node, EdgeType.ASSOCIATED_TOKEN).stream()
-            .filter(n -> n.getType().equals(NodeType.IDENTIFIER_TOKEN))
-            .findAny();
-    if (!any.isPresent()) {
-      throw new AssertionError();
+    if (node.getType().equals(NodeType.AST_ELEMENT)) {
+      // Breadth first search to the first node declaring a named identifier node
+      Deque<FeatureNode> toCheck = new LinkedList<>();
+      toCheck.add(node);
+      while (!toCheck.isEmpty()) {
+        FeatureNode next = toCheck.pop();
+        Set<FeatureNode> successors =
+            successors(next, EdgeType.AST_CHILD, EdgeType.ASSOCIATED_TOKEN);
+        Optional<FeatureNode> name =
+            successors.stream()
+                .filter(n -> n.getType().equals(NodeType.IDENTIFIER_TOKEN))
+                .findAny();
+        if (name.isPresent()) {
+          return name.get();
+        }
+        toCheck.addAll(successors);
+      }
+      Optional<FeatureNode> token =
+          tokens().stream().filter(t -> t.getStartPosition() == node.getStartPosition()).findAny();
+      if (token.isPresent()) {
+        return token.get();
+      }
     }
-    return any.get();
+    throw new AssertionError("Need to support " + node.getContents());
   }
 
   /** Add an edge between feature nodes for these two compiler trees. */
@@ -426,6 +477,14 @@ public class FeatureGraph {
                         || n.getType().equals(NodeType.FAKE_AST))
             .filter(n -> graph.successors(n).isEmpty())
             .collect(toImmutableSet());
+    toRemove.stream()
+        .filter(n -> n.getType().equals(NodeType.AST_LEAF))
+        .findAny()
+        .ifPresent(
+            n -> {
+              throw new AssertionError("AST Leaf not matched to token: " + n);
+            });
+
     toRemove.forEach(graph::removeNode);
     toRemove.forEach(n -> treeToNodeMap.inverse().remove(n));
     return !toRemove.isEmpty();

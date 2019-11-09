@@ -16,6 +16,8 @@
 
 package uk.ac.cam.acr31.features.javac.testing;
 
+import static com.google.common.collect.ImmutableSet.toImmutableSet;
+
 import com.google.common.collect.Sets;
 import java.util.HashSet;
 import java.util.Optional;
@@ -30,8 +32,28 @@ import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureNode;
 /** Helper methods for writing assertions about feature graphs. */
 public class FeatureGraphChecks {
 
+  /** Find nodes matching this span. */
   public static Set<FeatureNode> findNodes(FeatureGraph graph, SourceSpan span) {
     return graph.findNode(span.start(), span.end());
+  }
+
+  /** Find nodes matching this span but with the specified type. */
+  public static Set<FeatureNode> findNodes(
+      FeatureGraph graph, SourceSpan span, FeatureNode.NodeType type) {
+    return graph.findNode(span.start(), span.end()).stream()
+        .filter(n -> n.getType() == type)
+        .collect(toImmutableSet());
+  }
+
+  /** Matches a chain of nodes with the specified contents and returns the final one. */
+  public static FeatureNode findNode(FeatureGraph graph, SourceSpan span, String... contents) {
+    Set<FeatureNode> s = findNodes(graph, span);
+    FeatureNode found = null;
+    for (String c : contents) {
+      found = s.stream().filter(n -> n.getContents().equals(c)).findFirst().orElseThrow();
+      s = graph.successors(found);
+    }
+    return found;
   }
 
   private static Optional<FeatureEdge> anyEdgeBetween(
