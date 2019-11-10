@@ -20,12 +20,10 @@ import static uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureEdge.EdgeT
 
 import com.google.common.collect.Iterables;
 import com.google.common.truth.Correspondence;
-import java.io.File;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import uk.ac.cam.acr31.features.javac.graph.FeatureGraph;
-import uk.ac.cam.acr31.features.javac.graph.ProtoOutput;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureNode;
 import uk.ac.cam.acr31.features.javac.testing.FeatureGraphChecks;
 import uk.ac.cam.acr31.features.javac.testing.SourceSpan;
@@ -130,7 +128,6 @@ public class TokenAssociationTest {
     // ACT
     FeatureGraph graph =
         FeaturePlugin.createFeatureGraph(compilation.compilationUnit(), compilation.context());
-    ProtoOutput.write(new File("/Users/acr31/foo.proto"), graph);
 
     // ASSERT
     FeatureNode variableNode =

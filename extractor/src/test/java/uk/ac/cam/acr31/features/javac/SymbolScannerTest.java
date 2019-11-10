@@ -18,13 +18,11 @@ package uk.ac.cam.acr31.features.javac;
 import static com.google.common.truth.Truth.assertThat;
 
 import com.google.common.collect.Iterables;
-import java.io.File;
 import java.util.Set;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import uk.ac.cam.acr31.features.javac.graph.FeatureGraph;
-import uk.ac.cam.acr31.features.javac.graph.ProtoOutput;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureEdge.EdgeType;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureNode;
 import uk.ac.cam.acr31.features.javac.testing.SourceSpan;
@@ -108,7 +106,6 @@ public class SymbolScannerTest {
     // ACT
     FeatureGraph graph =
         FeaturePlugin.createFeatureGraph(compilation.compilationUnit(), compilation.context());
-    ProtoOutput.write(new File("/Users/acr31/foo.proto"), graph);
 
     // ASSERT
     FeatureNode symbolNode = findSymbolNode(graph, inv);
