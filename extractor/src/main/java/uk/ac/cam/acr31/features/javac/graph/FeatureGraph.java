@@ -182,7 +182,7 @@ public class FeatureGraph {
    * binary name in the JLS).
    */
   private static String getName(Symbol symbol) {
-    if (symbol.owner.kind == Kinds.Kind.MTH) {
+    if (symbol.owner != null && symbol.owner.kind == Kinds.Kind.MTH) {
       if (symbol.kind == Kinds.Kind.VAR) {
         Symbol.VarSymbol varSymbol = (Symbol.VarSymbol) symbol;
         return getName(varSymbol.owner) + "." + varSymbol.name + "@" + varSymbol.pos;
@@ -190,6 +190,7 @@ public class FeatureGraph {
     }
     switch (symbol.kind) {
       case TYP:
+      case PCK:
         return symbol.flatName().toString();
       default:
         return getName(symbol.owner) + "." + symbol.toString();

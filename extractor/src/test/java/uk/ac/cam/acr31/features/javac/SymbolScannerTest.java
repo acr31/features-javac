@@ -391,6 +391,25 @@ public class SymbolScannerTest {
     assertThat(declSymbol).isNotEqualTo(useSymbol);
   }
 
+  @Test
+  public void symbolScanner_getsName_forImportedPackage() {
+    // ARRANGE
+    TestCompilation compilation =
+        TestCompilation.compile(
+            "Test.java",
+            "import java.util.List;", //
+            "public class Test {}");
+    SourceSpan pckge = compilation.sourceSpan("java.", "util", ".List");
+
+    // ACT
+    FeatureGraph graph =
+        FeaturePlugin.createFeatureGraph(compilation.compilationUnit(), compilation.context());
+
+    // ASSERT
+    FeatureNode symbol = findSymbolNode(graph, pckge);
+    assertThat(symbol.getContents()).isEqualTo("java.util");
+  }
+
   private FeatureNode findSymbolNode(FeatureGraph graph, SourceSpan sourceSpan) {
     Set<FeatureNode> nodes = graph.findNode(sourceSpan.start(), sourceSpan.end());
     return Iterables.getOnlyElement(
