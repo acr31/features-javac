@@ -24,6 +24,7 @@ import com.sun.tools.javac.parser.Tokens.TokenKind;
 import com.sun.tools.javac.util.Context;
 import java.io.IOException;
 import javax.tools.JavaFileObject;
+import org.apache.commons.text.StringEscapeUtils;
 import uk.ac.cam.acr31.features.javac.graph.FeatureGraph;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureEdge.EdgeType;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureNode;
@@ -94,6 +95,7 @@ public class Tokens {
   private static String tokenToString(ErrorProneToken token) {
     switch (String.valueOf(token.kind().tag)) {
       case "STRING":
+        return "\"" + StringEscapeUtils.escapeJava(token.stringVal()) + "\"";
       case "NUMERIC":
         return token.stringVal();
       case "NAMED":

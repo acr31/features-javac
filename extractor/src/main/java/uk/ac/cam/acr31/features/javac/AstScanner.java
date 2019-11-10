@@ -30,6 +30,7 @@ import java.util.Deque;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import org.apache.commons.text.StringEscapeUtils;
 import uk.ac.cam.acr31.features.javac.graph.FeatureGraph;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureEdge.EdgeType;
@@ -119,7 +120,8 @@ class AstScanner {
                 "Did not expect to find trees in a set but found " + o.getClass());
           }
           GraphProtos.FeatureNode valueNode =
-              featureGraph.createFeatureNode(NodeType.AST_LEAF, Objects.toString(o), -1, -1);
+              featureGraph.createFeatureNode(
+                  NodeType.AST_LEAF, StringEscapeUtils.escapeJava(Objects.toString(o)), -1, -1);
           featureGraph.addEdge(holderNode, valueNode, EdgeType.AST_CHILD);
         }
       } else {

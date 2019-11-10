@@ -16,6 +16,7 @@
 package uk.ac.cam.acr31.features.javac;
 
 import static com.google.common.truth.Truth.assertThat;
+import static uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureEdge.EdgeType;
 
 import com.google.common.collect.Iterables;
 import com.google.common.truth.Correspondence;
@@ -204,5 +205,29 @@ public class TokenAssociationTest {
 
     assertThat(graph.edges(variableNode1, identifier1)).isNotEmpty();
     assertThat(graph.edges(variableNode2, identifier2)).isNotEmpty();
+  }
+
+  @Test
+  public void tokenAssociated_literalTokenWithStringLiteralAstNode() {
+    // ARRANGE
+    TestCompilation compilation =
+        TestCompilation.compile(
+            "Test.java",
+            "public class Test {", //
+            "  String s = \"\\\"\";",
+            "}");
+    SourceSpan tokenSpan = compilation.sourceSpan("\"\\\"\"");
+
+    // ACT
+    FeatureGraph graph =
+        FeaturePlugin.createFeatureGraph(compilation.compilationUnit(), compilation.context());
+
+    // ASSERT
+    FeatureNode token =
+        Iterables.getOnlyElement(
+            FeatureGraphChecks.findNodes(graph, tokenSpan, FeatureNode.NodeType.TOKEN));
+    FeatureNode stringLiteral =
+        Iterables.getOnlyElement(graph.predecessors(token, EdgeType.ASSOCIATED_TOKEN));
+    assertThat(stringLiteral.getContents()).isEqualTo("STRING_LITERAL");
   }
 }
