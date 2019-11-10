@@ -15,13 +15,16 @@
  */
 package uk.ac.cam.acr31.features.javac;
 
+import static com.google.common.collect.ImmutableList.toImmutableList;
 import static com.google.common.truth.Truth.assertThat;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import uk.ac.cam.acr31.features.javac.graph.FeatureGraph;
+import uk.ac.cam.acr31.features.javac.proto.GraphProtos;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureNode;
 import uk.ac.cam.acr31.features.javac.testing.FeatureGraphChecks;
 import uk.ac.cam.acr31.features.javac.testing.SourceSpan;
@@ -72,5 +75,32 @@ public class AstScannerTest {
         Iterables.getOnlyElement(
             FeatureGraphChecks.findNodes(graph, tokenSpan, FeatureNode.NodeType.TOKEN));
     assertThat(token.getContents()).isEqualTo("\"\\\"\"");
+  }
+
+  @Test
+  public void astScanner_producesTree_whenAnonymousInnerClass() {
+    // In this case javac says the identifier of the anonymous class and the extends clause of the
+    // new class body are the same node. This would create a non-tree.
+    // ARRANGE
+    TestCompilation compilation =
+        TestCompilation.compile(
+            "Test.java",
+            "public class Test {", //
+            "  void test() {",
+            "    Object o = new Object() {};",
+            "  }",
+            "}");
+    // ACT
+    FeatureGraph graph =
+        FeaturePlugin.createFeatureGraph(compilation.compilationUnit(), compilation.context());
+
+    // ASSERT
+    ImmutableList<FeatureNode> nodesWithPredecessors =
+        graph.astNodes().stream()
+            .filter(
+                n -> graph.predecessors(n, GraphProtos.FeatureEdge.EdgeType.AST_CHILD).size() != 1)
+            .filter(n -> graph.getAstRoot() != n)
+            .collect(toImmutableList());
+    assertThat(nodesWithPredecessors).isEmpty();
   }
 }

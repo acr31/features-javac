@@ -18,6 +18,7 @@ package uk.ac.cam.acr31.features.javac;
 
 import com.google.common.base.CaseFormat;
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Symbol;
@@ -79,6 +80,13 @@ class AstScanner {
         if (m.getName().equals("getPackageName")
             || m.getName().equals("getSourceFile")
             || m.getName().equals("getLineMap")) {
+          continue;
+        }
+      }
+
+      if (NewClassTree.class.isAssignableFrom(treeInterface)) {
+        NewClassTree newClassTree = (NewClassTree) node;
+        if (newClassTree.getClassBody() != null && m.getName().equals("getIdentifier")) {
           continue;
         }
       }
