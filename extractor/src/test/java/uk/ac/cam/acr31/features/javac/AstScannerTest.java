@@ -103,4 +103,30 @@ public class AstScannerTest {
             .collect(toImmutableList());
     assertThat(nodesWithPredecessors).isEmpty();
   }
+
+  @Test
+  public void astScanner_addsNameNode_toConstructorDefinitions() {
+    // ARRANGE
+    TestCompilation compilation =
+        TestCompilation.compile(
+            "Test.java",
+            "package test;",
+            "class Test {", //
+            "  Test() {}",
+            "}");
+    SourceSpan tokenSpan = compilation.sourceSpan("Test", "()");
+
+    // ACT
+    FeatureGraph graph =
+        FeaturePlugin.createFeatureGraph(compilation.compilationUnit(), compilation.context());
+
+    // ASSERT
+    FeatureNode token =
+        Iterables.getOnlyElement(
+            FeatureGraphChecks.findNodes(graph, tokenSpan, FeatureNode.NodeType.IDENTIFIER_TOKEN));
+    FeatureNode predecessor =
+        Iterables.getOnlyElement(
+            graph.predecessors(token, GraphProtos.FeatureEdge.EdgeType.ASSOCIATED_TOKEN));
+    assertThat(predecessor.getContents()).isEqualTo("NAME");
+  }
 }
