@@ -24,6 +24,7 @@ import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.PackageTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreeScanner;
@@ -87,6 +88,12 @@ public class SymbolScanner extends TreeScanner<Void, Void> {
   public Void visitVariable(VariableTree node, Void ignored) {
     addNode(node);
     return super.visitVariable(node, ignored);
+  }
+
+  @Override
+  public Void visitPackage(PackageTree node, Void ignored) {
+    addNode(node);
+    return super.visitPackage(node, ignored);
   }
 
   private void addNode(Tree node) {
