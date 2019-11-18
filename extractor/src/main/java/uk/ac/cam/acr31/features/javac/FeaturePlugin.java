@@ -138,7 +138,6 @@ public class FeaturePlugin implements Plugin {
     linkTokensToAstNodes(featureGraph);
     // prune all ast nodes with no successors (these are leaves not connected to tokens)
     featureGraph.pruneAstNodes();
-
     //    removeIdentifierAstNodes(featureGraph);
 
     JavacProcessingEnvironment processingEnvironment = JavacProcessingEnvironment.instance(context);
@@ -157,8 +156,27 @@ public class FeaturePlugin implements Plugin {
     GuardedByScanner.addToGraph(compilationUnit, featureGraph);
     SymbolScanner.addToGraph(compilationUnit, featureGraph);
     linkCommentsToAstNodes(featureGraph);
+    checkSymbols(featureGraph);
 
     return featureGraph;
+  }
+
+  /**
+   * Check that all identifier tokens have a symbol associated.
+   *
+   * <p>This excludes tokens within the package declaration since javac only allocates a symbol to
+   * the whole package.
+   */
+  private static void checkSymbols(FeatureGraph graph) {
+    graph.nodes().stream()
+        .filter(n -> n.getType().equals(NodeType.IDENTIFIER_TOKEN))
+        .filter(n -> !graph.hasAncestor(n, NodeType.AST_ELEMENT, "PACKAGE"))
+        .forEach(
+            token -> {
+              if (graph.predecessors(token, EdgeType.ASSOCIATED_SYMBOL).isEmpty()) {
+                throw new AssertionError(token + " has no associated symbol");
+              }
+            });
   }
 
   private static void removeIdentifierAstNodes(FeatureGraph graph) {
