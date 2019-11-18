@@ -34,6 +34,7 @@ import com.sun.tools.javac.tree.EndPosTable;
 import com.sun.tools.javac.tree.JCTree;
 import java.util.Deque;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Optional;
@@ -306,6 +307,24 @@ public class FeatureGraph {
                 graph.edgesConnecting(node, n).stream()
                     .anyMatch(e -> edgeTypeList.contains(e.getType())))
         .collect(toImmutableSet());
+  }
+
+  /** Return true if this node has an ancestor of the given type and contents. */
+  public boolean hasAncestor(FeatureNode node, NodeType ancestorType, String ancestorContents) {
+    Deque<FeatureNode> queue = new LinkedList<>(predecessors(node));
+    Set<FeatureNode> visited = new HashSet<>();
+    while (!queue.isEmpty()) {
+      FeatureNode next = queue.pop();
+      if (visited.contains(next)) {
+        continue;
+      }
+      if (next.getType() == ancestorType && next.getContents().equals(ancestorContents)) {
+        return true;
+      }
+      visited.add(next);
+      queue.addAll(graph.predecessors(next));
+    }
+    return false;
   }
 
   public Set<FeatureNode> predecessors(FeatureNode node) {
