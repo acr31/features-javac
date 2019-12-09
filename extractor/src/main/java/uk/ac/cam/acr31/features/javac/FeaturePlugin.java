@@ -171,6 +171,7 @@ public class FeaturePlugin implements Plugin {
     graph.nodes().stream()
         .filter(n -> n.getType().equals(NodeType.IDENTIFIER_TOKEN))
         .filter(n -> !graph.hasAncestor(n, NodeType.AST_ELEMENT, "PACKAGE"))
+        .filter(n -> !graph.hasAncestor(n, NodeType.AST_ELEMENT, "LABELED_STATEMENT"))
         .forEach(
             token -> {
               if (graph.predecessors(token, EdgeType.ASSOCIATED_SYMBOL).isEmpty()) {

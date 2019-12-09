@@ -129,4 +129,24 @@ public class AstScannerTest {
             graph.predecessors(token, GraphProtos.FeatureEdge.EdgeType.ASSOCIATED_TOKEN));
     assertThat(predecessor.getContents()).isEqualTo("NAME");
   }
+
+  @Test
+  public void astScanner_doesntAbort_onLabeledStatements() {
+    // ARRANGE
+    TestCompilation compilation =
+        TestCompilation.compile(
+            "Test.java",
+            "class Test {", //
+            "  void f() {",
+            "    LABEL: {}",
+            "  }",
+            "}");
+
+    // ACT
+    FeatureGraph graph =
+        FeaturePlugin.createFeatureGraph(compilation.compilationUnit(), compilation.context());
+
+    // ASSERT
+    assertThat(graph.nodes()).isNotEmpty();
+  }
 }
