@@ -16,7 +16,8 @@
 
 package uk.ac.cam.acr31.features.javac.syntactic;
 
-import com.google.errorprone.util.ASTHelpers;
+import static uk.ac.cam.acr31.features.javac.Optionals.ifBothPresent;
+
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.IdentifierTree;
@@ -29,6 +30,8 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreeScanner;
 import com.sun.tools.javac.code.Symbol;
+import java.util.Optional;
+import uk.ac.cam.acr31.features.javac.Symbols;
 import uk.ac.cam.acr31.features.javac.graph.FeatureGraph;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureEdge.EdgeType;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureNode;
@@ -97,28 +100,23 @@ public class SymbolScanner extends TreeScanner<Void, Void> {
   }
 
   private void addNode(Tree node) {
-    Symbol symbol = ASTHelpers.getSymbol(node);
-    if (symbol == null) {
-      return;
-    }
-
-    FeatureNode target = featureGraph.lookupNode(node);
-    if (target == null) {
-      return;
-    }
-    target = featureGraph.toIdentifierNode(target);
-
-    FeatureNode featureNode = featureGraph.createFeatureNode(toSymbolType(symbol), symbol);
-
+    Optional<FeatureNode> featureNode =
+        Symbols.getSymbol(node).map(sym -> featureGraph.createFeatureNode(toSymbolType(sym), sym));
+    Optional<FeatureNode> target =
+        Optional.ofNullable(featureGraph.lookupNode(node)).map(featureGraph::toIdentifierNode);
     // If your code says: String a = "a", b = "b", then javac synths up some extra ast nodes along
     // the lines of String a = "a"; String b = "b";  some of the extra nodes will be clones, some
     // (leaves) will just be the same node reused.  In this case we will visit String twice even
     // though both times point to the same token so just check that there is no edge before adding
     // another.
-
-    if (featureGraph.predecessors(target, EdgeType.ASSOCIATED_SYMBOL).isEmpty()) {
-      featureGraph.addEdge(featureNode, target, EdgeType.ASSOCIATED_SYMBOL);
-    }
+    ifBothPresent(
+        featureNode,
+        target,
+        (f, t) -> {
+          if (featureGraph.predecessors(t, EdgeType.ASSOCIATED_SYMBOL).isEmpty()) {
+            featureGraph.addEdge(f, t, EdgeType.ASSOCIATED_SYMBOL);
+          }
+        });
   }
 
   private static NodeType toSymbolType(Symbol symbol) {

@@ -143,7 +143,7 @@ class AstScanner {
         if (node.getKind() == Tree.Kind.METHOD
             && m.getName().equals("getName")
             && value.equals("<init>")) {
-          value = ((JCTree.JCMethodDecl) node).sym.owner.name.toString();
+          value = Symbols.getSymbol(node).map(sym -> sym.owner.name.toString()).orElseThrow();
         }
         GraphProtos.FeatureNode holderNode =
             featureGraph.createFeatureNode(

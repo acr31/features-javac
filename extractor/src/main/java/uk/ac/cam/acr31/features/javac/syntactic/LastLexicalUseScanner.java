@@ -26,10 +26,9 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreeScanner;
 import com.sun.tools.javac.code.Kinds;
 import com.sun.tools.javac.code.Symbol;
-import com.sun.tools.javac.tree.JCTree.JCIdent;
-import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import java.util.Collection;
 import java.util.Iterator;
+import uk.ac.cam.acr31.features.javac.Symbols;
 import uk.ac.cam.acr31.features.javac.graph.FeatureGraph;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureEdge.EdgeType;
 
@@ -60,17 +59,15 @@ public class LastLexicalUseScanner extends TreeScanner<Void, Void> {
 
   @Override
   public Void visitVariable(VariableTree node, Void ignored) {
-    JCVariableDecl variableDecl = (JCVariableDecl) node;
-    symbolMap.put(variableDecl.sym, node);
+    Symbols.getSymbol(node).ifPresent(sym -> symbolMap.put(sym, node));
     return super.visitVariable(node, ignored);
   }
 
   @Override
   public Void visitIdentifier(IdentifierTree node, Void ignored) {
-    JCIdent ident = (JCIdent) node;
-    if (ident.sym != null && ident.sym.kind == Kinds.Kind.VAR) {
-      symbolMap.put(ident.sym, node);
-    }
+    Symbols.getSymbol(node)
+        .filter(sym -> sym.kind == Kinds.Kind.VAR)
+        .ifPresent(sym -> symbolMap.put(sym, node));
     return super.visitIdentifier(node, ignored);
   }
 }

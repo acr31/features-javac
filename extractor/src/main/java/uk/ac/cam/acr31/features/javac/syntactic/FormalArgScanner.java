@@ -17,7 +17,6 @@
 package uk.ac.cam.acr31.features.javac.syntactic;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.errorprone.util.ASTHelpers;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
@@ -27,10 +26,10 @@ import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreeScanner;
 import com.sun.tools.javac.code.Symbol;
-import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import uk.ac.cam.acr31.features.javac.Symbols;
 import uk.ac.cam.acr31.features.javac.graph.FeatureGraph;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureEdge.EdgeType;
 
@@ -50,8 +49,7 @@ public class FormalArgScanner extends TreeScanner<Void, Void> {
 
     @Override
     public Void visitMethod(MethodTree node, Void ignored) {
-      JCMethodDecl methodDecl = (JCMethodDecl) node;
-      methodSymbols.put(methodDecl.sym, node);
+      Symbols.getSymbol(node).ifPresent(sym -> methodSymbols.put(sym, node));
       return super.visitMethod(node, ignored);
     }
 
@@ -78,21 +76,19 @@ public class FormalArgScanner extends TreeScanner<Void, Void> {
 
   @Override
   public Void visitMethodInvocation(MethodInvocationTree node, Void ignored) {
-    Symbol.MethodSymbol sym = ASTHelpers.getSymbol(node);
-    if (sym != null && methodSymbols.containsKey(sym)) {
-      MethodTree methodTree = methodSymbols.get(sym);
-      process(node.getArguments(), methodTree.getParameters());
-    }
+    Symbols.getSymbol(node)
+        .filter(methodSymbols::containsKey)
+        .map(methodSymbols::get)
+        .ifPresent(mth -> process(node.getArguments(), mth.getParameters()));
     return super.visitMethodInvocation(node, ignored);
   }
 
   @Override
   public Void visitNewClass(NewClassTree node, Void ignored) {
-    Symbol.MethodSymbol symbol = ASTHelpers.getSymbol(node);
-    if (symbol != null && methodSymbols.containsKey(symbol)) {
-      MethodTree methodTree = methodSymbols.get(symbol);
-      process(node.getArguments(), methodTree.getParameters());
-    }
+    Symbols.getSymbol(node)
+        .filter(methodSymbols::containsKey)
+        .map(methodSymbols::get)
+        .ifPresent(mth -> process(node.getArguments(), mth.getParameters()));
     return super.visitNewClass(node, ignored);
   }
 

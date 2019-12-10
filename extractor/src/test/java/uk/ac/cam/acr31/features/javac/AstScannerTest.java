@@ -149,4 +149,31 @@ public class AstScannerTest {
     // ASSERT
     assertThat(graph.nodes()).isNotEmpty();
   }
+
+  @Test
+  public void astScanner_doesntAbort_onEnum() {
+    // ARRANGE
+    TestCompilation compilation =
+        TestCompilation.compile(
+            "Test.java",
+            "import java.util.List;",
+            "enum Test {", //
+            "  FIRST(1),",
+            "  SECOND(2,FIRST);",
+            "  private final int x;",
+            "  private final Test y;",
+            "  Test(int x) { this(x,null); }",
+            "  Test(int x, Test y) {",
+            "    this.x = x;",
+            "    this.y = y;",
+            "  }",
+            "}");
+
+    // ACT
+    FeatureGraph graph =
+        FeaturePlugin.createFeatureGraph(compilation.compilationUnit(), compilation.context());
+
+    // ASSERT
+    assertThat(graph.nodes()).isNotEmpty();
+  }
 }

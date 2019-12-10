@@ -20,9 +20,9 @@ import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.util.TreeScanner;
 import com.sun.tools.javac.code.Kinds;
-import com.sun.tools.javac.tree.JCTree;
 import java.util.ArrayList;
 import java.util.List;
+import uk.ac.cam.acr31.features.javac.Symbols;
 
 /** Collector for variable and field names. */
 class IdentifierCollector extends TreeScanner<Void, Void> {
@@ -41,8 +41,7 @@ class IdentifierCollector extends TreeScanner<Void, Void> {
 
   @Override
   public Void visitIdentifier(IdentifierTree node, Void ignored) {
-    JCTree.JCIdent ident = (JCTree.JCIdent) node;
-    if (ident.sym.kind == Kinds.Kind.VAR) {
+    if (Symbols.getSymbol(node).map(sym -> sym.kind == Kinds.Kind.VAR).orElse(false)) {
       identifiers.add(node);
     }
     return super.visitIdentifier(node, ignored);
