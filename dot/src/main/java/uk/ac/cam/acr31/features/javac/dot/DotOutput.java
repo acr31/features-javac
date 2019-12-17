@@ -37,7 +37,6 @@ import org.apache.commons.text.StringEscapeUtils;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureEdge;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureEdge.EdgeType;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureNode;
-import uk.ac.cam.acr31.features.javac.proto.GraphProtos.FeatureNode.NodeType;
 import uk.ac.cam.acr31.features.javac.proto.GraphProtos.Graph;
 import uk.ac.cam.acr31.features.javac.proto.NodeTypes;
 
@@ -101,12 +100,6 @@ public class DotOutput {
               .filter(n -> NodeTypes.isToken(n.getType()))
               .collect(toImmutableSet());
       writeSubgraph(w, tokenSet, "same", verboseDot);
-
-      Set<FeatureNode> typeSet =
-          graph.getNodeList().stream()
-              .filter(n -> n.getType().equals(NodeType.TYPE))
-              .collect(toImmutableSet());
-      writeSubgraph(w, typeSet, null, verboseDot);
 
       for (FeatureEdge edge : graph.getEdgeList()) {
         w.println(dotEdge(edge, index.incidentNodes(edge)));
@@ -187,8 +180,7 @@ public class DotOutput {
         }
         break;
       case HAS_TYPE:
-        ports = "headport=e, tailport=w, color=grey, weight=0";
-        break;
+        return "";
       case ASSIGNABLE_TO:
         ports = "headport=e, tailport=w, color=brown, weight=0";
         break;
