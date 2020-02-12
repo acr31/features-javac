@@ -53,50 +53,58 @@ public class SymbolScanner extends TreeScanner<Void, Void> {
 
   @Override
   public Void visitClass(ClassTree node, Void ignored) {
+    Void result = super.visitClass(node, ignored);
     addNode(node);
-    return super.visitClass(node, ignored);
+    return result;
   }
 
   @Override
   public Void visitNewClass(NewClassTree node, Void ignored) {
+    Void result = super.visitNewClass(node, ignored);
     addNode(node);
-    return super.visitNewClass(node, ignored);
+    return result;
   }
 
   @Override
   public Void visitMethod(MethodTree node, Void ignored) {
+    Void result = super.visitMethod(node, ignored);
     addNode(node);
-    return super.visitMethod(node, ignored);
+    return result;
   }
 
   @Override
   public Void visitMethodInvocation(MethodInvocationTree node, Void ignored) {
+    Void result = super.visitMethodInvocation(node, ignored);
     addNode(node);
-    return super.visitMethodInvocation(node, ignored);
+    return result;
   }
 
   @Override
   public Void visitIdentifier(IdentifierTree node, Void ignored) {
+    Void result = super.visitIdentifier(node, ignored);
     addNode(node);
-    return super.visitIdentifier(node, ignored);
+    return result;
   }
 
   @Override
   public Void visitMemberSelect(MemberSelectTree node, Void ignored) {
+    Void result = super.visitMemberSelect(node, ignored);
     addNode(node);
-    return super.visitMemberSelect(node, ignored);
+    return result;
   }
 
   @Override
   public Void visitVariable(VariableTree node, Void ignored) {
+    Void result = super.visitVariable(node, ignored);
     addNode(node);
-    return super.visitVariable(node, ignored);
+    return result;
   }
 
   @Override
   public Void visitPackage(PackageTree node, Void ignored) {
+    Void result = super.visitPackage(node, ignored);
     addNode(node);
-    return super.visitPackage(node, ignored);
+    return result;
   }
 
   private void addNode(Tree node) {
