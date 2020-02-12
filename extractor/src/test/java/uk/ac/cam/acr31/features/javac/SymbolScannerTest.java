@@ -407,6 +407,28 @@ public class SymbolScannerTest {
     assertThat(symbol.getContents()).isEqualTo("java.util");
   }
 
+  @Test
+  public void symbolScanner_associatesMethodSymbol_withMethodInInnerClass() {
+    // ARRANGE
+    TestCompilation compilation =
+        TestCompilation.compile(
+            "Test.java",
+            "public class Test {", //
+            "  Object o = new Object() {",
+            "    void innerMethod() {}",
+            "  };",
+            "}");
+    SourceSpan innerMethod = compilation.sourceSpan("void ", "innerMethod", "()");
+
+    // ACT
+    FeatureGraph graph =
+        FeaturePlugin.createFeatureGraph(compilation.compilationUnit(), compilation.context());
+
+    // ASSERT
+    FeatureNode symbol = findSymbolNode(graph, innerMethod);
+    assertThat(symbol.getContents()).isEqualTo("Test$1.innerMethod()");
+  }
+
   private FeatureNode findSymbolNode(FeatureGraph graph, SourceSpan sourceSpan) {
     Set<FeatureNode> nodes = graph.findNode(sourceSpan.start(), sourceSpan.end());
     return Iterables.getOnlyElement(
