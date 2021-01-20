@@ -25,7 +25,7 @@ Latest extrator version built from HEAD: https://storage.googleapis.com/features
 
 #### Step 3: to generate .proto files
 ``` 
- javac -cp extractor/target/features-javac-extractor-1.0.0-SNAPSHOT-jar-with-dependencies.jar -Xplugin:FeaturePlugin Test.java 
+ javac -cp extractor/target/features-javac-extractor-1.0.0-SNAPSHOT-jar-with-dependencies.jar -Xplugin:FeaturePlugin T.java 
 ```
 
 #### Step 4: to generate .dot files
